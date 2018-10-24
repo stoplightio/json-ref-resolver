@@ -27,7 +27,7 @@
     "test:watch": "jest --watch",
     "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
     "deploy-docs": "ts-node scripts/gh-pages-publish",
-    "commit": "git-cz --retry",
+    "commit": "git-cz",
     "semantic-release": "semantic-release"
   },
   "lint-staged": {
