@@ -1,0 +1,14 @@
+{
+  "input": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$ref": "toplevelref.json"
+  },
+  "expected": {
+    "type": "object",
+    "properties": {
+      "baz": {
+        "type": "string"
+      }
+    }
+  }
+}

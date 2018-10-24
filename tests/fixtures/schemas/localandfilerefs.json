@@ -1,0 +1,66 @@
+{
+  "input": {
+    "description": "Just a basic schema.",
+    "title": "Basic Object",
+    "type": "object",
+    "definitions": {
+      "id": {
+        "$ref": "id.json"
+      },
+      "foo": {
+        "$ref": "foo.json"
+      },
+      "bar": {
+        "$ref": "bar.json"
+      }
+    },
+    "properties": {
+      "id": {
+        "$ref": "#/definitions/id"
+      },
+      "foo": {
+        "$ref": "#/definitions/foo"
+      },
+      "bar": {
+        "$ref": "#/definitions/bar"
+      }
+    }
+  },
+  "expected": {
+    "description": "Just a basic schema.",
+    "title": "Basic Object",
+    "type": "object",
+    "definitions": {
+      "id": {
+        "description": "unique identifier of a the object",
+        "type": "string",
+        "minLength": 1
+      },
+      "foo": {
+        "description": "foo property",
+        "readOnly": true,
+        "type": "number"
+      },
+      "bar": {
+        "description": "bar property",
+        "type": "boolean"
+      }
+    },
+    "properties": {
+      "id": {
+        "description": "unique identifier of a the object",
+        "type": "string",
+        "minLength": 1
+      },
+      "foo": {
+        "description": "foo property",
+        "readOnly": true,
+        "type": "number"
+      },
+      "bar": {
+        "description": "bar property",
+        "type": "boolean"
+      }
+    }
+  }
+}

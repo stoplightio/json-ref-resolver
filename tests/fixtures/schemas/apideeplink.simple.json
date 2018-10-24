@@ -1,0 +1,35 @@
+{
+  "input": {
+    "foo": {
+      "$ref": "#/bar/inner"
+    },
+    "bar": {
+      "inner": {
+        "$ref": "#/inner"
+      }
+    },
+    "inner": {
+      "$ref": "#/schema"
+    },
+    "schema": {
+      "$ref": "widget-update.simple.json#/foo-id"
+    }
+  },
+  "assertCache": true,
+  "expected": {
+    "foo": {
+      "type": "string"
+    },
+    "bar": {
+      "inner": {
+        "type": "string"
+      }
+    },
+    "inner": {
+      "type": "string"
+    },
+    "schema": {
+      "type": "string"
+    }
+  }
+}

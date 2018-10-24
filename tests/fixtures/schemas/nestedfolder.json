@@ -1,0 +1,64 @@
+{
+  "input": {
+    "title": "nested folder test",
+    "definitions": {
+      "f1": {
+        "$ref": "folder1/withinf1.json"
+      },
+      "someNestedProp": {
+        "$ref": "folder1/more/more.json#/definitions/plusOne"
+      }
+    },
+    "properties": {
+      "f1": {
+        "$ref": "#/definitions/f1"
+      },
+      "someNestedProp": {
+        "$ref": "#/definitions/someNestedProp"
+      }
+    }
+  },
+  "expected": {
+    "title": "nested folder test",
+    "definitions": {
+      "f1": {
+        "description": "Just a basic schema within folder1.",
+        "title": "Folder1 Object",
+        "type": "object",
+        "properties": {
+          "something": {
+            "description": "some property",
+            "readOnly": true,
+            "type": "number"
+          },
+          "someMore": {
+            "type": "number"
+          }
+        }
+      },
+      "someNestedProp": {
+        "type": "string"
+      }
+    },
+    "properties": {
+      "f1": {
+        "description": "Just a basic schema within folder1.",
+        "title": "Folder1 Object",
+        "type": "object",
+        "properties": {
+          "something": {
+            "description": "some property",
+            "readOnly": true,
+            "type": "number"
+          },
+          "someMore": {
+            "type": "number"
+          }
+        }
+      },
+      "someNestedProp": {
+        "type": "string"
+      }
+    }
+  }
+}

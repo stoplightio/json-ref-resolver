@@ -1,0 +1,5 @@
+{
+  "foo-id": {
+    "$ref": "foomodel.simple.json#/id"
+  }
+}

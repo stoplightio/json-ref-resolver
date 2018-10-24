@@ -1,0 +1,13 @@
+{
+  "description": "Login request.",
+  "title": "User API - Login request",
+  "type": "object",
+  "properties": {
+    "email": {
+      "$ref": "common-definitions.json#/definitions/email"
+    },
+    "password": {
+      "$ref": "common-definitions.json#/definitions/password"
+    }
+  }
+}

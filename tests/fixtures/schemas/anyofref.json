@@ -1,0 +1,81 @@
+{
+  "input": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+      "localDef1": {
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string"
+          }
+        }
+      },
+      "localDef2": {
+        "type": "object",
+        "properties": {
+          "bar": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "anyOf": [
+      {
+        "$ref": "#/definitions/localDef1"
+      },
+      {
+        "type": "object",
+        "properties": {
+          "baz": {
+            "$ref": "#/definitions/localDef2"
+          }
+        }
+      }
+    ]
+  },
+  "assertCache": true,
+  "expected": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+      "localDef1": {
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string"
+          }
+        }
+      },
+      "localDef2": {
+        "type": "object",
+        "properties": {
+          "bar": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "anyOf": [
+      {
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string"
+          }
+        }
+      },
+      {
+        "type": "object",
+        "properties": {
+          "baz": {
+            "type": "object",
+            "properties": {
+              "bar": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

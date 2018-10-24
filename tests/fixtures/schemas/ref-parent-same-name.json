@@ -1,0 +1,53 @@
+{
+  "description":
+    "This checks that a circular reference to something with path that includes the current path works (the string 'definitions/data-rows' includes the string 'definitions/data-row')",
+  "input": {
+    "definitions": {
+      "data-rows": {
+        "title": "DataRows",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/data-row"
+        }
+      },
+      "data-row": {
+        "title": "DataRow",
+        "type": "object",
+        "additionalProperties": false,
+        "patternProperties": {
+          ".+": {
+            "type": ["object", "number", "integer", "boolean", "string", "null", "array"]
+          }
+        }
+      }
+    }
+  },
+  "expected": {
+    "definitions": {
+      "data-rows": {
+        "title": "DataRows",
+        "type": "array",
+        "items": {
+          "title": "DataRow",
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            ".+": {
+              "type": ["object", "number", "integer", "boolean", "string", "null", "array"]
+            }
+          }
+        }
+      },
+      "data-row": {
+        "title": "DataRow",
+        "type": "object",
+        "additionalProperties": false,
+        "patternProperties": {
+          ".+": {
+            "type": ["object", "number", "integer", "boolean", "string", "null", "array"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "input": {
+    "description": "Just a basic schema.",
+    "title": "Basic Object",
+    "type": "object",
+    "properties": {
+      "id": {
+        "$ref": "id.json"
+      },
+      "foo": {
+        "$ref": "foo.json"
+      },
+      "bar": {
+        "$ref": "bar.json"
+      }
+    }
+  },
+  "expected": {
+    "description": "Just a basic schema.",
+    "title": "Basic Object",
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "unique identifier of a the object",
+        "type": "string",
+        "minLength": 1
+      },
+      "foo": {
+        "description": "foo property",
+        "readOnly": true,
+        "type": "number"
+      },
+      "bar": {
+        "description": "bar property",
+        "type": "boolean"
+      }
+    }
+  }
+}
