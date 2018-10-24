@@ -1,4 +1,4 @@
-import { URI } from '@stoplight/uri/lib/uri';
+import { URI } from '@stoplight/uri';
 
 import { Cache } from './cache';
 import * as Types from './types';

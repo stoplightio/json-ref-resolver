@@ -1,4 +1,4 @@
-import { URI } from '@stoplight/uri/lib/uri';
+import { URI } from '@stoplight/uri';
 import { DepGraph } from 'dependency-graph';
 
 export interface IResolver {

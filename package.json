@@ -110,6 +110,7 @@
     "rollup-plugin-json": "3.1.x",
     "rollup-plugin-node-resolve": "3.4.x",
     "rollup-plugin-sourcemaps": "0.4.x",
+    "rollup-plugin-terser": "2.x.x",
     "rollup-plugin-typescript2": "0.17.x",
     "semantic-release": "15.10.x",
     "ts-jest": "23.x.x",
@@ -120,8 +121,9 @@
     "typescript": "3.1.x"
   },
   "dependencies": {
-    "@stoplight/json": "0.0.43",
-    "@stoplight/uri": "0.0.43",
+    "@stoplight/json": "0.0.44-alpha.1",
+    "@stoplight/path": "0.0.44-alpha.1",
+    "@stoplight/uri": "0.0.44-alpha.1",
     "dependency-graph": "0.7.x",
     "fast-memoize": "2.5.x",
     "immer": "1.7.x"

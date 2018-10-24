@@ -1,4 +1,4 @@
-import { URI } from '@stoplight/uri/lib/uri';
+import { URI } from '@stoplight/uri';
 import * as fs from 'fs';
 
 import httpMocks from './fixtures/http-mocks';

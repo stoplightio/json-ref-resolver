@@ -1,4 +1,4 @@
-import { getValue } from '@stoplight/json/lib/json';
+import { getValue } from '@stoplight/json';
 import { DepGraph } from 'dependency-graph';
 
 import * as Types from './types';

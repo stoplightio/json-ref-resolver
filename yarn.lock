@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@babel/code-frame@^7.0.0-beta.35":
+"@babel/code-frame@^7.0.0", "@babel/code-frame@^7.0.0-beta.35":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.0.0.tgz#06e2ab19bdb535385559aabb5ba59729482800f8"
   integrity sha512-OfC2uemaknXr87bdLUkWog7nYuliM9Ij5HUcajsVcMCpQrcLmtxRbVFTIqmcSkSeYRBFBRxs2FiUqFJDLdiebA==
@@ -282,10 +282,10 @@
   resolved "https://registry.yarnpkg.com/@stoplight/fast-safe-stringify/-/fast-safe-stringify-2.1.1.tgz#faf12b804aef7ab2acc460edd40d23f7bb5cb3b8"
   integrity sha1-+vErgErverKsxGDt1A0j97tcs7g=
 
-"@stoplight/json@0.0.43":
-  version "0.0.43"
-  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-0.0.43.tgz#28a428e05ddee10d6817fff98a87f8863e772621"
-  integrity sha512-FmsIcjdEXcSdq+SvZFLuLRbim+tabQLE7bsxjTZdvsoBM5BxoCQueNyubl5KKsEOPPvkJL4+8jPRrusNfOz9Gw==
+"@stoplight/json@0.0.44-alpha.1":
+  version "0.0.44-alpha.1"
+  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-0.0.44-alpha.1.tgz#1750c504b0bbdfad8fb2eadea783dbfde52c24c1"
+  integrity sha512-thChwqRPAIMm5hoM/uv4ZUyGdxoCWqKf+qXPyrVH1oQdtWtc3Q5e+5cIiMy7/4VjZRpmLaYdVnvRQXkMVy0RXw==
   dependencies:
     "@stoplight/fast-safe-stringify" "2.1.x"
     lodash.get "4.x.x"
@@ -293,19 +293,19 @@
     lodash.trimstart "4.x.x"
     tslib "1.x.x"
 
-"@stoplight/path@0.0.43":
-  version "0.0.43"
-  resolved "https://registry.yarnpkg.com/@stoplight/path/-/path-0.0.43.tgz#3891ce9a881fd63679478b1638aff338229ca8f7"
-  integrity sha512-jHdNCPBznL1sHSiNu6RVMYmhFVYtkTF8ikRlFtbgMfrYf83BJX4iCauI7p7qMwQcHxKSHVUW+YhOItlonykybA==
+"@stoplight/path@0.0.44-alpha.1":
+  version "0.0.44-alpha.1"
+  resolved "https://registry.yarnpkg.com/@stoplight/path/-/path-0.0.44-alpha.1.tgz#82441d7815d7fb7e1fa02a422ddc7166b683b9ea"
+  integrity sha512-8+lUMLLORTWjyQqg7KJL8UKDKheR8k9SmhkKsY9ytY4eprIHMPy0hmWRmR/SAoniwF4Yhv6ZdnwThK7Q+yEeUQ==
   dependencies:
     tslib "1.x.x"
 
-"@stoplight/uri@0.0.43":
-  version "0.0.43"
-  resolved "https://registry.yarnpkg.com/@stoplight/uri/-/uri-0.0.43.tgz#de2145bbd196078a042d040b0324910ce07937a2"
-  integrity sha512-fYgM+5etGI+ViHYkcSKEmG27uVF5ia5pAFdb/6Si0aTcs8azOf1sCfqdanhbJLsLIDU5ze9ZBp+qlhkyUiNAsA==
+"@stoplight/uri@0.0.44-alpha.1":
+  version "0.0.44-alpha.1"
+  resolved "https://registry.yarnpkg.com/@stoplight/uri/-/uri-0.0.44-alpha.1.tgz#ffdcdf30046de71af65f735266cc3b79071f77ff"
+  integrity sha512-d0wGfuxr/lks2TKHGkldDdx8BI+ksL0ceYuB+EHPtYSQO0/WQ9zyWLR46c+xJo/Zh1p9hEao/bgJI+b80WNUiw==
   dependencies:
-    "@stoplight/path" "0.0.43"
+    "@stoplight/path" "0.0.44-alpha.1"
     tslib "1.x.x"
 
 "@types/estree@0.0.39":
@@ -6294,6 +6294,15 @@ rollup-plugin-sourcemaps@0.4.x:
     rollup-pluginutils "^2.0.1"
     source-map-resolve "^0.5.0"
 
+rollup-plugin-terser@2.x.x:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-terser/-/rollup-plugin-terser-2.0.2.tgz#1b59d67c80fc0d499cdc29a6991944b2d671ea03"
+  integrity sha512-B+oXJLFrIyczYRUuq4I+cP1AQBvnvr5CFa6RN0mx1o8s6OrTmnRVBx4a8hk7eRY2Z00DE3jw4LxV3708gBQsdQ==
+  dependencies:
+    "@babel/code-frame" "^7.0.0"
+    jest-worker "^23.2.0"
+    terser "^3.8.2"
+
 rollup-plugin-typescript2@0.17.x:
   version "0.17.2"
   resolved "https://registry.yarnpkg.com/rollup-plugin-typescript2/-/rollup-plugin-typescript2-0.17.2.tgz#7d18a94b74993307ec69b7c2f571c12b51561a14"
@@ -6666,7 +6675,7 @@ source-map-support@^0.4.15:
   dependencies:
     source-map "^0.5.6"
 
-source-map-support@^0.5.6:
+source-map-support@^0.5.6, source-map-support@~0.5.6:
   version "0.5.9"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.9.tgz#41bc953b2534267ea2d605bccfa7bfa3111ced5f"
   integrity sha512-gR6Rw4MvUlYy83vP0vxoVNzM6t8MUXqNuRsuBmBHQDu1Fh6X015FrLdgoDKcNdkwGubozq0P4N0Q37UyFVr1EA==
@@ -7003,6 +7012,15 @@ term-size@^1.2.0:
   integrity sha1-RYuDiH8oj8Vtb/+/rSYuJmOO+mk=
   dependencies:
     execa "^0.7.0"
+
+terser@^3.8.2:
+  version "3.10.2"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-3.10.2.tgz#a61d2c97065f9fdc8c49a18655e2a80ca7298a94"
+  integrity sha512-+QrFoqBImmsQGB4c/HvaqgZynmbNvNBwoBxuu7fYXtq5EEtlLUzph+WimDj+xMkuqawXPMl2lgCIz81CdXvt+w==
+  dependencies:
+    commander "~2.17.1"
+    source-map "~0.6.1"
+    source-map-support "~0.5.6"
 
 test-exclude@^4.2.1:
   version "4.2.3"

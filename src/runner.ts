@@ -1,6 +1,6 @@
-import { getValue, setValue, startsWith } from '@stoplight/json/lib/json';
-import { trimStart } from '@stoplight/json/lib/json';
-import { URI } from '@stoplight/uri/lib/uri';
+import { getValue, setValue, startsWith } from '@stoplight/json';
+import { trimStart } from '@stoplight/json';
+import { URI } from '@stoplight/uri';
 import produce from 'immer';
 const memoize = require('fast-memoize');
 
