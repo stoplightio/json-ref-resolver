@@ -1,0 +1,111 @@
+{
+  "name": "json-ref-resolver",
+  "version": "0.0.0",
+  "description": "",
+  "keywords": [],
+  "main": "dist/json-ref-resolver.umd.js",
+  "module": "dist/json-ref-resolver.es5.js",
+  "typings": "dist/types/json-ref-resolver.d.ts",
+  "files": [
+    "dist"
+  ],
+  "author": "Stoplight <support@stoplight.io>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stoplightio/json-ref-resolver.git"
+  },
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "scripts": {
+    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "prebuild": "rimraf dist",
+    "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
+    "start": "rollup -c rollup.config.ts -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
+    "deploy-docs": "ts-node scripts/gh-pages-publish",
+    "commit": "git-cz",
+    "semantic-release": "semantic-release",
+    "semantic-release-prepare": "ts-node scripts/semantic-release-prepare",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-conventional-changelog"
+    }
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testEnvironment": "node",
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test/"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
+      }
+    },
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/*.{js,ts}"
+    ]
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "7.x.x",
+    "@commitlint/config-conventional": "7.x.x",
+    "@types/jest": "23.x.x",
+    "@types/node": "10.x.x",
+    "colors": "1.x.x",
+    "commitizen": "3.x.x",
+    "cz-conventional-changelog": "2.x.x",
+    "husky": "1.x.x",
+    "jest": "23.x.x",
+    "lint-staged": "7.x.x",
+    "prettier": "1.14.x",
+    "rimraf": "2.x.x",
+    "rollup": "0.66.x",
+    "rollup-plugin-commonjs": "9.2.x",
+    "rollup-plugin-json": "3.1.x",
+    "rollup-plugin-node-resolve": "3.4.x",
+    "rollup-plugin-sourcemaps": "0.4.x",
+    "rollup-plugin-typescript2": "0.17.x",
+    "semantic-release": "15.x.x",
+    "ts-jest": "23.x.x",
+    "ts-node": "7.x.x",
+    "tslint": "5.x.x",
+    "tslint-config-stoplight": "1.x.x",
+    "typedoc": "0.13.x",
+    "typescript": "3.1.x"
+  }
+}
