@@ -2,41 +2,61 @@
 
 Recursively resolves JSON pointers and remote authorities.
 
+- Explore the interfaces: [TSDoc](https://stoplightio.github.io/json-ref-resolver/)
+- View the changelog: [Releases](https://github.com/stoplightio/json-ref-resolver/releases)
+
 ### Features
 
-- Performant. Hot paths are memoized, only one crawl is needed, and remote authorities are resolved concurrently.
+- Performant. Hot paths are memoized, remote authorities are resolved concurrently, and the minimum surface area is crawled and resolved.
 - Caching. Results from remote authorities are cached.
 - Immutable. The original object is not changed, and structural sharing is used to only change relevant bits.
 - Reference equality. Pointers to the same location will resolve to the same object in memory.
 - Flexible. Bring your own readers for http://, file://, mongo://, custom://... etc.
 - Reliable. Well tested to handle all sorts of circular reference edge cases.
 
+### Installation
+
+Supported in modern browsers and node.
+
+```bash
+# latest stable
+yarn add @stoplight/json-ref-resolver
+```
+
 ### Usage
 
 All relevant types and options can be found in [src/types.ts](src/types.ts).
 
-```js
+```ts
+import { Resolver } from '@stoplight/json-ref-resolver';
+
 // some example http library
 const request = require('request');
 
-// fs in node.. in general this library works just fine in the browser though
+// if we're in node, we create a file reader with fs
 const fs = require('fs');
 
-// readers can do anything, so long as they have a read function that returns a promise that resolves to a value
-const httpReader = {
-  async read(ref) {
-    return request(ref.toString());
-  },
-};
+// create our resolver instance
+const resolver = new Resolver({
+  // readers can do anything, so long as they define an async read function that resolves to a value
+  readers: {
+    // this reader will be invoked for refs with the https protocol
+    https: {
+      async read(ref: uri.URI) {
+        return request(ref.toString());
+      },
+    },
 
-// this would obviously only be possible in node
-const fileReader {
-  async read(ref) {
-    return fs.read(ref.toString(true));
+    // this reader will be invoked for refs with the file protocol
+    file: {
+      async read(ref: uri.URI) {
+        return fs.read(ref.toString());
+      },
+    },
   },
-};
+});
 
-const source = {
+const resolved = await resolver.resolve({
   definitions: {
     someOASFile: {
       $ref: './main.oas2.yml#/definitions/user',
@@ -45,24 +65,20 @@ const source = {
       $ref: 'https://foo.com/intro.md',
     },
   },
-};
-
-// set our resolver, passing in our scheme -> reader mapping
-const resolver = new Resolver({
-  readers: {
-    http: httpReader,
-    https: httpReader,
-    file: fileReader,
-  },
 });
 
-const resolved = await resolver.resolve(source);
-
 console.log(resolved.result);
+
+// ==> outputs the original object, with refs resolved and replaced
+//
 // {
 //   definitions: {
-//     someOASFile: // .. whatever data is in the file located in the location definitions.foo in file './main.oas2.yml#/definitions/user'
-//     someMarkdownFile: // .. whatever data is returned from https://foo.com/intro.md
+//     someOASFile: {
+//       // ... the data located in the relative file `./main.oas2.yml` and inner json path `#/definitions/user`
+//     },
+//     someMarkdownFile: {
+//       // ... the data located at the url `https://foo.com/intro.md`
+//     }
 //   },
 // }
 ```
