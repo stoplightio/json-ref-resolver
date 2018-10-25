@@ -17,19 +17,20 @@
   },
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=8.3.0"
   },
   "scripts": {
-    "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts'",
-    "prebuild": "rimraf dist",
-    "build": "rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
     "start": "rollup -c rollup.config.ts -w",
+    "prebuild": "rimraf dist",
+    "build": "rollup -c rollup.config.ts",
+    "build.docs": "typedoc --out docs --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
     "test": "jest",
     "test.watch": "jest --watch --coverage=false",
     "test.prod": "npm run lint && npm run test -- --coverage --no-cache",
-    "deploy-docs": "ts-node scripts/gh-pages-publish",
+    "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts'",
     "commit": "git-cz",
-    "semantic-release": "semantic-release"
+    "release": "semantic-release",
+    "release.docs": "ts-node scripts/gh-pages-publish"
   },
   "lint-staged": {
     "{src}/**/*.ts": [
@@ -49,6 +50,15 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/npm",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ],
       "@semantic-release/github"
     ]
   },
@@ -75,7 +85,16 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "src/*.{js,ts}"
-    ]
+    ],
+    "globals": {
+      "ts-jest": {
+        "diagnostics": {
+          "ignoreCodes": [
+            151001
+          ]
+        }
+      }
+    }
   },
   "prettier": {
     "printWidth": 100,
@@ -92,25 +111,22 @@
     "dependency-graph": "0.7.x",
     "fast-memoize": "2.5.x",
     "immer": "1.7.x",
-    "lodash.get": "4.x.x",
-    "lodash.set": "4.x.x",
-    "lodash.trimstart": "4.x.x",
+    "lodash": "4.x.x",
     "urijs": "1.19.x"
   },
   "devDependencies": {
     "@commitlint/cli": "7.x.x",
     "@commitlint/config-conventional": "7.x.x",
-    "@semantic-release/commit-analyzer": "6.1.x",
-    "@semantic-release/github": "5.2.x",
-    "@semantic-release/npm": "5.0.x",
-    "@semantic-release/release-notes-generator": "7.1.x",
+    "@semantic-release/commit-analyzer": "6.x.x",
+    "@semantic-release/git": "7.x.x",
+    "@semantic-release/github": "5.x.x",
+    "@semantic-release/npm": "5.x.x",
+    "@semantic-release/release-notes-generator": "7.x.x",
     "@types/jest": "23.x.x",
-    "@types/lodash.get": "4.x.x",
-    "@types/lodash.set": "4.x.x",
-    "@types/lodash.trimstart": "4.x.x",
+    "@types/lodash": "4.x.x",
     "@types/node": "10.x.x",
     "@types/urijs": "1.15.x",
-    "benchmark": "2.1.x",
+    "benchmark": "2.x.x",
     "commitizen": "3.x.x",
     "cz-conventional-changelog": "2.x.x",
     "husky": "1.x.x",
@@ -125,7 +141,7 @@
     "rollup-plugin-sourcemaps": "0.4.x",
     "rollup-plugin-terser": "2.x.x",
     "rollup-plugin-typescript2": "0.17.x",
-    "semantic-release": "15.10.x",
+    "semantic-release": "15.x.x",
     "ts-jest": "23.x.x",
     "ts-node": "7.x.x",
     "tslint": "5.x.x",

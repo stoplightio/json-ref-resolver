@@ -23,8 +23,9 @@ jobs:
       - checkout
       - run: yarn
       - run: yarn build
-      - run: yarn semantic-release
-      - run: yarn deploy-docs
+      - run: yarn build.docs
+      - run: yarn release
+      - run: yarn release.docs
 
 workflows:
   version: 2

@@ -1,7 +1,8 @@
 import fastStringify from '@stoplight/fast-safe-stringify';
-const _get = require('lodash.get');
-const _set = require('lodash.set');
-const _trimStart = require('lodash.trimstart');
+
+const _get = require('lodash/get');
+const _set = require('lodash/set');
+const _trimStart = require('lodash/trimstart');
 
 export const stringify = (
   target: any,
