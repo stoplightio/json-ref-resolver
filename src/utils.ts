@@ -89,3 +89,11 @@ export const pathToJSONPointer = (path: string[]): string => {
 export const addToJSONPointer = (pointer: string, part: string): string => {
   return `${pointer}/${encodeFragmentSegment(part)}`;
 };
+
+export const uriToJSONPointer = (uri: uri.URI): string => {
+  return uri && uri.fragment() ? `#${uri.fragment()}` : '';
+};
+
+export const uriIsJSONPointer = (ref: uri.URI): boolean => {
+  return ref.toString().slice(0, 2) === '#/';
+};

@@ -1,4 +1,3 @@
-import { URI } from '@stoplight/uri';
 import { DepGraph } from 'dependency-graph';
 
 export interface IResolver {
@@ -19,7 +18,7 @@ export interface IResolverOptions {
   };
 
   // customize what is resolved and/or transform the standard $refs that are resolved
-  transformRef?: (opts: ITransformRefOpts, ctx: any) => URI | void;
+  transformRef?: (opts: ITransformRefOpts, ctx: any) => uri.URI | void;
 
   parseAuthorityResult?: (opts: IParseAuthorityOpts) => Promise<IParseAuthorityResult>;
 
@@ -41,18 +40,18 @@ export interface IResolveOptions extends IResolverOptions {
   jsonPointer?: string;
 
   // the parent authority. basically, where are we right now (current URL to help with relative $refs, or process.cwd() for files, etc)
-  authority?: URI;
+  authority?: uri.URI;
 }
 
 export interface IReader {
-  read(ref: URI, ctx: any): Promise<any>;
+  read(ref: uri.URI, ctx: any): Promise<any>;
 }
 
 export interface IParseAuthorityOpts {
   result: any;
   authorityResult: IAuthorityLookupResult;
-  targetAuthority: URI;
-  parentAuthority: URI;
+  targetAuthority: uri.URI;
+  parentAuthority: uri.URI;
   parentPath: string[];
 }
 
@@ -69,8 +68,8 @@ export interface IComputeRefOpts {
 }
 
 export interface ITransformRefOpts extends IComputeRefOpts {
-  ref?: URI;
-  authority: URI;
+  ref?: uri.URI;
+  authority: uri.URI;
 }
 
 export type ResolverErrorCode =
@@ -82,7 +81,7 @@ export interface IResolveError {
   code: ResolverErrorCode;
   message: string;
   path: string[];
-  authority: URI;
+  authority: uri.URI;
   authorityStack: string[];
   pointerStack: string[];
 }
@@ -112,7 +111,7 @@ export interface ICacheOptions {
 }
 
 export interface IRefHandlerOpts {
-  ref: URI;
+  ref: uri.URI;
   val: any;
   pointerStack: string[];
   cacheKey: string;
@@ -135,7 +134,7 @@ export interface IResolveRunner {
   depth: number;
   atMaxAuthorityDepth: () => boolean;
   resolve: (source: any, opts?: IResolveOptions) => Promise<IResolveResult>;
-  computeRef: (opts: IComputeRefOpts) => URI | void | undefined;
+  computeRef: (opts: IComputeRefOpts) => uri.URI | void | undefined;
   lookupAndResolveAuthority: (opts: IRefHandlerOpts) => Promise<IAuthorityLookupResult>;
 }
 

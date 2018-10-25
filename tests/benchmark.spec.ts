@@ -10,8 +10,38 @@ const { ResolveRunner } = require('../src/runner');
 
 import Circular from './fixtures/circular';
 
-describe('resolver', () => {
-  test.skip('benchmark', async () => {
+/**
+ * To run benchmark:
+ *
+ * 1. remove `.skip` below
+ * 2. `yarn test tests/benchmark.spec.ts`
+ */
+
+describe.skip('benchmark', async () => {
+  test('huge circular resolve', async () => {
+    const suite = new Benchmark.Suite();
+    await new Promise(resolve => {
+      // add tests
+      suite
+        .add('huge circular resolve', async () => {
+          const resolver = new Resolver();
+          await resolver.resolve(Circular);
+        })
+        .on('cycle', (event: any) => {
+          console.log(String(event.target));
+        })
+        .on('complete abort', function() {
+          // hz = ops / sec
+          // at the time i'm writing this, i get ~45 op/s on my macbook pro
+          // @ts-ignore
+          expect(this['0'].hz).toBeGreaterThan(40);
+          resolve();
+        })
+        .run();
+    });
+  });
+
+  test('crawler', async () => {
     const suite = new Benchmark.Suite();
 
     const source = {
@@ -69,10 +99,6 @@ describe('resolver', () => {
     await new Promise(resolve => {
       // add tests
       suite
-        .add('basic resolve', async () => {
-          const resolver = new Resolver();
-          await resolver.resolve(Circular);
-        })
         .add('crawler', () => {
           // create our crawler instance
           const crawler = new ResolveCrawler(sharedRunner);
@@ -90,9 +116,9 @@ describe('resolver', () => {
         })
         .on('complete abort', function() {
           // hz = ops / sec
-          // at the time i'm writing this, i get ~5k op/s on my macbook pro
+          // at the time i'm writing this, i get ~24,000 op/s on my macbook pro
           // @ts-ignore
-          expect(this['0'].hz).toBeGreaterThan(3000);
+          expect(this['0'].hz).toBeGreaterThan(20000);
           resolve();
         })
         .run();

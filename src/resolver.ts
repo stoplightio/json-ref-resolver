@@ -1,5 +1,3 @@
-import { URI } from '@stoplight/uri';
-
 import { Cache } from './cache';
 import * as Types from './types';
 
@@ -10,7 +8,7 @@ export class Resolver implements Types.IResolver {
   public readers: {
     [scheme: string]: Types.IReader;
   };
-  public transformRef?: (opts: Types.ITransformRefOpts, ctx: any) => URI | any;
+  public transformRef?: (opts: Types.ITransformRefOpts, ctx: any) => uri.URI | any;
   public parseAuthorityResult?: (
     opts: Types.IParseAuthorityOpts
   ) => Promise<Types.IParseAuthorityResult>;
@@ -44,8 +42,6 @@ export class Resolver implements Types.IResolver {
       },
       opts
     );
-
-    // console.log(JSON.stringify(runOpts, null, 2));
 
     // merge ctx
     runOpts.ctx = Object.assign({}, this.ctx || {}, opts.ctx || {});

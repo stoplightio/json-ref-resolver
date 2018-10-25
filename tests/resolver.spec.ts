@@ -1,5 +1,5 @@
-import { URI } from '@stoplight/uri';
 import * as fs from 'fs';
+import * as URI from 'urijs';
 
 import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
@@ -9,8 +9,8 @@ import { ResolveRunner } from '../src/runner';
 import * as Types from '../src/types';
 
 export class FileReader implements Types.IReader {
-  public async read(uri: URI) {
-    const path = uri.fsPath;
+  public async read(uri: uri.URI) {
+    const path = uri.path();
     return new Promise((resolve, reject) => {
       try {
         const raw = fs.readFileSync(path);
@@ -23,8 +23,8 @@ export class FileReader implements Types.IReader {
 }
 
 export class HttpReader implements Types.IReader {
-  public async read(uri: URI) {
-    const mock = httpMocks[uri.toString(true)];
+  public async read(uri: uri.URI) {
+    const mock = httpMocks[uri.toString()];
 
     if (mock) return mock;
 
@@ -57,7 +57,7 @@ const runFixtures = (factory: any) => {
 const runFixture = (resolver: any, testCase: any, _file: any, filePath: any) => {
   return async () => {
     const resolved = await resolver.resolve(testCase.input, {
-      authority: URI.parse(filePath),
+      authority: new URI(filePath),
     });
 
     expect(resolved.result).toEqual(testCase.expected);
@@ -404,8 +404,8 @@ describe('resolver', () => {
       };
 
       const reader: Types.IReader = {
-        async read(uri: URI): Promise<any> {
-          return data[uri.authority];
+        async read(uri: uri.URI): Promise<any> {
+          return data[uri.authority()];
         },
       };
 
@@ -485,8 +485,8 @@ describe('resolver', () => {
       };
 
       const reader: Types.IReader = {
-        async read(uri: URI): Promise<any> {
-          return data[uri.authority];
+        async read(uri: uri.URI): Promise<any> {
+          return data[uri.authority()];
         },
       };
 
@@ -694,8 +694,8 @@ describe('resolver', () => {
       };
 
       const reader: Types.IReader = {
-        async read(ref: URI): Promise<any> {
-          return data[ref.authority];
+        async read(ref: uri.URI): Promise<any> {
+          return data[ref.authority()];
         },
       };
 
@@ -833,13 +833,13 @@ describe('resolver', () => {
       const resolver = new Resolver();
       const result = await resolver.resolve(source);
 
-      expect(result.errors[0]).toEqual({
+      expect({ ...result.errors[0], authority: undefined }).toEqual({
         code: 'POINTER_MISSING',
         message: "'#/missing' does not exist",
         path: ['inner'],
-        authority: URI.parse(''),
         authorityStack: [],
         pointerStack: [],
+        authority: undefined,
       });
       expect(result.errors.length).toEqual(1);
     });
@@ -863,9 +863,9 @@ describe('resolver', () => {
       };
 
       const reader: Types.IReader = {
-        async read(ref: URI): Promise<any> {
-          if (data[ref.authority]) {
-            return data[ref.authority];
+        async read(ref: uri.URI): Promise<any> {
+          if (data[ref.authority()]) {
+            return data[ref.authority()];
           }
 
           throw new Error('not found!');
@@ -890,14 +890,15 @@ describe('resolver', () => {
           },
         },
       });
-      expect(result.errors[0]).toEqual({
+      expect({ ...result.errors[0], authority: undefined }).toEqual({
         code: 'RESOLVE_AUTHORITY',
         message: 'Error: not found!',
-        authority: URI.parse('custom://missing'),
         authorityStack: [],
         pointerStack: [],
         path: ['definitions', 'foo'],
+        authority: undefined,
       });
+      expect(result.errors[0].authority.toString()).toBe('custom://missing/');
       expect(result.errors.length).toEqual(1);
     });
 
@@ -923,9 +924,9 @@ describe('resolver', () => {
       };
 
       const reader: Types.IReader = {
-        async read(ref: URI): Promise<any> {
-          if (data[ref.authority]) {
-            return data[ref.authority];
+        async read(ref: uri.URI): Promise<any> {
+          if (data[ref.authority()]) {
+            return data[ref.authority()];
           }
 
           throw new Error('not found!');
@@ -952,7 +953,7 @@ describe('resolver', () => {
         code: 'POINTER_MISSING',
         message: "'#/missing' does not exist",
         path: ['inner'],
-        authority: URI.parse('custom://bar'),
+        authority: new URI('custom://bar').fragment(''),
         authorityStack: [],
         pointerStack: [],
       });
@@ -998,8 +999,8 @@ describe('resolver', () => {
       });
 
       const reader: Types.IReader = {
-        async read(ref: URI): Promise<any> {
-          if (ref.path === '/b') {
+        async read(ref: uri.URI): Promise<any> {
+          if (ref.path() === '/b') {
             return {
               definitions: {
                 'Full Order': {
@@ -1017,7 +1018,7 @@ describe('resolver', () => {
       };
 
       const result = await resolver.resolve(source, {
-        authority: URI.parse('https://foo.com/a'),
+        authority: new URI('https://foo.com/a'),
         readers: {
           https: reader,
         },
@@ -1079,7 +1080,7 @@ describe('resolver', () => {
       const resolved = await resolver.resolve(source, {
         transformRef(opts) {
           transformRefCalled = true;
-          return opts.ref && opts.ref.with({ fragment: '/bar' });
+          return opts.ref && opts.ref.fragment('/bar');
         },
       });
 
@@ -1117,8 +1118,8 @@ describe('resolver', () => {
       };
 
       const reader: Types.IReader = {
-        async read(ref: URI): Promise<any> {
-          if (ref.path.split('.')[1] === 'md') {
+        async read(ref: uri.URI): Promise<any> {
+          if (ref.path().split('.')[1] === 'md') {
             return data.markdown;
           }
 
@@ -1131,7 +1132,7 @@ describe('resolver', () => {
           http: reader,
         },
         parseAuthorityResult: async opts => {
-          if (opts.targetAuthority.path.split('.')[1] === 'md') {
+          if (opts.targetAuthority.path().split('.')[1] === 'md') {
             opts.result = {
               heading1: 'hello',
             };
@@ -1186,8 +1187,8 @@ describe('resolver', () => {
       };
 
       const reader: Types.IReader = {
-        async read(ref: URI): Promise<any> {
-          return data[ref.path.slice(1)];
+        async read(ref: uri.URI): Promise<any> {
+          return data[ref.path().slice(1)];
         },
       };
 
@@ -1255,14 +1256,15 @@ describe('resolver', () => {
         },
       });
 
-      expect(result.errors[0]).toEqual({
+      expect({ ...result.errors[0], authority: undefined }).toEqual({
         code: 'PARSE_AUTHORITY',
-        message: "Error parsing lookup result for 'http://foo': Error: some parse error!",
-        authority: URI.parse('http://foo'),
+        message: "Error parsing lookup result for 'http://foo/': Error: some parse error!",
         pointerStack: [],
         authorityStack: [],
         path: ['definitions', 'foo'],
+        authority: undefined,
       });
+      expect(result.errors[0].authority.toString()).toEqual(new URI('http://foo').toString());
     });
 
     test('should pass context to transformRef and read', async () => {
@@ -1320,7 +1322,7 @@ describe('resolver', () => {
       });
 
       const result = await resolver.resolve(source, {
-        authority: URI.parse('https://root.com/foo.yml'),
+        authority: new URI('https://root.com/foo.yml'),
       });
 
       expect(result.result).toEqual({
@@ -1338,7 +1340,7 @@ describe('resolver', () => {
       });
 
       const result = await resolver.resolve(source, {
-        authority: URI.parse('https://exporter.stoplight.io/4254/master/main.oas2.yml'),
+        authority: new URI('https://exporter.stoplight.io/4254/master/main.oas2.yml'),
       });
 
       expect(result.result).toEqual(resolvedResults['https://exporter.io/resolved']);
@@ -1355,7 +1357,7 @@ describe('resolver', () => {
       });
 
       const result = await resolver.resolve(source, {
-        authority: URI.parse('https://back-pointing.com/a'),
+        authority: new URI('https://back-pointing.com/a'),
       });
 
       expect(result.result).toEqual({
@@ -1398,8 +1400,8 @@ describe('resolver', () => {
       };
 
       const httpReader: Types.IReader = {
-        async read(ref: URI): Promise<any> {
-          return data[ref.toString(true)];
+        async read(ref: uri.URI): Promise<any> {
+          return data[ref.toString()];
         },
       };
 

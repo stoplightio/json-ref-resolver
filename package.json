@@ -25,8 +25,8 @@
     "build": "rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
     "start": "rollup -c rollup.config.ts -w",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
+    "test.watch": "jest --watch --coverage=false",
+    "test.prod": "npm run lint && npm run test -- --coverage --no-cache",
     "deploy-docs": "ts-node scripts/gh-pages-publish",
     "commit": "git-cz",
     "semantic-release": "semantic-release"
@@ -87,6 +87,16 @@
       "@commitlint/config-conventional"
     ]
   },
+  "dependencies": {
+    "@stoplight/fast-safe-stringify": "2.1.x",
+    "dependency-graph": "0.7.x",
+    "fast-memoize": "2.5.x",
+    "immer": "1.7.x",
+    "lodash.get": "4.x.x",
+    "lodash.set": "4.x.x",
+    "lodash.trimstart": "4.x.x",
+    "urijs": "1.19.x"
+  },
   "devDependencies": {
     "@commitlint/cli": "7.x.x",
     "@commitlint/config-conventional": "7.x.x",
@@ -95,7 +105,11 @@
     "@semantic-release/npm": "5.0.x",
     "@semantic-release/release-notes-generator": "7.1.x",
     "@types/jest": "23.x.x",
+    "@types/lodash.get": "4.x.x",
+    "@types/lodash.set": "4.x.x",
+    "@types/lodash.trimstart": "4.x.x",
     "@types/node": "10.x.x",
+    "@types/urijs": "1.15.x",
     "benchmark": "2.1.x",
     "colors": "1.x.x",
     "commitizen": "3.x.x",
@@ -119,13 +133,5 @@
     "tslint-config-stoplight": "1.x.x",
     "typedoc": "0.13.x",
     "typescript": "3.1.x"
-  },
-  "dependencies": {
-    "@stoplight/json": "0.0.44-alpha.1",
-    "@stoplight/path": "0.0.44-alpha.1",
-    "@stoplight/uri": "0.0.44-alpha.1",
-    "dependency-graph": "0.7.x",
-    "fast-memoize": "2.5.x",
-    "immer": "1.7.x"
   }
 }

@@ -1,45 +1,20 @@
-import { getValue, setValue, startsWith } from '@stoplight/json';
-import { trimStart } from '@stoplight/json';
-import { URI } from '@stoplight/uri';
 import produce from 'immer';
+import * as URI from 'urijs';
 const memoize = require('fast-memoize');
 
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
+import { getValue, setValue, startsWith, trimStart } from './json';
 import * as Types from './types';
 import * as Utils from './utils';
 
 let resolveRunnerCount = 0;
 
-const _removeRootPath = (root: string, child: string): string => {
-  const rootPathParts = root.split('/');
-  const childPathParts = child.split('/');
-
-  for (const rootPathPart of rootPathParts) {
-    if (!rootPathPart) continue;
-    if (childPathParts.length === 0) break;
-    if (rootPathPart === childPathParts[0]) {
-      childPathParts.shift();
-    } else {
-      break;
-    }
-  }
-
-  return childPathParts.join('/');
-};
-
-const _resolvePaths = (root: string, child: string): string => {
-  const filePath = root.split('/');
-  filePath[filePath.length - 1] = child;
-
-  return filePath.join('/');
-};
-
 export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
   public depth: number;
   public authorityStack: string[];
-  public readonly authority: URI;
+  public readonly authority: uri.URI;
   public readonly authorityCache: Types.ICache;
   public readonly readers: {
     [scheme: string]: Types.IReader;
@@ -50,7 +25,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly debug: boolean;
   public readonly resolvePointers: boolean;
   public readonly resolveAuthorities: boolean;
-  public readonly transformRef?: (opts: Types.ITransformRefOpts, ctx: any) => URI | any;
+  public readonly transformRef?: (opts: Types.ITransformRefOpts, ctx: any) => uri.URI | any;
   public ctx: any = {};
 
   private _source: any;
@@ -59,7 +34,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     this.id = resolveRunnerCount += 1;
     this.depth = opts.depth || 0;
     this._source = source;
-    this.authority = opts.authority || URI.parse('');
+    this.authority = opts.authority || new URI('');
     this.authorityStack = opts.authorityStack || [];
     this.authorityCache = opts.authorityCache || new Cache();
 
@@ -110,7 +85,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (!resolved.result) {
       resolved.errors.push({
         code: 'POINTER_MISSING',
-        message: `'${jsonPointer}' does not exist @ '${this.authority.toString(true)}'`,
+        message: `'${jsonPointer}' does not exist @ '${this.authority.toString()}'`,
         authority: this.authority,
         authorityStack: this.authorityStack,
         pointerStack: [],
@@ -238,7 +213,7 @@ export class ResolveRunner implements Types.IResolveRunner {
    * Determine if we should resolve this part of source
    * If so, return the appropriate URI object
    */
-  public computeRef = (opts: Types.IComputeRefOpts): URI | void => {
+  public computeRef = (opts: Types.IComputeRefOpts): uri.URI | void => {
     let ref;
     if (opts.key === '$ref') {
       ref = opts.val;
@@ -248,30 +223,28 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     if (!ref) return;
 
-    ref = URI.parse(ref);
-    // Does ref only have a fragment
-    if (ref.toString(true) !== `#${ref.fragment}`) {
-      // if we're working with a file
-      if (ref.isFile(this.authority)) {
-        if (this.authority.scheme && !this.authority.isFile()) {
-          // TODO: should error here, cannot resolve file refs if the parent is not a file (for example if parent was http)
-          return ref;
-        }
+    ref = new URI(ref);
 
-        const resolvedPath = _resolvePaths(this.authority.fsPath, ref.fsPath);
-        ref = ref.with({ scheme: 'file', path: resolvedPath });
+    // Does ref only have a fragment
+    if (ref.toString() !== `#${ref.fragment()}`) {
+      let isFile = ref.scheme() === 'file';
+
+      // if the file scheme is not explicitly set, check the authority
+      if (!isFile && !ref.scheme()) {
+        const scheme = this.authority.scheme();
+        // if the authority has no scheme, then assume it is a file (urls will have http, etc)
+        isFile = scheme === '' || scheme === 'file';
+      }
+
+      // if we're working with a file, resolve any path diferences and make sure the scheme is set
+      if (isFile) {
+        ref = ref.absoluteTo(this.authority).scheme('file');
       } else if (
-        (ref.scheme.includes('http') ||
-          (ref.scheme === '' && this.authority.scheme.includes('http'))) &&
-        ref.toString(true) !== this.authority.toString(true)
+        ref.scheme().includes('http') ||
+        (ref.scheme() === '' && this.authority.scheme().includes('http'))
       ) {
-        if (this.authority.authority !== '' && ref.authority === '') {
-          const child = _removeRootPath(this.authority.fsPath, ref.fsPath);
-          const resolvedPath = _resolvePaths(this.authority.fsPath, child);
-          ref = this.authority.with({
-            path: resolvedPath,
-            fragment: ref.fragment,
-          });
+        if (this.authority.authority() !== '' && ref.authority() === '') {
+          ref = ref.absoluteTo(this.authority);
         }
       }
     }
@@ -294,12 +267,15 @@ export class ResolveRunner implements Types.IResolveRunner {
     return this.authorityStack.length >= 100;
   };
 
-  public lookupAuthority = async (opts: { ref: URI; cacheKey: string }): Promise<ResolveRunner> => {
+  public lookupAuthority = async (opts: {
+    ref: uri.URI;
+    cacheKey: string;
+  }): Promise<ResolveRunner> => {
     const { ref } = opts;
 
-    const reader = this.readers[ref.scheme];
+    const reader = this.readers[ref.scheme()];
     if (!reader) {
-      throw new Error(`No reader defined for scheme '${ref.scheme}' in ref ${ref.toString(true)}`);
+      throw new Error(`No reader defined for scheme '${ref.scheme()}' in ref ${ref.toString()}`);
     }
 
     const result = await reader.read(ref, this.ctx);
@@ -357,11 +333,11 @@ export class ResolveRunner implements Types.IResolveRunner {
         }
 
         authorityResolver = await this.lookupAuthority({
-          ref: ref.with({ fragment: '' }),
+          ref: ref.clone().fragment(''),
           cacheKey: authorityCacheKey,
         });
 
-        const currentAuthority = this.authority.toString(true);
+        const currentAuthority = this.authority.toString();
         if (currentAuthority && this.depth !== 0) {
           authorityResolver.authorityStack = authorityResolver.authorityStack.concat([
             currentAuthority,
@@ -382,21 +358,21 @@ export class ResolveRunner implements Types.IResolveRunner {
       // @ts-ignore
       if (authorityResolver) {
         try {
-          lookupResult.resolved = await authorityResolver.resolve(ref.toJSONPointer());
+          lookupResult.resolved = await authorityResolver.resolve(Utils.uriToJSONPointer(ref));
 
           // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
           if (lookupResult.resolved.errors.length) {
             for (const error of lookupResult.resolved.errors) {
               if (
                 error.code === 'POINTER_MISSING' &&
-                error.path.join('/') === ref.fragment.slice(1) // only reset result value if the error is specifically for this fragment
+                error.path.join('/') === ref.fragment().slice(1) // only reset result value if the error is specifically for this fragment
               ) {
                 // if the original authority request had a #/fragment on it, we wont be working with the root
                 // result value, but rather whatever was at #/fragment
                 // so this just trims #/fragment off the front of the error path (which is relative to the root), so that we can effectively
                 // set the correct property on the result fragment
                 const errorPathInResult = ref.fragment
-                  ? trimStart(error.path, trimStart(ref.fragment, '/').split('/'))
+                  ? trimStart(error.path, trimStart(ref.fragment(), '/').split('/'))
                   : error.path;
 
                 if (errorPathInResult && errorPathInResult.length) {
@@ -432,7 +408,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
               lookupResult.error = {
                 code: 'PARSE_AUTHORITY',
-                message: `Error parsing lookup result for '${ref.toString(e)}': ${String(e)}`,
+                message: `Error parsing lookup result for '${ref.toString()}': ${String(e)}`,
                 authority: ref,
                 authorityStack: this.authorityStack,
                 pointerStack,
@@ -443,7 +419,7 @@ export class ResolveRunner implements Types.IResolveRunner {
         } catch (e) {
           lookupResult.error = {
             code: 'RESOLVE_POINTER',
-            message: `Error resolving pointer @ ${ref.toJSONPointer()}: ${String(e)}`,
+            message: `Error resolving pointer @ ${Utils.uriToJSONPointer(ref)}: ${String(e)}`,
             path: parentPath,
             authority: ref,
             authorityStack: this.authorityStack,
@@ -462,8 +438,11 @@ export class ResolveRunner implements Types.IResolveRunner {
       : JSON.stringify(arguments);
   }
 
-  private computeAuthorityCacheKey(ref: URI) {
+  private computeAuthorityCacheKey(ref: uri.URI) {
     // don't include the fragment on authority cache key
-    return ref.with({ fragment: '' }).toString(true);
+    return ref
+      .clone()
+      .fragment('')
+      .toString();
   }
 }

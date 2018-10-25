@@ -1,6 +1,6 @@
-import { getValue } from '@stoplight/json';
 import { DepGraph } from 'dependency-graph';
 
+import { getValue } from './json';
 import * as Types from './types';
 import * as Utils from './utils';
 
@@ -80,7 +80,7 @@ export class ResolveCrawler implements Types.IResolveCrawler {
             parentPath,
             parentPointer: currentPointer,
             pointerStack,
-            cacheKey: ref.toJSONPointer(),
+            cacheKey: Utils.uriToJSONPointer(ref),
             resolvingPointer: this.jsonPointer,
           });
         } else if (typeof val === 'object') {
@@ -97,9 +97,9 @@ export class ResolveCrawler implements Types.IResolveCrawler {
     const { pointerStack, parentPath, parentPointer, ref } = opts;
 
     // local pointer
-    if (ref.isJSONPointer()) {
+    if (Utils.uriIsJSONPointer(ref)) {
       if (this._runner.resolvePointers) {
-        const targetPointer = ref.toJSONPointer();
+        const targetPointer = Utils.uriToJSONPointer(ref);
         const targetPath = Utils.jsonPointerToPath(targetPointer);
 
         /**
