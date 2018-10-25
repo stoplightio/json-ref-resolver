@@ -35,6 +35,9 @@ workflows:
       - test_node_8
       - test_node_10
       - release:
+          filters:
+            branches:
+              only: master
           requires:
             - test_node_8
             - test_node_10
