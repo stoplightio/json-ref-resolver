@@ -1,5 +1,5 @@
 {
-  "name": "json-ref-resolver",
+  "name": "@stoplight/json-ref-resolver",
   "version": "0.0.0",
   "description": "",
   "keywords": [],
@@ -111,7 +111,6 @@
     "@types/node": "10.x.x",
     "@types/urijs": "1.15.x",
     "benchmark": "2.1.x",
-    "colors": "1.x.x",
     "commitizen": "3.x.x",
     "cz-conventional-changelog": "2.x.x",
     "husky": "1.x.x",
