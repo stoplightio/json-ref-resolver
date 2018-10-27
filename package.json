@@ -1,11 +1,17 @@
 {
   "name": "@stoplight/json-ref-resolver",
   "version": "1.0.3",
-  "description": "",
-  "keywords": [],
-  "main": "dist/json-ref-resolver.umd.js",
-  "module": "dist/json-ref-resolver.es5.js",
-  "typings": "dist/types/json-ref-resolver.d.ts",
+  "description": "Recursively resolve JSON pointers and remote authorities.",
+  "keywords": [
+    "json-parser",
+    "json",
+    "json-schema",
+    "resolver",
+    "openapi",
+    "swagger"
+  ],
+  "main": "index.js",
+  "typings": "index.d.ts",
   "sideEffects": false,
   "files": [
     "dist"
@@ -20,16 +26,15 @@
     "node": ">=8.3.0"
   },
   "scripts": {
-    "start": "rollup -c rollup.config.ts -w",
     "prebuild": "rimraf dist",
-    "build": "rollup -c rollup.config.ts",
+    "build": "tsc --build && ts-node scripts/post-build-preparation",
     "build.docs": "typedoc --out docs --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
     "test": "jest",
     "test.watch": "jest --watch --coverage=false",
     "test.prod": "npm run lint && npm run test -- --coverage --no-cache",
     "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts'",
     "commit": "git-cz",
-    "release": "semantic-release",
+    "release": "cd dist && semantic-release",
     "release.docs": "ts-node scripts/gh-pages-publish"
   },
   "lint-staged": {
@@ -67,6 +72,11 @@
       "path": "node_modules/cz-conventional-changelog"
     }
   },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
   "jest": {
     "testEnvironment": "node",
     "transform": {
@@ -101,11 +111,6 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
   "dependencies": {
     "@stoplight/fast-safe-stringify": "2.1.x",
     "dependency-graph": "0.7.x",
@@ -134,13 +139,6 @@
     "lint-staged": "7.x.x",
     "prettier": "1.14.x",
     "rimraf": "2.x.x",
-    "rollup": "0.66.x",
-    "rollup-plugin-commonjs": "9.2.x",
-    "rollup-plugin-json": "3.1.x",
-    "rollup-plugin-node-resolve": "3.4.x",
-    "rollup-plugin-sourcemaps": "0.4.x",
-    "rollup-plugin-terser": "2.x.x",
-    "rollup-plugin-typescript2": "0.17.x",
     "semantic-release": "15.x.x",
     "ts-jest": "23.x.x",
     "ts-node": "7.x.x",

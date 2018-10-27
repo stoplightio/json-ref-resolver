@@ -17,7 +17,7 @@ const parsedUrl = url.parse(repoUrl);
 const repository = (parsedUrl.host || '') + (parsedUrl.path || '');
 const ghToken = process.env.GH_TOKEN;
 
-echo('Deploying docs!!!');
+echo('Deploying docs.');
 cd('docs');
 touch('.nojekyll');
 exec('git init');
@@ -26,7 +26,7 @@ exec('git config user.name "Stoplight"');
 exec('git config user.email "support@stoplight.io"');
 exec(`git commit -m "chore(docs): ${pkg.version} [skip ci]"`);
 exec(`git push --force --quiet "https://${ghToken}@${repository}" master:gh-pages`);
-echo('Docs deployed!!');
+echo('Docs deployed.');
 
 // TS needs to know that this is not beling loaded globally
 // https://stackoverflow.com/a/41975448/197017
