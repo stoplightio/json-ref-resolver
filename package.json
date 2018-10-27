@@ -34,7 +34,7 @@
     "test.prod": "npm run lint && npm run test -- --coverage --no-cache",
     "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts'",
     "commit": "git-cz",
-    "release": "semantic-release",
+    "release": "semantic-release -d",
     "release.docs": "ts-node scripts/gh-pages-publish",
     "postpublish": "cp -r dist/package.json ."
   },
