@@ -34,7 +34,7 @@
     "test.prod": "npm run lint && npm run test -- --coverage --no-cache",
     "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts'",
     "commit": "git-cz",
-    "release": "semantic-release -d",
+    "release": "semantic-release --debug --no-ci",
     "release.docs": "ts-node scripts/gh-pages-publish",
     "postpublish": "cp -r dist/package.json ."
   },
@@ -52,15 +52,18 @@
     }
   },
   "release": {
-    "pkgRoot": "dist",
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      "@semantic-release/npm",
+      [
+        "@semantic-release/npm",
+        {
+          "pkgRoot": "dist"
+        }
+      ],
       [
         "@semantic-release/git",
         {
-          "pkgRoot": ".",
           "assets": [
             "package.json"
           ],
