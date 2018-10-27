@@ -1,0 +1,36 @@
+{
+  "name": "@stoplight/json-ref-resolver",
+  "version": "1.0.4",
+  "description": "Recursively resolve JSON pointers and remote authorities.",
+  "keywords": [
+    "json-parser",
+    "json",
+    "json-schema",
+    "resolver",
+    "openapi",
+    "swagger"
+  ],
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "author": "Stoplight <support@stoplight.io>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stoplightio/json-ref-resolver.git"
+  },
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=8.3.0"
+  },
+  "dependencies": {
+    "@stoplight/fast-safe-stringify": "2.1.x",
+    "dependency-graph": "0.7.x",
+    "fast-memoize": "2.5.x",
+    "immer": "1.7.x",
+    "lodash": "4.x.x",
+    "urijs": "1.19.x"
+  }
+}
