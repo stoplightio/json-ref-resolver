@@ -60,6 +60,7 @@
       [
         "@semantic-release/git",
         {
+          "pkgRoot": ".",
           "assets": [
             "package.json"
           ],
