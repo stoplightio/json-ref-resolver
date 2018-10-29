@@ -1,20 +1,41 @@
 version: 2
-jobs:
-  test_node_8:
-    docker:
-      - image: circleci/node:8
-    steps:
-      - checkout
-      - run: yarn
-      - run: yarn test.prod
 
-  test_node_10:
-    docker:
-      - image: circleci/node:10
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:8
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - run:
+          name: Download cc-test-reporter
+          command: |
+            mkdir -p tmp/
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./tmp/cc-test-reporter
+            chmod +x ./tmp/cc-test-reporter
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - cc-test-reporter
+
+  test_node_8:
+    <<: *defaults
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/repo/tmp
       - run: yarn
+      - run:
+          name: cc-before
+          command: |
+            ./cc-test-reporter before-build
       - run: yarn test.prod
+      - run:
+          name: cc-after
+          command: |
+            ./cc-test-reporter after-build --coverage-input-type lcov --exit-code $?
 
   release:
     docker:
@@ -30,14 +51,14 @@ jobs:
 workflows:
   version: 2
   test_and_release:
-    # Run the test jobs first, then the release only when all the test jobs are successful
     jobs:
-      - test_node_8
-      - test_node_10
+      - build
+      - test_node_8:
+          requires:
+            - build
       - release:
           filters:
             branches:
               only: master
           requires:
             - test_node_8
-            - test_node_10
