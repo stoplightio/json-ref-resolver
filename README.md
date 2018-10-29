@@ -1,5 +1,7 @@
 # JSON Ref Resolver
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/2709ceb88e1d8158aca2/maintainability)](https://codeclimate.com/repos/5bd77b15f12ccd1f28000097/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/2709ceb88e1d8158aca2/test_coverage)](https://codeclimate.com/repos/5bd77b15f12ccd1f28000097/test_coverage)
+
 Recursively resolves JSON pointers and remote authorities.
 
 - Explore the interfaces: [TSDoc](https://stoplightio.github.io/json-ref-resolver/)
