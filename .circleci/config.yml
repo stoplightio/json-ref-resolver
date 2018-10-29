@@ -1,31 +1,16 @@
 version: 2
 
-defaults: &defaults
-  working_directory: ~/repo
-  docker:
-    - image: circleci/node:8
-
 jobs:
-  build:
-    <<: *defaults
+  test_node_8:
+    docker:
+      - image: circleci/node:8
     steps:
+      - checkout
       - run:
           name: Download cc-test-reporter
           command: |
-            mkdir -p tmp/
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./tmp/cc-test-reporter
-            chmod +x ./tmp/cc-test-reporter
-      - persist_to_workspace:
-          root: tmp
-          paths:
-            - cc-test-reporter
-
-  test_node_8:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/repo/tmp
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
       - run: yarn
       - run:
           name: cc-before
@@ -39,7 +24,7 @@ jobs:
 
   release:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:8
     steps:
       - checkout
       - run: yarn
@@ -52,10 +37,7 @@ workflows:
   version: 2
   test_and_release:
     jobs:
-      - build
-      - test_node_8:
-          requires:
-            - build
+      - test_node_8
       - release:
           filters:
             branches:
