@@ -1,6 +1,6 @@
 {
   "name": "@stoplight/json-ref-resolver",
-  "version": "1.0.5",
+  "version": "0.0.0",
   "description": "Recursively resolve JSON pointers and remote authorities.",
   "keywords": [
     "json-parser",
@@ -10,8 +10,7 @@
     "openapi",
     "swagger"
   ],
-  "main": "index.js",
-  "typings": "index.d.ts",
+  "main": "src/index.ts",
   "sideEffects": false,
   "author": "Stoplight <support@stoplight.io>",
   "repository": {
@@ -52,24 +51,11 @@
     }
   },
   "release": {
+    "pkgRoot": "dist",
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      [
-        "@semantic-release/npm",
-        {
-          "pkgRoot": "dist"
-        }
-      ],
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "package.json"
-          ],
-          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-        }
-      ],
+      "@semantic-release/npm",
       "@semantic-release/github"
     ]
   },

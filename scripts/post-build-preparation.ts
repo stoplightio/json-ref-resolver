@@ -19,6 +19,9 @@ const releasePkg = _pick(pkg, [
   'dependencies',
 ]);
 
+releasePkg.main = 'index.js';
+releasePkg.typings = 'index.d.ts';
+
 echo('Copying extra files to dist folder.');
 writeFileSync('dist/package.json', JSON.stringify(releasePkg, null, 2));
 copyFileSync('README.md', 'dist/README.md');
