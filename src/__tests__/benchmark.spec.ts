@@ -2,13 +2,13 @@
  * @jest-environment node
  */
 
+import Circular from './fixtures/circular';
+
 const Benchmark = require('benchmark');
 
-const { ResolveCrawler } = require('../src/crawler');
-const { Resolver } = require('../src/resolver');
-const { ResolveRunner } = require('../src/runner');
-
-import Circular from './fixtures/circular';
+const { ResolveCrawler } = require('../crawler');
+const { Resolver } = require('../resolver');
+const { ResolveRunner } = require('../runner');
 
 /**
  * To run benchmark:

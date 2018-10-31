@@ -1,6 +1,6 @@
 import * as URI from 'urijs';
 
-import { uriIsJSONPointer, uriToJSONPointer } from '../src/utils';
+import { uriIsJSONPointer, uriToJSONPointer } from '../utils';
 
 describe('uri', () => {
   test('toString()', () => {

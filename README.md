@@ -1,6 +1,6 @@
 # JSON Ref Resolver
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/2709ceb88e1d8158aca2/maintainability)](https://codeclimate.com/repos/5bd77b15f12ccd1f28000097/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/2709ceb88e1d8158aca2/test_coverage)](https://codeclimate.com/repos/5bd77b15f12ccd1f28000097/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/0b1d841cc2445e29ef50/maintainability)](https://codeclimate.com/github/stoplightio/json-ref-resolver/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/0b1d841cc2445e29ef50/test_coverage)](https://codeclimate.com/github/stoplightio/json-ref-resolver/test_coverage)
 
 Recursively resolves JSON pointers and remote authorities.
 

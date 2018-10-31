@@ -1,12 +1,11 @@
 import * as fs from 'fs';
 import * as URI from 'urijs';
 
+import { Resolver } from '../resolver';
+import { ResolveRunner } from '../runner';
+import * as Types from '../types';
 import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
-
-import { Resolver } from '../src/resolver';
-import { ResolveRunner } from '../src/runner';
-import * as Types from '../src/types';
 
 export class FileReader implements Types.IReader {
   public async read(uri: uri.URI) {

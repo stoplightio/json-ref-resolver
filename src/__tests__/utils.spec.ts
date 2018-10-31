@@ -1,4 +1,4 @@
-import * as Utils from '../src/utils';
+import * as Utils from '../utils';
 
 describe('utils', () => {
   test('jsonPointerToPath', () => {
