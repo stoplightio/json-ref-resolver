@@ -29,25 +29,25 @@
     "build": "tsc -p ./tsconfig.build.json && ts-node scripts/post-build-preparation",
     "build.docs": "typedoc --out docs --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
     "test": "jest",
-    "test.watch": "jest --watch --coverage=false",
+    "test.watch": "jest --watch",
     "test.prod": "yarn lint && yarn test --coverage --no-cache",
     "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts'",
+    "format": "tslint --fix src/**/*.ts",
     "commit": "git-cz",
-    "release": "semantic-release --debug --no-ci",
+    "release": "semantic-release",
     "release.docs": "ts-node scripts/gh-pages-publish",
     "postpublish": "cp -r dist/package.json ."
   },
   "lint-staged": {
-    "{src}/**/*.ts": [
-      "prettier --write",
+    "*.ts": [
+      "tslint --fix",
       "git add"
     ]
   },
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "lint-staged",
-      "pre-push": "npm run test.prod && npm run build"
+      "pre-commit": "lint-staged"
     }
   },
   "release": {
@@ -75,7 +75,7 @@
       ".(ts|tsx)": "ts-jest"
     },
     "testMatch": [
-      "<rootDir>/src/**/__tests__/*.(ts|js)?(x)"
+      "**/__tests__/*.(ts|js)?(x)"
     ],
     "moduleFileExtensions": [
       "ts",
@@ -88,7 +88,6 @@
       "index.ts",
       "types.ts"
     ],
-    "collectCoverage": true,
     "collectCoverageFrom": [
       "src/**/*.{js,ts}"
     ],
@@ -101,11 +100,6 @@
         }
       }
     }
-  },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "trailingComma": "es5"
   },
   "dependencies": {
     "@stoplight/fast-safe-stringify": "2.1.x",
@@ -132,7 +126,7 @@
     "cz-conventional-changelog": "2.x.x",
     "husky": "1.x.x",
     "jest": "23.x.x",
-    "lint-staged": "7.x.x",
+    "lint-staged": "8.x.x",
     "prettier": "1.14.x",
     "rimraf": "2.x.x",
     "semantic-release": "15.x.x",
