@@ -27,3 +27,6 @@ checks:
   similar-code:
     config:
       threshold: 200
+exclude_patterns:
+  - 'scripts/'
+  - '**/__tests__/'
