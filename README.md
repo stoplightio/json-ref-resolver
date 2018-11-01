@@ -9,12 +9,12 @@ Recursively resolves JSON pointers and remote authorities.
 
 ### Features
 
-- Performant. Hot paths are memoized, remote authorities are resolved concurrently, and the minimum surface area is crawled and resolved.
-- Caching. Results from remote authorities are cached.
-- Immutable. The original object is not changed, and structural sharing is used to only change relevant bits.
-- Reference equality. Pointers to the same location will resolve to the same object in memory.
-- Flexible. Bring your own readers for http://, file://, mongo://, custom://... etc.
-- Reliable. Well tested to handle all sorts of circular reference edge cases.
+- **Performant**: Hot paths are memoized, remote authorities are resolved concurrently, and the minimum surface area is crawled and resolved.
+- **Caching**: Results from remote authorities are cached.
+- **Immutable**: The original object is not changed, and structural sharing is used to only change relevant bits.
+- **Reference equality:** Pointers to the same location will resolve to the same object in memory.
+- **Flexible:** Bring your own readers for `http://`, `file://`, `mongo://`, `custom://`... etc.
+- **Reliable:** Well tested to handle all sorts of circular reference edge cases.
 
 ### Installation
 
@@ -30,13 +30,13 @@ yarn add @stoplight/json-ref-resolver
 All relevant types and options can be found in [src/types.ts](src/types.ts).
 
 ```ts
-import { Resolver } from '@stoplight/json-ref-resolver';
+import { Resolver } from "@stoplight/json-ref-resolver";
 
 // some example http library
-const request = require('request');
+const request = require("request");
 
 // if we're in node, we create a file reader with fs
-const fs = require('fs');
+const fs = require("fs");
 
 // create our resolver instance
 const resolver = new Resolver({
@@ -46,27 +46,27 @@ const resolver = new Resolver({
     https: {
       async read(ref: uri.URI) {
         return request(ref.toString());
-      },
+      }
     },
 
     // this reader will be invoked for refs with the file protocol
     file: {
       async read(ref: uri.URI) {
         return fs.read(ref.toString());
-      },
-    },
-  },
+      }
+    }
+  }
 });
 
 const resolved = await resolver.resolve({
   definitions: {
     someOASFile: {
-      $ref: './main.oas2.yml#/definitions/user',
+      $ref: "./main.oas2.yml#/definitions/user"
     },
     someMarkdownFile: {
-      $ref: 'https://foo.com/intro.md',
-    },
-  },
+      $ref: "https://foo.com/intro.md"
+    }
+  }
 });
 
 console.log(resolved.result);
@@ -84,3 +84,15 @@ console.log(resolved.result);
 //   },
 // }
 ```
+
+### Contributing
+
+1. Clone repo
+2. Create / checkout `feature/{name}`, `chore/{name}`, or `fix/{name}` branch
+3. Install deps: `yarn`
+4. Make your changes
+5. Run tests: `yarn test.prod`
+6. Stage relevant files to git
+7. Commit: `yarn commit`
+8. Push: `git push`
+9. Open PR targeting the `develop` branch
