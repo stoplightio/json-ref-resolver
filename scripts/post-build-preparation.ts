@@ -16,6 +16,8 @@ const releasePkg = _pick(pkg, [
   'repository',
   'license',
   'engines',
+  'optionalDependencies',
+  'peerDependencies',
   'dependencies',
 ]);
 

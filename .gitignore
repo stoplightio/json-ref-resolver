@@ -8,7 +8,7 @@ coverage
 dist
 compiled
 .awcache
-docs
+docs-auto
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

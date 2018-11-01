@@ -28,7 +28,7 @@
     "setup": "yarn",
     "prebuild": "rimraf dist",
     "build": "tsc -p ./tsconfig.build.json && ts-node scripts/post-build-preparation",
-    "build.docs": "typedoc --out docs --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
+    "build.docs": "typedoc --out docs-auto --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
     "test": "jest",
     "test.watch": "jest --watch",
     "test.prod": "yarn lint && yarn test --coverage --no-cache",

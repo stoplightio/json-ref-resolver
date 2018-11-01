@@ -18,13 +18,13 @@ const repository = (parsedUrl.host || '') + (parsedUrl.path || '');
 const ghToken = process.env.GH_TOKEN;
 
 echo('Deploying docs.');
-cd('docs');
+cd('docs-auto');
 touch('.nojekyll');
 exec('git init');
 exec('git add .');
 exec('git config user.name "Stoplight"');
 exec('git config user.email "support@stoplight.io"');
-exec(`git commit -m "chore(docs): ${pkg.version} [skip ci]"`);
+exec(`git commit -m "chore(docs) [skip ci]"`);
 exec(`git push --force --quiet "https://${ghToken}@${repository}" master:gh-pages`);
 echo('Docs deployed.');
 
