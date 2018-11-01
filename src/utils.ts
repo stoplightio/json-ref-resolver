@@ -38,9 +38,7 @@ const decodeUriFragmentIdentifier = (ptr: string): string[] => {
   }
 
   if (ptr.length === 0 || ptr[0] !== '#') {
-    throw new ReferenceError(
-      'Invalid JSON Pointer syntax; URI fragment idetifiers must begin with a hash.'
-    );
+    throw new ReferenceError('Invalid JSON Pointer syntax; URI fragment idetifiers must begin with a hash.');
   }
 
   if (ptr.length === 1) {

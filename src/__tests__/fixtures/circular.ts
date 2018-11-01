@@ -794,8 +794,7 @@ export default {
       properties: {
         options: {
           type: 'object',
-          description:
-            'Map of options for a specific Action, for example read frequency, or value to be written',
+          description: 'Map of options for a specific Action, for example read frequency, or value to be written',
           additionalProperties: {
             type: 'string',
           },
@@ -917,12 +916,7 @@ export default {
         },
         optionType: {
           type: 'string',
-          enum: [
-            'CONNECTION_INTERVAL',
-            'NOTIFY_TIME_IN_MILLIS',
-            'NOTIFY_TIME_OUT_IN_MILLIS',
-            'PRIORITY',
-          ],
+          enum: ['CONNECTION_INTERVAL', 'NOTIFY_TIME_IN_MILLIS', 'NOTIFY_TIME_OUT_IN_MILLIS', 'PRIORITY'],
         },
         unknownFields: {
           $ref: '#/definitions/UnknownFieldSet',
@@ -3422,12 +3416,7 @@ export default {
         },
         optionType: {
           type: 'string',
-          enum: [
-            'CONNECTION_INTERVAL',
-            'NOTIFY_TIME_IN_MILLIS',
-            'NOTIFY_TIME_OUT_IN_MILLIS',
-            'PRIORITY',
-          ],
+          enum: ['CONNECTION_INTERVAL', 'NOTIFY_TIME_IN_MILLIS', 'NOTIFY_TIME_OUT_IN_MILLIS', 'PRIORITY'],
         },
         parserForType: {
           $ref: '#/definitions/Parser«Option»',
@@ -3658,8 +3647,7 @@ export default {
       properties: {
         options: {
           type: 'object',
-          description:
-            'Map of options for a specific Action, for example read frequency, or value to be written',
+          description: 'Map of options for a specific Action, for example read frequency, or value to be written',
           additionalProperties: {
             type: 'string',
           },
@@ -3680,8 +3668,7 @@ export default {
         },
         sId: {
           type: 'string',
-          description:
-            'Service from which to extract the Id of the peripheral - set if inAdvert is false',
+          description: 'Service from which to extract the Id of the peripheral - set if inAdvert is false',
         },
       },
       description: 'Command to determine how to extract the identity of the peripheral',
@@ -3786,31 +3773,11 @@ export default {
         },
         javaType: {
           type: 'string',
-          enum: [
-            'INT',
-            'LONG',
-            'FLOAT',
-            'DOUBLE',
-            'BOOLEAN',
-            'STRING',
-            'BYTE_STRING',
-            'ENUM',
-            'MESSAGE',
-          ],
+          enum: ['INT', 'LONG', 'FLOAT', 'DOUBLE', 'BOOLEAN', 'STRING', 'BYTE_STRING', 'ENUM', 'MESSAGE'],
         },
         liteJavaType: {
           type: 'string',
-          enum: [
-            'INT',
-            'LONG',
-            'FLOAT',
-            'DOUBLE',
-            'BOOLEAN',
-            'STRING',
-            'BYTE_STRING',
-            'ENUM',
-            'MESSAGE',
-          ],
+          enum: ['INT', 'LONG', 'FLOAT', 'DOUBLE', 'BOOLEAN', 'STRING', 'BYTE_STRING', 'ENUM', 'MESSAGE'],
         },
         liteType: {
           type: 'string',
@@ -4362,8 +4329,7 @@ export default {
         },
         options: {
           type: 'object',
-          description:
-            'Map of options for a specific Action, for example read frequency, or value to be written',
+          description: 'Map of options for a specific Action, for example read frequency, or value to be written',
           additionalProperties: {
             type: 'string',
           },

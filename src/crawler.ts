@@ -25,12 +25,7 @@ export class ResolveCrawler implements Types.IResolveCrawler {
     this._runner = runner;
   }
 
-  public computeGraph = (
-    target: any,
-    parentPath: string[] = [],
-    parentPointer = '#',
-    pointerStack: string[] = []
-  ) => {
+  public computeGraph = (target: any, parentPath: string[] = [], parentPointer = '#', pointerStack: string[] = []) => {
     if (!parentPointer) parentPointer = '#';
 
     let ref = this._runner.computeRef({
@@ -157,12 +152,7 @@ export class ResolveCrawler implements Types.IResolveCrawler {
           pointerStack.push(targetPointer);
 
           // if we are partially resolving
-          this.computeGraph(
-            getValue(this._runner.source, targetPath),
-            targetPath,
-            targetPointer,
-            pointerStack
-          );
+          this.computeGraph(getValue(this._runner.source, targetPath), targetPath, targetPointer, pointerStack);
 
           pointerStack.pop();
         }

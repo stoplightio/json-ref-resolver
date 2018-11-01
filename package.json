@@ -25,6 +25,7 @@
     "node": ">=8.3.0"
   },
   "scripts": {
+    "setup": "yarn",
     "prebuild": "rimraf dist",
     "build": "tsc -p ./tsconfig.build.json && ts-node scripts/post-build-preparation",
     "build.docs": "typedoc --out docs --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
@@ -33,7 +34,7 @@
     "test.prod": "yarn lint && yarn test --coverage --no-cache",
     "test.update": "yarn test --updateSnapshot",
     "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts'",
-    "format": "tslint --fix src/**/*.ts",
+    "format": "yarn lint --fix",
     "commit": "git-cz",
     "release": "semantic-release",
     "release.docs": "ts-node scripts/gh-pages-publish",

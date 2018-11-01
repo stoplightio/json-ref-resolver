@@ -19,9 +19,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly readers: {
     [scheme: string]: Types.IReader;
   };
-  public readonly parseAuthorityResult?: (
-    opts: Types.IParseAuthorityOpts
-  ) => Promise<Types.IParseAuthorityResult>;
+  public readonly parseAuthorityResult?: (opts: Types.IParseAuthorityOpts) => Promise<Types.IParseAuthorityResult>;
   public readonly debug: boolean;
   public readonly resolvePointers: boolean;
   public readonly resolveAuthorities: boolean;
@@ -48,10 +46,8 @@ export class ResolveRunner implements Types.IResolveRunner {
     this.parseAuthorityResult = opts.parseAuthorityResult;
     this.transformRef = opts.transformRef;
     this.debug = opts.debug || false;
-    this.resolvePointers =
-      typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
-    this.resolveAuthorities =
-      typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
+    this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
+    this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
     this.ctx = opts.ctx;
 
     this.lookupAuthority = memoize(this.lookupAuthority, {
@@ -239,10 +235,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       // if we're working with a file, resolve any path diferences and make sure the scheme is set
       if (isFile) {
         ref = ref.absoluteTo(this.authority).scheme('file');
-      } else if (
-        ref.scheme().includes('http') ||
-        (ref.scheme() === '' && this.authority.scheme().includes('http'))
-      ) {
+      } else if (ref.scheme().includes('http') || (ref.scheme() === '' && this.authority.scheme().includes('http'))) {
         if (this.authority.authority() !== '' && ref.authority() === '') {
           ref = ref.absoluteTo(this.authority);
         }
@@ -267,10 +260,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     return this.authorityStack.length >= 100;
   };
 
-  public lookupAuthority = async (opts: {
-    ref: uri.URI;
-    cacheKey: string;
-  }): Promise<ResolveRunner> => {
+  public lookupAuthority = async (opts: { ref: uri.URI; cacheKey: string }): Promise<ResolveRunner> => {
     const { ref } = opts;
 
     const reader = this.readers[ref.scheme()];
@@ -295,9 +285,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     });
   };
 
-  public lookupAndResolveAuthority = async (
-    opts: Types.IRefHandlerOpts
-  ): Promise<Types.IAuthorityLookupResult> => {
+  public lookupAndResolveAuthority = async (opts: Types.IRefHandlerOpts): Promise<Types.IAuthorityLookupResult> => {
     const { val, ref, resolvingPointer, parentPointer, pointerStack } = opts;
 
     // slice to make a fresh copy since we mutate in crawler for performance
@@ -326,9 +314,7 @@ export class ResolveRunner implements Types.IResolveRunner {
           // TODO: report this to bugsnag so we can track? throw it as some special
           // fatal error, that platform can look for and report (maybe other errors as well)?
           throw new Error(
-            `Max authority depth (${
-              this.authorityStack.length
-            }) reached. Halting, this is probably a circular loop.`
+            `Max authority depth (${this.authorityStack.length}) reached. Halting, this is probably a circular loop.`
           );
         }
 
@@ -339,9 +325,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
         const currentAuthority = this.authority.toString();
         if (currentAuthority && this.depth !== 0) {
-          authorityResolver.authorityStack = authorityResolver.authorityStack.concat([
-            currentAuthority,
-          ]);
+          authorityResolver.authorityStack = authorityResolver.authorityStack.concat([currentAuthority]);
         }
       } catch (e) {
         lookupResult.error = {
@@ -433,9 +417,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   };
 
   public _cacheKeySerializer(sOpts: any) {
-    return sOpts && typeof sOpts === 'object' && sOpts.cacheKey
-      ? sOpts.cacheKey
-      : JSON.stringify(arguments);
+    return sOpts && typeof sOpts === 'object' && sOpts.cacheKey ? sOpts.cacheKey : JSON.stringify(arguments);
   }
 
   private computeAuthorityCacheKey(ref: uri.URI) {

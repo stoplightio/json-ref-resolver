@@ -72,11 +72,7 @@ export interface ITransformRefOpts extends IComputeRefOpts {
   authority: uri.URI;
 }
 
-export type ResolverErrorCode =
-  | 'POINTER_MISSING'
-  | 'RESOLVE_AUTHORITY'
-  | 'PARSE_AUTHORITY'
-  | 'RESOLVE_POINTER';
+export type ResolverErrorCode = 'POINTER_MISSING' | 'RESOLVE_AUTHORITY' | 'PARSE_AUTHORITY' | 'RESOLVE_POINTER';
 export interface IResolveError {
   code: ResolverErrorCode;
   message: string;
@@ -142,12 +138,7 @@ export interface IResolveCrawler {
   jsonPointer?: string;
   pointerGraph: DepGraph<string>;
   pointerStemGraph: DepGraph<string>;
-  computeGraph: (
-    target: any,
-    parentPath: string[],
-    parentPointer: string,
-    pointerStack: string[]
-  ) => void;
+  computeGraph: (target: any, parentPath: string[], parentPointer: string, pointerStack: string[]) => void;
 }
 
 export interface ICrawlerResult {

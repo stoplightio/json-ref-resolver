@@ -4,11 +4,7 @@ const _get = require('lodash/get');
 const _set = require('lodash/set');
 const _trimStart = require('lodash/trimStart');
 
-export const stringify = (
-  target: any,
-  replacer?: (key: any, value: any) => any,
-  offset?: number
-) => {
+export const stringify = (target: any, replacer?: (key: any, value: any) => any, offset?: number) => {
   if (!target || typeof target === 'string') return target;
 
   try {

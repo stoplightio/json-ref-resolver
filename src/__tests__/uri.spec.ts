@@ -5,9 +5,7 @@ import { uriIsJSONPointer, uriToJSONPointer } from '../utils';
 describe('uri', () => {
   test('toString()', () => {
     expect(new URI('#/foo').toString()).toEqual('#/foo');
-    expect(new URI('http://foo.com?foo=bar#/foo').toString()).toEqual(
-      'http://foo.com/?foo=bar#/foo'
-    );
+    expect(new URI('http://foo.com?foo=bar#/foo').toString()).toEqual('http://foo.com/?foo=bar#/foo');
     expect(uriToJSONPointer(new URI('http://foo.com?foo=bar#/foo'))).toEqual('#/foo');
     expect(URI.parse('http://foo.com/foo/bar?foo=bar#/fee')).toEqual({
       protocol: 'http',

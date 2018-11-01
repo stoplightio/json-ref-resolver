@@ -9,9 +9,7 @@ export class Resolver implements Types.IResolver {
     [scheme: string]: Types.IReader;
   };
   public transformRef?: (opts: Types.ITransformRefOpts, ctx: any) => uri.URI | any;
-  public parseAuthorityResult?: (
-    opts: Types.IParseAuthorityOpts
-  ) => Promise<Types.IParseAuthorityResult>;
+  public parseAuthorityResult?: (opts: Types.IParseAuthorityOpts) => Promise<Types.IParseAuthorityResult>;
   public debug: boolean;
   public resolvePointers: boolean;
   public resolveAuthorities: boolean;
