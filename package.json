@@ -17,7 +17,7 @@
     "type": "git",
     "url": "https://github.com/stoplightio/json-ref-resolver.git"
   },
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "files": [
     "**/*"
   ],
