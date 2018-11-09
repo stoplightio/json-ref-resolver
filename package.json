@@ -12,6 +12,8 @@
   ],
   "main": "src/index.ts",
   "sideEffects": false,
+  "homepage": "https://github.com/stoplightio/json-ref-resolver",
+  "bugs": "https://github.com/stoplightio/json-ref-resolver/issues",
   "author": "Stoplight <support@stoplight.io>",
   "repository": {
     "type": "git",
@@ -25,20 +27,18 @@
     "node": ">=8.3.0"
   },
   "scripts": {
-    "setup": "yarn",
-    "prebuild": "rimraf dist",
-    "build": "tsc -p ./tsconfig.build.json && ts-node scripts/post-build-preparation",
-    "build.docs": "typedoc --out docs-auto --target es6 --theme minimal --mode file --excludeExternals --excludeNotExported --excludePrivate --excludeProtected src",
-    "test": "jest",
-    "test.watch": "jest --watch",
+    "build": "sl-scripts build",
+    "build.docs": "sl-scripts build:tsdoc",
+    "test": "sl-scripts test",
+    "test.watch": "yarn test --watch",
     "test.prod": "yarn lint && yarn test --coverage --no-cache",
     "test.update": "yarn test --updateSnapshot",
-    "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts'",
+    "lint": "sl-scripts lint",
     "format": "yarn lint --fix",
     "commit": "git-cz",
-    "release": "semantic-release",
-    "release.docs": "ts-node scripts/gh-pages-publish",
-    "postpublish": "cp -r dist/package.json ."
+    "release": "sl-scripts release",
+    "release.dryRun": "sl-scripts release --dry-run --debug",
+    "release.docs": "sl-scripts release:docs"
   },
   "lint-staged": {
     "*.ts": [
@@ -52,15 +52,6 @@
       "pre-commit": "lint-staged"
     }
   },
-  "release": {
-    "pkgRoot": "dist",
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/npm",
-      "@semantic-release/github"
-    ]
-  },
   "config": {
     "commitizen": {
       "path": "node_modules/cz-conventional-changelog"
@@ -71,38 +62,6 @@
       "@commitlint/config-conventional"
     ]
   },
-  "jest": {
-    "testEnvironment": "node",
-    "transform": {
-      ".(ts|tsx)": "ts-jest"
-    },
-    "testMatch": [
-      "**/__tests__/*.(ts|js)?(x)"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/__tests__/",
-      "index.ts",
-      "types.ts"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{js,ts}"
-    ],
-    "globals": {
-      "ts-jest": {
-        "diagnostics": {
-          "ignoreCodes": [
-            151001
-          ]
-        }
-      }
-    }
-  },
   "dependencies": {
     "@stoplight/fast-safe-stringify": "2.1.x",
     "dependency-graph": "0.7.x",
@@ -112,29 +71,9 @@
     "urijs": "1.19.x"
   },
   "devDependencies": {
-    "@commitlint/cli": "7.x.x",
-    "@commitlint/config-conventional": "7.x.x",
-    "@semantic-release/commit-analyzer": "6.x.x",
-    "@semantic-release/git": "7.x.x",
-    "@semantic-release/github": "5.x.x",
-    "@semantic-release/npm": "5.x.x",
-    "@semantic-release/release-notes-generator": "7.x.x",
-    "@types/jest": "23.x.x",
+    "@stoplight/scripts": "1.0.x",
     "@types/lodash": "4.x.x",
-    "@types/node": "10.x.x",
     "@types/urijs": "1.15.x",
-    "benchmark": "2.x.x",
-    "commitizen": "3.x.x",
-    "cz-conventional-changelog": "2.x.x",
-    "husky": "1.x.x",
-    "jest": "23.x.x",
-    "lint-staged": "8.x.x",
-    "rimraf": "2.x.x",
-    "semantic-release": "15.x.x",
-    "ts-jest": "23.x.x",
-    "ts-node": "7.x.x",
-    "tslint-config-stoplight": "1.x.x",
-    "typedoc": "0.13.x",
-    "typescript": "3.1.x"
+    "benchmark": "2.x.x"
   }
 }
