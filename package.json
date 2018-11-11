@@ -21,7 +21,8 @@
   },
   "license": "Apache-2.0",
   "files": [
-    "**/*"
+    "**/*",
+    "!__tests__"
   ],
   "engines": {
     "node": ">=8.3.0"
@@ -29,20 +30,35 @@
   "scripts": {
     "build": "sl-scripts build",
     "build.docs": "sl-scripts build:tsdoc",
+    "commit": "git-cz",
+    "lint": "sl-scripts lint",
+    "lint.fix": "yarn lint --fix",
+    "release": "sl-scripts release",
+    "release.docs": "sl-scripts release:docs",
+    "release.dryRun": "sl-scripts release --dry-run --debug",
     "test": "sl-scripts test",
-    "test.watch": "yarn test --watch",
     "test.prod": "yarn lint && yarn test --coverage --no-cache",
     "test.update": "yarn test --updateSnapshot",
-    "lint": "sl-scripts lint",
-    "format": "yarn lint --fix",
-    "commit": "git-cz",
-    "release": "sl-scripts release",
-    "release.dryRun": "sl-scripts release --dry-run --debug",
-    "release.docs": "sl-scripts release:docs"
+    "test.watch": "yarn test --watch"
+  },
+  "dependencies": {
+    "@stoplight/fast-safe-stringify": "2.1.x",
+    "dependency-graph": "0.7.x",
+    "fast-memoize": "2.5.x",
+    "immer": "1.7.x",
+    "lodash": "4.x.x",
+    "urijs": "1.19.x"
+  },
+  "devDependencies": {
+    "@stoplight/scripts": "1.1.x",
+    "@types/lodash": "4.x.x",
+    "@types/urijs": "1.15.x",
+    "benchmark": "2.x.x",
+    "typescript": "3.1.6"
   },
   "lint-staged": {
-    "*.ts": [
-      "tslint --fix",
+    "src/*.ts": [
+      "yarn lint.fix",
       "git add"
     ]
   },
@@ -61,19 +77,5 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
-  },
-  "dependencies": {
-    "@stoplight/fast-safe-stringify": "2.1.x",
-    "dependency-graph": "0.7.x",
-    "fast-memoize": "2.5.x",
-    "immer": "1.7.x",
-    "lodash": "4.x.x",
-    "urijs": "1.19.x"
-  },
-  "devDependencies": {
-    "@stoplight/scripts": "1.0.x",
-    "@types/lodash": "4.x.x",
-    "@types/urijs": "1.15.x",
-    "benchmark": "2.x.x"
   }
 }
