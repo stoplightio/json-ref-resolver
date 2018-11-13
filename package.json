@@ -50,14 +50,14 @@
     "urijs": "1.19.x"
   },
   "devDependencies": {
-    "@stoplight/scripts": "1.1.x",
+    "@stoplight/scripts": "1.1.2",
     "@types/lodash": "4.x.x",
     "@types/urijs": "1.15.x",
     "benchmark": "2.x.x",
     "typescript": "3.1.6"
   },
   "lint-staged": {
-    "src/*.ts": [
+    "*.ts": [
       "yarn lint.fix",
       "git add"
     ]
@@ -77,5 +77,8 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
+  },
+  "release": {
+    "extends": "@stoplight/scripts/release"
   }
 }
