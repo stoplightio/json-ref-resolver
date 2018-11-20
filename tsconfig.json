@@ -1,7 +1,6 @@
 {
   "extends": "./node_modules/@stoplight/scripts/tsconfig.json",
-  "include": ["src"],
-  "compilerOptions": {
-    "outDir": "dist"
-  }
+
+  // target all ts files
+  "include": ["."]
 }
