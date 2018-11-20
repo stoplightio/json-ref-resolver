@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as URI from 'urijs';
 
+import { Cache } from '../cache';
 import { Resolver } from '../resolver';
 import { ResolveRunner } from '../runner';
 import * as Types from '../types';
@@ -134,8 +135,7 @@ describe('resolver', () => {
         word: 'world',
       };
 
-      const resolver = new Resolver();
-      resolver.resolvePointers = false;
+      const resolver = new Resolver({ resolvePointers: false });
       const resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
     });
@@ -306,11 +306,11 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
+        resolveAuthorities: false,
         readers: {
           custom: reader,
         },
       });
-      resolver.resolveAuthorities = false;
 
       const resolved = await resolver.resolve(source);
 
@@ -791,9 +791,9 @@ describe('resolver', () => {
         readers: {
           custom: reader,
         },
-        authorityCacheOpts: {
+        authorityCache: new Cache({
           stdTTL: 1000, // 1s cache
-        },
+        }),
       });
 
       let resolved = await resolver.resolve(source);

@@ -5,10 +5,8 @@ import _get = require('lodash/get');
 import * as Types from './types';
 import * as Utils from './utils';
 
-/**
- * @hidden
- */
-export class ResolveCrawler implements Types.IResolveCrawler {
+/** @hidden */
+export class ResolveCrawler implements Types.ICrawler {
   public readonly authorityResolvers: Array<Promise<Types.IAuthorityLookupResult>> = [];
 
   // jsonPointer = the jsonPointer the runner was originally called with

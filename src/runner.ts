@@ -13,9 +13,7 @@ const memoize = require('fast-memoize');
 
 let resolveRunnerCount = 0;
 
-/**
- * @hidden
- */
+/** @hidden */
 export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
   public depth: number;
@@ -25,11 +23,11 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly readers: {
     [scheme: string]: Types.IReader;
   };
-  public readonly parseAuthorityResult?: (opts: Types.IParseAuthorityOpts) => Promise<Types.IParseAuthorityResult>;
+  public readonly parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
   public readonly debug: boolean;
   public readonly resolvePointers: boolean;
   public readonly resolveAuthorities: boolean;
-  public readonly transformRef?: (opts: Types.ITransformRefOpts, ctx: any) => uri.URI | any;
+  public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
   public ctx: any = {};
 
   private _source: any;

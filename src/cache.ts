@@ -1,5 +1,6 @@
 import * as Types from './types';
 
+/** @hidden */
 export class Cache implements Types.ICache {
   public debug = false;
 
@@ -23,7 +24,7 @@ export class Cache implements Types.ICache {
     };
   } = {};
 
-  constructor(opts: Types.ICacheOptions = {}) {
+  constructor(opts: Types.ICacheOpts = {}) {
     this._stdTTL = opts.stdTTL;
   }
 
