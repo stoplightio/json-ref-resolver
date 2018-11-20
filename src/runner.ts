@@ -10,6 +10,9 @@ import * as Utils from './utils';
 
 let resolveRunnerCount = 0;
 
+/**
+ * @hidden
+ */
 export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
   public depth: number;

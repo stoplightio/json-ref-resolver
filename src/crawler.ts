@@ -4,6 +4,9 @@ import { getValue } from './json';
 import * as Types from './types';
 import * as Utils from './utils';
 
+/**
+ * @hidden
+ */
 export class ResolveCrawler implements Types.IResolveCrawler {
   public readonly authorityResolvers: Array<Promise<Types.IAuthorityLookupResult>> = [];
 
