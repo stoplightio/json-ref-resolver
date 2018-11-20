@@ -11,31 +11,23 @@ import { ResolveRunner } from './runner';
 export class Resolver {
   public readonly authorityCache: Types.ICache;
 
+  protected resolvePointers: boolean;
+  protected resolveAuthorities: boolean;
+  protected ctx: any = {};
+  protected debug: boolean;
   protected readers: {
     [scheme: string]: Types.IReader;
   };
 
-  /** Customize what is resolved and/or transform the standard $refs that are resolved. */
+  protected isRef?: (key: string, val: any) => string | void;
   protected transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
-
   protected parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
-
-  /** Does not do much right now... */
-  protected debug: boolean;
-
-  /** Should we resolve pointers? true by default. */
-  protected resolvePointers: boolean;
-
-  /** Should we resolve authorities? true by default. */
-  protected resolveAuthorities: boolean;
-
-  /** A spot to put your own arbitrary data. This is passed to a variety of the other hook functions. */
-  protected ctx: any = {};
 
   constructor(opts: Types.IResolverOpts = {}) {
     this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
     this.debug = opts.debug || false;
+    this.isRef = opts.isRef;
     this.transformRef = opts.transformRef;
     this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
     this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
@@ -50,6 +42,7 @@ export class Resolver {
         authorityCache: this.authorityCache,
         readers: this.readers,
         debug: this.debug,
+        isRef: this.isRef,
         transformRef: this.transformRef,
         resolvePointers: this.resolvePointers,
         resolveAuthorities: this.resolveAuthorities,

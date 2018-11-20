@@ -13,22 +13,36 @@ const memoize = require('fast-memoize');
 
 let resolveRunnerCount = 0;
 
+export const defaultIsRef = (key: string, val: any) => {
+  if (key === '$ref') {
+    return val;
+  } else if (val && typeof val === 'object' && val.$ref) {
+    return val.$ref;
+  }
+
+  return;
+};
+
 /** @hidden */
 export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
-  public depth: number;
-  public authorityStack: string[];
   public readonly authority: uri.URI;
   public readonly authorityCache: Types.ICache;
+
+  public depth: number;
+  public authorityStack: string[];
+
+  public readonly resolvePointers: boolean;
+  public readonly resolveAuthorities: boolean;
+  public ctx: any = {};
+  public readonly debug: boolean;
   public readonly readers: {
     [scheme: string]: Types.IReader;
   };
-  public readonly parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
-  public readonly debug: boolean;
-  public readonly resolvePointers: boolean;
-  public readonly resolveAuthorities: boolean;
+
+  public readonly isRef: (key: string, val: any) => string | void;
   public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
-  public ctx: any = {};
+  public readonly parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
 
   private _source: any;
 
@@ -46,12 +60,14 @@ export class ResolveRunner implements Types.IResolveRunner {
       this.authorityCache.set(this.computeAuthorityCacheKey(this.authority), this);
     }
 
+    this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
-    this.parseAuthorityResult = opts.parseAuthorityResult;
-    this.transformRef = opts.transformRef;
     this.debug = opts.debug || false;
+    this.isRef = opts.isRef || defaultIsRef;
+    this.transformRef = opts.transformRef;
     this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
     this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
+    this.parseAuthorityResult = opts.parseAuthorityResult;
     this.ctx = opts.ctx;
 
     this.lookupAuthority = memoize(this.lookupAuthority, {
@@ -210,20 +226,16 @@ export class ResolveRunner implements Types.IResolveRunner {
   }
 
   /**
-   * Determine if we should resolve this part of source
-   * If so, return the appropriate URI object
+   * Determine if we should resolve this part of source.
+   *
+   * If so, return the appropriate URI object.
    */
   public computeRef = (opts: Types.IComputeRefOpts): uri.URI | void => {
-    let ref;
-    if (opts.key === '$ref') {
-      ref = opts.val;
-    } else if (opts.val && typeof opts.val === 'object' && opts.val.$ref) {
-      ref = opts.val.$ref;
-    }
+    const refStr = this.isRef(opts.key, opts.val);
 
-    if (!ref) return;
+    if (!refStr) return;
 
-    ref = new URI(ref);
+    let ref = new URI(refStr);
 
     // Does ref only have a fragment
     if (ref.toString() !== `#${ref.fragment()}`) {

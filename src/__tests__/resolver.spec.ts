@@ -3,7 +3,7 @@ import * as URI from 'urijs';
 
 import { Cache } from '../cache';
 import { Resolver } from '../resolver';
-import { ResolveRunner } from '../runner';
+import { defaultIsRef, ResolveRunner } from '../runner';
 import * as Types from '../types';
 import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
@@ -1087,6 +1087,63 @@ describe('resolver', () => {
 
       // we redirected the ref to /bar instead of /foo
       expect(resolved.result.inner).toEqual('hello2');
+    });
+
+    /**
+     * This allows the end user to completely customize which properties are resolved.
+     */
+    test('should support `isRef` hook', async () => {
+      const source = {
+        inner: {
+          randomProp: '#/foo',
+        },
+        foo: 'hello1',
+      };
+
+      const resolver = new Resolver({
+        isRef(_key, val) {
+          if (typeof val === 'string' && val.startsWith('#/')) return val;
+          return;
+        },
+      });
+
+      const resolved = await resolver.resolve(source);
+      expect(resolved.result.inner).toEqual({
+        randomProp: 'hello1',
+      });
+    });
+
+    /**
+     * This version preserves the original $ref handling, combined with our custom isRef logic.
+     */
+    test('should support `isRef` hook combined with defaultIsRef', async () => {
+      const source = {
+        inner: {
+          randomProp: '#/foo',
+        },
+        inner2: {
+          $ref: '#/bar',
+        },
+        foo: 'hello1',
+        bar: 'hello2',
+      };
+
+      const resolver = new Resolver({
+        isRef(key, val) {
+          if (typeof val === 'string' && val.startsWith('#/')) return val;
+          return defaultIsRef(key, val);
+        },
+      });
+
+      const resolved = await resolver.resolve(source);
+      expect(resolved.result).toEqual({
+        inner: {
+          randomProp: 'hello1',
+        },
+        inner2: 'hello2',
+        foo: 'hello1',
+        bar: 'hello2',
+      });
     });
 
     /**

@@ -16,7 +16,21 @@ export interface IResolverOpts {
     [scheme: string]: IReader;
   };
 
-  /** Hook customize what is resolved and/or transform the standard $refs that are resolved. */
+  /**
+   * Hook to customize which properties are resolved.
+   *
+   * By default, only `$ref` keys are considered and processed.
+   *
+   * If defined, this hook is called for every single property in source, so it should be performant!
+   *
+   * It should return the string to be resolved, or nothing to skip.
+   *
+   * Note, this overrides the default behavior. If you would like to preserve that, call the exported `defaultIsRef`
+   * as part of your custom `isRef` function.
+   */
+  isRef?: (key: string, val: any) => string | void;
+
+  /** Hook to customize what is resolved and/or transform the standard $refs that are resolved. */
   transformRef?: (opts: IRefTransformer, ctx: any) => uri.URI | void;
 
   /**
