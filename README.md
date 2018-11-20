@@ -27,7 +27,42 @@ yarn add @stoplight/json-ref-resolver
 
 ### Usage
 
-All relevant types and options can be found in [src/types.ts](src/types.ts).
+All relevant types and options can be found in [src/types.ts](src/types.ts) or in the TSDoc.
+
+#### Basic Local Resolution
+
+```ts
+import { Resolver } from "@stoplight/json-ref-resolver";
+
+const resolver = new Resolver();
+const resolved = await resolver.resolve({
+  user: {
+    $ref: "#/models/user"
+  },
+  models: {
+    user: {
+      name: "john"
+    }
+  }
+});
+
+console.log(resolved.result);
+
+// ==> outputs the original object, with local refs resolved and replaced
+//
+// {
+//   user: {
+//     name: 'json'
+//   },
+//   models: {
+//     user: {
+//       name: 'john'
+//     }
+//   }
+// }
+```
+
+#### With Authority Readers
 
 ```ts
 import { Resolver } from "@stoplight/json-ref-resolver";
