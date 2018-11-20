@@ -1,12 +1,15 @@
+import { pointerToPath, startsWith, trimStart } from '@stoplight/json';
 import produce from 'immer';
+import _get = require('lodash/get');
+import _set = require('lodash/set');
 import * as URI from 'urijs';
-const memoize = require('fast-memoize');
 
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
-import { getValue, setValue, startsWith, trimStart } from './json';
 import * as Types from './types';
 import * as Utils from './utils';
+
+const memoize = require('fast-memoize');
 
 let resolveRunnerCount = 0;
 
@@ -77,8 +80,8 @@ export class ResolveRunner implements Types.IResolveRunner {
     let targetPath: any;
     jsonPointer = jsonPointer && jsonPointer.trim();
     if (jsonPointer && jsonPointer !== '#' && jsonPointer !== '#/') {
-      targetPath = Utils.jsonPointerToPath(jsonPointer);
-      resolved.result = getValue(resolved.result, targetPath);
+      targetPath = pointerToPath(jsonPointer);
+      resolved.result = _get(resolved.result, targetPath);
     }
 
     if (!resolved.result) {
@@ -134,7 +137,7 @@ export class ResolveRunner implements Types.IResolveRunner {
             if (!resolvedTargetPath.length) {
               return r.resolved.result;
             } else {
-              setValue(draft, resolvedTargetPath, r.resolved.result);
+              _set(draft, resolvedTargetPath, r.resolved.result);
             }
           }
         });
@@ -161,16 +164,16 @@ export class ResolveRunner implements Types.IResolveRunner {
             const dependants = crawler.pointerGraph.dependantsOf(pointer);
             if (!dependants.length) continue;
 
-            const pointerPath = Utils.jsonPointerToPath(pointer);
-            const val = getValue(draft, pointerPath);
+            const pointerPath = pointerToPath(pointer);
+            const val = _get(draft, pointerPath);
             for (const dependant of dependants) {
               // check to prevent circular references in the resulting JS object
               // this implementation is MUCH more performant than decycling the final object to remove circulars
               let isCircular;
-              const dependantPath = Utils.jsonPointerToPath(dependant);
+              const dependantPath = pointerToPath(dependant);
               const dependantStems = crawler.pointerStemGraph.dependenciesOf(pointer);
               for (const stem of dependantStems) {
-                if (startsWith(dependantPath, Utils.jsonPointerToPath(stem))) {
+                if (startsWith(dependantPath, pointerToPath(stem))) {
                   isCircular = true;
                   break;
                 }
@@ -180,7 +183,7 @@ export class ResolveRunner implements Types.IResolveRunner {
               if (isCircular) continue;
 
               if (val) {
-                setValue(draft, dependantPath, val);
+                _set(draft, dependantPath, val);
               } else {
                 resolved.errors.push({
                   code: 'POINTER_MISSING',
@@ -200,7 +203,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     }
 
     if (targetPath) {
-      resolved.result = getValue(this._source, targetPath);
+      resolved.result = _get(this._source, targetPath);
     } else {
       resolved.result = this._source;
     }
@@ -363,7 +366,7 @@ export class ResolveRunner implements Types.IResolveRunner {
                   : error.path;
 
                 if (errorPathInResult && errorPathInResult.length) {
-                  setValue(lookupResult.resolved.result, errorPathInResult, val);
+                  _set(lookupResult.resolved.result, errorPathInResult, val);
                 } else if (lookupResult.resolved.result) {
                   lookupResult.resolved.result = val;
                 }

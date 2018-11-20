@@ -46,12 +46,12 @@
     "test.watch": "yarn test --watch"
   },
   "dependencies": {
-    "@stoplight/fast-safe-stringify": "2.1.x",
+    "@stoplight/json": "1.1.x",
     "dependency-graph": "0.7.x",
-    "fast-memoize": "2.5.x",
-    "immer": "1.8.x",
+    "fast-memoize": "2.x.x",
+    "immer": "1.x.x",
     "lodash": "4.x.x",
-    "urijs": "1.19.x"
+    "urijs": "1.x.x"
   },
   "devDependencies": {
     "@stoplight/scripts": "3.0.0",

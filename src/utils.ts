@@ -20,38 +20,6 @@ const replace = (str: string, find: string, repl: string): string => {
   return res;
 };
 
-const decodeFragmentSegments = (segments: string[]): string[] => {
-  const len = segments.length;
-  const res = new Array(len);
-  let i = -1;
-
-  while (++i < len) {
-    res[i] = replace(replace(decodeURIComponent('' + segments[i]), '~1', '/'), '~0', '~');
-  }
-
-  return res;
-};
-
-const decodeUriFragmentIdentifier = (ptr: string): string[] => {
-  if (typeof ptr !== 'string') {
-    throw new TypeError('Invalid type: JSON Pointers are represented as strings.');
-  }
-
-  if (ptr.length === 0 || ptr[0] !== '#') {
-    throw new ReferenceError('Invalid JSON Pointer syntax; URI fragment idetifiers must begin with a hash.');
-  }
-
-  if (ptr.length === 1) {
-    return [];
-  }
-
-  if (ptr[1] !== '/') {
-    throw new ReferenceError('Invalid JSON Pointer syntax.');
-  }
-
-  return decodeFragmentSegments(ptr.substring(2).split('/'));
-};
-
 const encodeFragmentSegment = (segment: string): string => {
   if (typeof segment === 'string') {
     return replace(replace(segment, '~', '~0'), '/', '~1');
@@ -60,30 +28,7 @@ const encodeFragmentSegment = (segment: string): string => {
   return segment;
 };
 
-const encodeFragmentSegments = (segments: string[]): string[] => {
-  return segments.map(encodeFragmentSegment);
-};
-
-const encodeUriFragmentIdentifier = (path: string[]): string => {
-  if (path && typeof path !== 'object') {
-    throw new TypeError('Invalid type: path must be an array of segments.');
-  }
-
-  if (path.length === 0) {
-    return '#';
-  }
-
-  return `#/${encodeFragmentSegments(path).join('/')}`;
-};
-
-export const jsonPointerToPath = (pointer: string): string[] => {
-  return decodeUriFragmentIdentifier(pointer);
-};
-
-export const pathToJSONPointer = (path: string[]): string => {
-  return encodeUriFragmentIdentifier(path);
-};
-
+// TODO: move to @stoplight/json
 export const addToJSONPointer = (pointer: string, part: string): string => {
   return `${pointer}/${encodeFragmentSegment(part)}`;
 };
