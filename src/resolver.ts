@@ -3,36 +3,46 @@ import * as Types from './types';
 
 import { ResolveRunner } from './runner';
 
-export class Resolver implements Types.IResolver {
-  public authorityCache: Types.ICache;
-  public readers: {
+/**
+ * This is the primary class.
+ *
+ * See IResolverOptions for available options that you can pass in.
+ */
+export class Resolver {
+  public readonly authorityCache: Types.ICache;
+
+  protected resolvePointers: boolean;
+  protected resolveAuthorities: boolean;
+  protected ctx: any = {};
+  protected debug: boolean;
+  protected readers: {
     [scheme: string]: Types.IReader;
   };
-  public transformRef?: (opts: Types.ITransformRefOpts, ctx: any) => uri.URI | any;
-  public parseAuthorityResult?: (opts: Types.IParseAuthorityOpts) => Promise<Types.IParseAuthorityResult>;
-  public debug: boolean;
-  public resolvePointers: boolean;
-  public resolveAuthorities: boolean;
-  public ctx: any = {};
 
-  constructor(opts: Types.IResolverOptions = {}) {
-    this.authorityCache = opts.authorityCache || new Cache(opts.authorityCacheOpts);
+  protected getRef?: (key: string, val: any) => string | void;
+  protected transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
+  protected parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
+
+  constructor(opts: Types.IResolverOpts = {}) {
+    this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
     this.debug = opts.debug || false;
+    this.getRef = opts.getRef;
     this.transformRef = opts.transformRef;
-    this.resolvePointers = opts.resolvePointers || true;
-    this.resolveAuthorities = opts.resolveAuthorities || true;
+    this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
+    this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
     this.parseAuthorityResult = opts.parseAuthorityResult;
     this.ctx = opts.ctx;
   }
 
-  public resolve(source: any, opts: Types.IResolveOptions = {}): Promise<Types.IResolveResult> {
+  public resolve(source: any, opts: Types.IResolveOpts = {}): Promise<Types.IResolveResult> {
     const runOpts = Object.assign(
       {},
       {
         authorityCache: this.authorityCache,
         readers: this.readers,
         debug: this.debug,
+        getRef: this.getRef,
         transformRef: this.transformRef,
         resolvePointers: this.resolvePointers,
         resolveAuthorities: this.resolveAuthorities,

@@ -1,30 +1,48 @@
+import { pointerToPath, startsWith, trimStart } from '@stoplight/json';
 import produce from 'immer';
+import _get = require('lodash/get');
+import _set = require('lodash/set');
 import * as URI from 'urijs';
-const memoize = require('fast-memoize');
 
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
-import { getValue, setValue, startsWith, trimStart } from './json';
 import * as Types from './types';
 import * as Utils from './utils';
 
+const memoize = require('fast-memoize');
+
 let resolveRunnerCount = 0;
 
+export const defaultGetRef = (key: string, val: any) => {
+  if (key === '$ref') {
+    return val;
+  } else if (val && typeof val === 'object' && val.$ref) {
+    return val.$ref;
+  }
+
+  return;
+};
+
+/** @hidden */
 export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
-  public depth: number;
-  public authorityStack: string[];
   public readonly authority: uri.URI;
   public readonly authorityCache: Types.ICache;
+
+  public depth: number;
+  public authorityStack: string[];
+
+  public readonly resolvePointers: boolean;
+  public readonly resolveAuthorities: boolean;
+  public ctx: any = {};
+  public readonly debug: boolean;
   public readonly readers: {
     [scheme: string]: Types.IReader;
   };
-  public readonly parseAuthorityResult?: (opts: Types.IParseAuthorityOpts) => Promise<Types.IParseAuthorityResult>;
-  public readonly debug: boolean;
-  public readonly resolvePointers: boolean;
-  public readonly resolveAuthorities: boolean;
-  public readonly transformRef?: (opts: Types.ITransformRefOpts, ctx: any) => uri.URI | any;
-  public ctx: any = {};
+
+  public readonly getRef: (key: string, val: any) => string | void;
+  public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
+  public readonly parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
 
   private _source: any;
 
@@ -42,12 +60,14 @@ export class ResolveRunner implements Types.IResolveRunner {
       this.authorityCache.set(this.computeAuthorityCacheKey(this.authority), this);
     }
 
+    this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
-    this.parseAuthorityResult = opts.parseAuthorityResult;
-    this.transformRef = opts.transformRef;
     this.debug = opts.debug || false;
+    this.getRef = opts.getRef || defaultGetRef;
+    this.transformRef = opts.transformRef;
     this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
     this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
+    this.parseAuthorityResult = opts.parseAuthorityResult;
     this.ctx = opts.ctx;
 
     this.lookupAuthority = memoize(this.lookupAuthority, {
@@ -74,8 +94,8 @@ export class ResolveRunner implements Types.IResolveRunner {
     let targetPath: any;
     jsonPointer = jsonPointer && jsonPointer.trim();
     if (jsonPointer && jsonPointer !== '#' && jsonPointer !== '#/') {
-      targetPath = Utils.jsonPointerToPath(jsonPointer);
-      resolved.result = getValue(resolved.result, targetPath);
+      targetPath = pointerToPath(jsonPointer);
+      resolved.result = _get(resolved.result, targetPath);
     }
 
     if (!resolved.result) {
@@ -131,7 +151,7 @@ export class ResolveRunner implements Types.IResolveRunner {
             if (!resolvedTargetPath.length) {
               return r.resolved.result;
             } else {
-              setValue(draft, resolvedTargetPath, r.resolved.result);
+              _set(draft, resolvedTargetPath, r.resolved.result);
             }
           }
         });
@@ -158,16 +178,16 @@ export class ResolveRunner implements Types.IResolveRunner {
             const dependants = crawler.pointerGraph.dependantsOf(pointer);
             if (!dependants.length) continue;
 
-            const pointerPath = Utils.jsonPointerToPath(pointer);
-            const val = getValue(draft, pointerPath);
+            const pointerPath = pointerToPath(pointer);
+            const val = _get(draft, pointerPath);
             for (const dependant of dependants) {
               // check to prevent circular references in the resulting JS object
               // this implementation is MUCH more performant than decycling the final object to remove circulars
               let isCircular;
-              const dependantPath = Utils.jsonPointerToPath(dependant);
+              const dependantPath = pointerToPath(dependant);
               const dependantStems = crawler.pointerStemGraph.dependenciesOf(pointer);
               for (const stem of dependantStems) {
-                if (startsWith(dependantPath, Utils.jsonPointerToPath(stem))) {
+                if (startsWith(dependantPath, pointerToPath(stem))) {
                   isCircular = true;
                   break;
                 }
@@ -177,7 +197,7 @@ export class ResolveRunner implements Types.IResolveRunner {
               if (isCircular) continue;
 
               if (val) {
-                setValue(draft, dependantPath, val);
+                _set(draft, dependantPath, val);
               } else {
                 resolved.errors.push({
                   code: 'POINTER_MISSING',
@@ -197,7 +217,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     }
 
     if (targetPath) {
-      resolved.result = getValue(this._source, targetPath);
+      resolved.result = _get(this._source, targetPath);
     } else {
       resolved.result = this._source;
     }
@@ -206,20 +226,16 @@ export class ResolveRunner implements Types.IResolveRunner {
   }
 
   /**
-   * Determine if we should resolve this part of source
-   * If so, return the appropriate URI object
+   * Determine if we should resolve this part of source.
+   *
+   * If so, return the appropriate URI object.
    */
   public computeRef = (opts: Types.IComputeRefOpts): uri.URI | void => {
-    let ref;
-    if (opts.key === '$ref') {
-      ref = opts.val;
-    } else if (opts.val && typeof opts.val === 'object' && opts.val.$ref) {
-      ref = opts.val.$ref;
-    }
+    const refStr = this.getRef(opts.key, opts.val);
 
-    if (!ref) return;
+    if (!refStr) return;
 
-    ref = new URI(ref);
+    let ref = new URI(refStr);
 
     // Does ref only have a fragment
     if (ref.toString() !== `#${ref.fragment()}`) {
@@ -360,7 +376,7 @@ export class ResolveRunner implements Types.IResolveRunner {
                   : error.path;
 
                 if (errorPathInResult && errorPathInResult.length) {
-                  setValue(lookupResult.resolved.result, errorPathInResult, val);
+                  _set(lookupResult.resolved.result, errorPathInResult, val);
                 } else if (lookupResult.resolved.result) {
                   lookupResult.resolved.result = val;
                 }

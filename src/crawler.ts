@@ -1,10 +1,12 @@
+import { pointerToPath } from '@stoplight/json';
 import { DepGraph } from 'dependency-graph';
+import _get = require('lodash/get');
 
-import { getValue } from './json';
 import * as Types from './types';
 import * as Utils from './utils';
 
-export class ResolveCrawler implements Types.IResolveCrawler {
+/** @hidden */
+export class ResolveCrawler implements Types.ICrawler {
   public readonly authorityResolvers: Array<Promise<Types.IAuthorityLookupResult>> = [];
 
   // jsonPointer = the jsonPointer the runner was originally called with
@@ -95,7 +97,7 @@ export class ResolveCrawler implements Types.IResolveCrawler {
     if (Utils.uriIsJSONPointer(ref)) {
       if (this._runner.resolvePointers) {
         const targetPointer = Utils.uriToJSONPointer(ref);
-        const targetPath = Utils.jsonPointerToPath(targetPointer);
+        const targetPath = pointerToPath(targetPointer);
 
         /**
          * Protects against circular references back to something higher up in the tree
@@ -152,7 +154,7 @@ export class ResolveCrawler implements Types.IResolveCrawler {
           pointerStack.push(targetPointer);
 
           // if we are partially resolving
-          this.computeGraph(getValue(this._runner.source, targetPath), targetPath, targetPointer, pointerStack);
+          this.computeGraph(_get(this._runner.source, targetPath), targetPath, targetPointer, pointerStack);
 
           pointerStack.pop();
         }

@@ -5,10 +5,15 @@
   "keywords": [
     "json-parser",
     "json",
+    "jsonschema",
     "json-schema",
+    "json-pointer",
+    "$ref",
     "resolver",
     "openapi",
-    "swagger"
+    "swagger",
+    "dereference",
+    "resolve"
   ],
   "main": "src/index.ts",
   "sideEffects": false,
@@ -21,15 +26,14 @@
   },
   "license": "Apache-2.0",
   "files": [
-    "**/*",
-    "!__tests__"
+    "**/*"
   ],
   "engines": {
     "node": ">=8.3.0"
   },
   "scripts": {
     "build": "sl-scripts build",
-    "build.docs": "sl-scripts build:tsdoc",
+    "build.docs": "sl-scripts build:typedoc",
     "commit": "git-cz",
     "lint": "sl-scripts lint",
     "lint.fix": "yarn lint --fix",
@@ -42,22 +46,22 @@
     "test.watch": "yarn test --watch"
   },
   "dependencies": {
-    "@stoplight/fast-safe-stringify": "2.1.x",
+    "@stoplight/json": "1.1.x",
     "dependency-graph": "0.7.x",
-    "fast-memoize": "2.5.x",
-    "immer": "1.7.x",
+    "fast-memoize": "2.x.x",
+    "immer": "1.x.x",
     "lodash": "4.x.x",
-    "urijs": "1.19.x"
+    "urijs": "1.x.x"
   },
   "devDependencies": {
-    "@stoplight/scripts": "1.1.2",
+    "@stoplight/scripts": "3.0.0",
     "@types/lodash": "4.x.x",
     "@types/urijs": "1.15.x",
     "benchmark": "2.x.x",
     "typescript": "3.1.6"
   },
   "lint-staged": {
-    "*.ts": [
+    "*.{ts,tsx}$": [
       "yarn lint.fix",
       "git add"
     ]

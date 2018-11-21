@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as URI from 'urijs';
 
+import { Cache } from '../cache';
 import { Resolver } from '../resolver';
-import { ResolveRunner } from '../runner';
+import { defaultGetRef, ResolveRunner } from '../runner';
 import * as Types from '../types';
 import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
@@ -134,8 +135,7 @@ describe('resolver', () => {
         word: 'world',
       };
 
-      const resolver = new Resolver();
-      resolver.resolvePointers = false;
+      const resolver = new Resolver({ resolvePointers: false });
       const resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
     });
@@ -306,11 +306,11 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
+        resolveAuthorities: false,
         readers: {
           custom: reader,
         },
       });
-      resolver.resolveAuthorities = false;
 
       const resolved = await resolver.resolve(source);
 
@@ -791,9 +791,9 @@ describe('resolver', () => {
         readers: {
           custom: reader,
         },
-        authorityCacheOpts: {
+        authorityCache: new Cache({
           stdTTL: 1000, // 1s cache
-        },
+        }),
       });
 
       let resolved = await resolver.resolve(source);
@@ -1087,6 +1087,63 @@ describe('resolver', () => {
 
       // we redirected the ref to /bar instead of /foo
       expect(resolved.result.inner).toEqual('hello2');
+    });
+
+    /**
+     * This allows the end user to completely customize which properties are resolved.
+     */
+    test('should support `getRef` hook', async () => {
+      const source = {
+        inner: {
+          randomProp: '#/foo',
+        },
+        foo: 'hello1',
+      };
+
+      const resolver = new Resolver({
+        getRef(_key, val) {
+          if (typeof val === 'string' && val.startsWith('#/')) return val;
+          return;
+        },
+      });
+
+      const resolved = await resolver.resolve(source);
+      expect(resolved.result.inner).toEqual({
+        randomProp: 'hello1',
+      });
+    });
+
+    /**
+     * This version preserves the original $ref handling, combined with our custom getRef logic.
+     */
+    test('should support `getRef` hook combined with defaultGetRef', async () => {
+      const source = {
+        inner: {
+          randomProp: '#/foo',
+        },
+        inner2: {
+          $ref: '#/bar',
+        },
+        foo: 'hello1',
+        bar: 'hello2',
+      };
+
+      const resolver = new Resolver({
+        getRef(key, val) {
+          if (typeof val === 'string' && val.startsWith('#/')) return val;
+          return defaultGetRef(key, val);
+        },
+      });
+
+      const resolved = await resolver.resolve(source);
+      expect(resolved.result).toEqual({
+        inner: {
+          randomProp: 'hello1',
+        },
+        inner2: 'hello2',
+        foo: 'hello1',
+        bar: 'hello2',
+      });
     });
 
     /**
