@@ -19,7 +19,7 @@ export class Resolver {
     [scheme: string]: Types.IReader;
   };
 
-  protected isRef?: (key: string, val: any) => string | void;
+  protected getRef?: (key: string, val: any) => string | void;
   protected transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
   protected parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
 
@@ -27,7 +27,7 @@ export class Resolver {
     this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
     this.debug = opts.debug || false;
-    this.isRef = opts.isRef;
+    this.getRef = opts.getRef;
     this.transformRef = opts.transformRef;
     this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
     this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
@@ -42,7 +42,7 @@ export class Resolver {
         authorityCache: this.authorityCache,
         readers: this.readers,
         debug: this.debug,
-        isRef: this.isRef,
+        getRef: this.getRef,
         transformRef: this.transformRef,
         resolvePointers: this.resolvePointers,
         resolveAuthorities: this.resolveAuthorities,

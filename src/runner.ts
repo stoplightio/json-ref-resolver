@@ -13,7 +13,7 @@ const memoize = require('fast-memoize');
 
 let resolveRunnerCount = 0;
 
-export const defaultIsRef = (key: string, val: any) => {
+export const defaultGetRef = (key: string, val: any) => {
   if (key === '$ref') {
     return val;
   } else if (val && typeof val === 'object' && val.$ref) {
@@ -40,7 +40,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     [scheme: string]: Types.IReader;
   };
 
-  public readonly isRef: (key: string, val: any) => string | void;
+  public readonly getRef: (key: string, val: any) => string | void;
   public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
   public readonly parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
 
@@ -63,7 +63,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
     this.debug = opts.debug || false;
-    this.isRef = opts.isRef || defaultIsRef;
+    this.getRef = opts.getRef || defaultGetRef;
     this.transformRef = opts.transformRef;
     this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
     this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
@@ -231,7 +231,7 @@ export class ResolveRunner implements Types.IResolveRunner {
    * If so, return the appropriate URI object.
    */
   public computeRef = (opts: Types.IComputeRefOpts): uri.URI | void => {
-    const refStr = this.isRef(opts.key, opts.val);
+    const refStr = this.getRef(opts.key, opts.val);
 
     if (!refStr) return;
 

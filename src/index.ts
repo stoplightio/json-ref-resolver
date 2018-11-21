@@ -1,4 +1,4 @@
 export * from './resolver';
 
-import { defaultIsRef } from './runner';
-export { defaultIsRef };
+import { defaultGetRef } from './runner';
+export { defaultGetRef };

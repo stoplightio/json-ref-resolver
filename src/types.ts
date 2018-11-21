@@ -25,12 +25,16 @@ export interface IResolverOpts {
    *
    * It should return the string to be resolved, or nothing to skip.
    *
-   * Note, this overrides the default behavior. If you would like to preserve that, call the exported `defaultIsRef`
-   * as part of your custom `isRef` function.
+   * Note, this overrides the default behavior. If you would like to preserve that, call the exported `defaultGetRef`
+   * as part of your custom `getRef` function.
    */
-  isRef?: (key: string, val: any) => string | void;
+  getRef?: (key: string, val: any) => string | void;
 
-  /** Hook to customize what is resolved and/or transform the standard $refs that are resolved. */
+  /**
+   * Hook to transform the final ref value before it is resolved.
+   *
+   * It should return a URI object to change the value being resolved, or void to make no changes.
+   */
   transformRef?: (opts: IRefTransformer, ctx: any) => uri.URI | void;
 
   /**

@@ -3,7 +3,7 @@ import * as URI from 'urijs';
 
 import { Cache } from '../cache';
 import { Resolver } from '../resolver';
-import { defaultIsRef, ResolveRunner } from '../runner';
+import { defaultGetRef, ResolveRunner } from '../runner';
 import * as Types from '../types';
 import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
@@ -1092,7 +1092,7 @@ describe('resolver', () => {
     /**
      * This allows the end user to completely customize which properties are resolved.
      */
-    test('should support `isRef` hook', async () => {
+    test('should support `getRef` hook', async () => {
       const source = {
         inner: {
           randomProp: '#/foo',
@@ -1101,7 +1101,7 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        isRef(_key, val) {
+        getRef(_key, val) {
           if (typeof val === 'string' && val.startsWith('#/')) return val;
           return;
         },
@@ -1114,9 +1114,9 @@ describe('resolver', () => {
     });
 
     /**
-     * This version preserves the original $ref handling, combined with our custom isRef logic.
+     * This version preserves the original $ref handling, combined with our custom getRef logic.
      */
-    test('should support `isRef` hook combined with defaultIsRef', async () => {
+    test('should support `getRef` hook combined with defaultGetRef', async () => {
       const source = {
         inner: {
           randomProp: '#/foo',
@@ -1129,9 +1129,9 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        isRef(key, val) {
+        getRef(key, val) {
           if (typeof val === 'string' && val.startsWith('#/')) return val;
-          return defaultIsRef(key, val);
+          return defaultGetRef(key, val);
         },
       });
 
