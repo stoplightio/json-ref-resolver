@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as _ from 'lodash';
 import * as URI from 'urijs';
 
 import { Cache } from '../cache';
@@ -114,6 +115,24 @@ describe('resolver', () => {
   });
 
   describe('resolve', () => {
+    test('should not mutate original document', async () => {
+      const source = {
+        hello: {
+          $ref: '#/word',
+        },
+        word: 'world',
+      };
+
+      const sourceCopy = _.clone(source);
+
+      const resolver = new Resolver();
+      const resolved = await resolver.resolve(source);
+      expect(resolved.result.hello).toBe('world');
+
+      // source should remain unchanged
+      expect(source).toEqual(sourceCopy);
+    });
+
     test('should support jsonPointers', async () => {
       const source = {
         hello: {
