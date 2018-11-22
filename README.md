@@ -29,7 +29,40 @@ yarn add @stoplight/json-ref-resolver
 
 All relevant types and options can be found in [src/types.ts](src/types.ts) or in the TSDoc.
 
-#### Basic Local Resolution
+```ts
+// Import the Resolver class.
+import { Resolver } from "@stoplight/json-ref-resolver";
+
+/**
+ * Create a Resolver instance. Resolve can be called on this instance multiple times to take advantage of caching.
+ *
+ * @param globalOpts {IResolverOpts} [{}]
+ *
+ * These options are used on every resolve call for this resolver instance.
+ *
+ * See `IResolverOpts` interface defined in [src/types.ts](src/types.ts) for available options.
+ *
+ * @return IResolver
+ */
+const resolver = new Resolver(globalOpts);
+
+/**
+ * Resolve the passed in object, replacing all references.
+
+ * @param resolveOpts {any} - The object to resolve.
+
+ * @param resolveOpts {IResolveOpts} [{}]
+ *
+ * These options override any globalOpts specified on the resolver instance, and only apply during this resolve call.
+ *
+ * See `IResolveOpts` interface defined in [src/types.ts](src/types.ts) for available options.
+ *
+ * @return IResolveResult - see [src/types.ts](src/types.ts) for interface definition.
+ */
+const resolved = await resolver.resolve(sourceObj, resolveOpts);
+```
+
+#### Example: Basic Local Resolution
 
 ```ts
 import { Resolver } from "@stoplight/json-ref-resolver";
@@ -46,23 +79,66 @@ const resolved = await resolver.resolve({
   }
 });
 
-console.log(resolved.result);
-
-// ==> outputs the original object, with local refs resolved and replaced
-//
-// {
-//   user: {
-//     name: 'json'
-//   },
-//   models: {
-//     user: {
-//       name: 'john'
-//     }
-//   }
-// }
+// ==> result is the original object, with local refs resolved and replaced
+expect(resolved.result).toEqual({
+  user: {
+    name: "json"
+  },
+  models: {
+    user: {
+      name: "john"
+    }
+  }
+});
 ```
 
-#### With Authority Readers
+#### Example: Resolve a Subset of the Source
+
+This will resolve the minimal number of references needed for the given target, and return the target.
+
+In the example below, the address reference (`https://slow-website.com/definitions#/address`) will NOT be resolved, since
+it is not needed to resolve the `#/user` jsonPointer target we have specified. However, `#/models/user/card` IS resolved since
+it is needed in order to full resolve the `#/user` property.
+
+```ts
+import { Resolver } from "@stoplight/json-ref-resolver";
+
+const resolver = new Resolver();
+const resolved = await resolver.resolve(
+  {
+    user: {
+      $ref: "#/models/user"
+    },
+    address: {
+      $ref: "https://slow-website.com/definitions#/address"
+    },
+    models: {
+      user: {
+        name: "john",
+        card: {
+          $ref: "#/models/card"
+        }
+      },
+      card: {
+        type: "visa"
+      }
+    }
+  },
+  {
+    jsonPointer: "#/user"
+  }
+);
+
+// ==> result is the target object, with refs resolved and replaced
+expect(resolved.result).toEqual({
+  name: "json",
+  card: {
+    type: "visa"
+  }
+});
+```
+
+#### Example: With Authority Readers
 
 ```ts
 import { Resolver } from "@stoplight/json-ref-resolver";
@@ -104,20 +180,17 @@ const resolved = await resolver.resolve({
   }
 });
 
-console.log(resolved.result);
-
-// ==> outputs the original object, with refs resolved and replaced
-//
-// {
-//   definitions: {
-//     someOASFile: {
-//       // ... the data located in the relative file `./main.oas2.yml` and inner json path `#/definitions/user`
-//     },
-//     someMarkdownFile: {
-//       // ... the data located at the url `https://foo.com/intro.md`
-//     }
-//   },
-// }
+// ==> result is the original object, with refs resolved and replaced
+expect(resolved.result).toEqual({
+  definitions: {
+    someOASFile: {
+      // ... the data located in the relative file `./main.oas2.yml` and inner json path `#/definitions/user`
+    },
+    someMarkdownFile: {
+      // ... the data located at the url `https://foo.com/intro.md`
+    }
+  }
+});
 ```
 
 ### Contributing
