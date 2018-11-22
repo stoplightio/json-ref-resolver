@@ -1,8 +1,14 @@
 import { DepGraph } from 'dependency-graph';
 
 /**
- * These options allow you to customize your Resolver instance in a variety of ways.
+ * The following interfaces are the primary interaction points for json-ref-resolver.
+ *
+ * IResolverOpts
+ * IResolveOpts
+ * IResolveResult
  */
+
+/** The options that you can pass to `new Resolver(opts)` */
 export interface IResolverOpts {
   /** Used to store authority lookup results. If no cache passed in, one will be created for you. */
   authorityCache?: ICache;
@@ -65,6 +71,7 @@ export interface IResolverOpts {
   ctx?: any;
 }
 
+/** The options that you can pass to `resolver.resolve(opts)` */
 export interface IResolveOpts extends IResolverOpts {
   // resolve a specific part of the source object
   jsonPointer?: string;
@@ -72,6 +79,27 @@ export interface IResolveOpts extends IResolverOpts {
   // the parent authority. basically, where are we right now (current URL to help with relative $refs, or process.cwd() for files, etc)
   authority?: uri.URI;
 }
+
+/** The object returned from `await resolver.resolve()` */
+export interface IResolveResult {
+  /** The original source object, with all relevant references replaced. */
+  result: any;
+
+  /** A map of every single reference in source, and where it points. */
+  refMap: {
+    [source: string]: string;
+  };
+
+  /** Any errors that occured during the resolution process. */
+  errors: IResolveError[];
+
+  /** The runner itself, which can be useful in more advanced cases. */
+  runner: IResolveRunner;
+}
+
+/**
+ * The below are useful to reference, but mostly internal details.
+ */
 
 export interface IReader {
   read(ref: uri.URI, ctx: any): Promise<any>;
@@ -118,12 +146,6 @@ export interface IResolveError {
   authority: uri.URI;
   authorityStack: string[];
   pointerStack: string[];
-}
-
-export interface IResolveResult {
-  result: any;
-  errors: IResolveError[];
-  runner: IResolveRunner;
 }
 
 export interface ICache {
