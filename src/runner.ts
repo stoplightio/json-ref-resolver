@@ -358,74 +358,63 @@ export class ResolveRunner implements Types.IResolveRunner {
       // only resolve the authority result if we were able to look it up and create the resolver
       // @ts-ignore
       if (authorityResolver) {
-        try {
-          lookupResult.resolved = await authorityResolver.resolve(Utils.uriToJSONPointer(ref));
+        lookupResult.resolved = await authorityResolver.resolve(Utils.uriToJSONPointer(ref));
 
-          // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
-          if (lookupResult.resolved.errors.length) {
-            for (const error of lookupResult.resolved.errors) {
-              if (
-                error.code === 'POINTER_MISSING' &&
-                error.path.join('/') === ref.fragment().slice(1) // only reset result value if the error is specifically for this fragment
-              ) {
-                // if the original authority request had a #/fragment on it, we wont be working with the root
-                // result value, but rather whatever was at #/fragment
-                // so this just trims #/fragment off the front of the error path (which is relative to the root), so that we can effectively
-                // set the correct property on the result fragment
-                const errorPathInResult = ref.fragment
-                  ? trimStart(error.path, trimStart(ref.fragment(), '/').split('/'))
-                  : error.path;
+        // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
+        if (lookupResult.resolved.errors.length) {
+          for (const error of lookupResult.resolved.errors) {
+            if (
+              error.code === 'POINTER_MISSING' &&
+              error.path.join('/') === ref.fragment().slice(1) // only reset result value if the error is specifically for this fragment
+            ) {
+              // if the original authority request had a #/fragment on it, we wont be working with the root
+              // result value, but rather whatever was at #/fragment
+              // so this just trims #/fragment off the front of the error path (which is relative to the root), so that we can effectively
+              // set the correct property on the result fragment
+              const errorPathInResult = ref.fragment
+                ? trimStart(error.path, trimStart(ref.fragment(), '/').split('/'))
+                : error.path;
 
-                if (errorPathInResult && errorPathInResult.length) {
-                  _set(lookupResult.resolved.result, errorPathInResult, val);
-                } else if (lookupResult.resolved.result) {
-                  lookupResult.resolved.result = val;
-                }
+              if (errorPathInResult && errorPathInResult.length) {
+                _set(lookupResult.resolved.result, errorPathInResult, val);
+              } else if (lookupResult.resolved.result) {
+                lookupResult.resolved.result = val;
               }
             }
           }
+        }
 
-          // support custom parsers
-          if (this.parseAuthorityResult) {
-            try {
-              // TODO: rework this to pass in an addValidation function to allow custom parsers to add their own validations
-              // then generally re-work the error system here to be based around more flexible validations
-              const parsed = await this.parseAuthorityResult({
-                authorityResult: lookupResult,
-                result: lookupResult.resolved.result,
-                targetAuthority: ref,
-                parentAuthority: this.authority,
-                parentPath,
-              });
+        // support custom parsers
+        if (this.parseAuthorityResult) {
+          try {
+            // TODO: rework this to pass in an addValidation function to allow custom parsers to add their own validations
+            // then generally re-work the error system here to be based around more flexible validations
+            const parsed = await this.parseAuthorityResult({
+              authorityResult: lookupResult,
+              result: lookupResult.resolved.result,
+              targetAuthority: ref,
+              parentAuthority: this.authority,
+              parentPath,
+            });
 
-              // if (parsed.errors) {
-              // TODO: as mentioned above, allow caller to add errors/validations
-              // }
+            // if (parsed.errors) {
+            // TODO: as mentioned above, allow caller to add errors/validations
+            // }
 
-              lookupResult.resolved.result = parsed.result;
-            } catch (e) {
-              // could not parse... roll back to original value
-              lookupResult.resolved.result = val;
+            lookupResult.resolved.result = parsed.result;
+          } catch (e) {
+            // could not parse... roll back to original value
+            lookupResult.resolved.result = val;
 
-              lookupResult.error = {
-                code: 'PARSE_AUTHORITY',
-                message: `Error parsing lookup result for '${ref.toString()}': ${String(e)}`,
-                authority: ref,
-                authorityStack: this.authorityStack,
-                pointerStack,
-                path: parentPath,
-              };
-            }
+            lookupResult.error = {
+              code: 'PARSE_AUTHORITY',
+              message: `Error parsing lookup result for '${ref.toString()}': ${String(e)}`,
+              authority: ref,
+              authorityStack: this.authorityStack,
+              pointerStack,
+              path: parentPath,
+            };
           }
-        } catch (e) {
-          lookupResult.error = {
-            code: 'RESOLVE_POINTER',
-            message: `Error resolving pointer @ ${Utils.uriToJSONPointer(ref)}: ${String(e)}`,
-            path: parentPath,
-            authority: ref,
-            authorityStack: this.authorityStack,
-            pointerStack,
-          };
         }
       }
     }

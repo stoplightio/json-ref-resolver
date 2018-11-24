@@ -952,6 +952,27 @@ describe('resolver', () => {
       expect(result.errors.length).toEqual(1);
     });
 
+    test('should throw error if no reader defined for ref scheme', async () => {
+      const source = {
+        inner: {
+          $ref: 'file:///a.json',
+        },
+      };
+
+      const resolver = new Resolver();
+      const result = await resolver.resolve(source);
+
+      expect({ ...result.errors[0], authority: undefined }).toEqual({
+        code: 'RESOLVE_AUTHORITY',
+        message: "Error: No reader defined for scheme 'file' in ref file:///a.json",
+        path: ['inner'],
+        authorityStack: [],
+        pointerStack: [],
+        authority: undefined,
+      });
+      expect(result.errors.length).toEqual(1);
+    });
+
     test('should track authority errors', async () => {
       const data = {
         bar: {
