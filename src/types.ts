@@ -60,9 +60,6 @@ export interface IResolverOpts {
    */
   resolveAuthorities?: boolean;
 
-  /** Does not do much right now... */
-  debug?: boolean;
-
   /**
    * A spot to put your own arbitrary data.
    *
@@ -149,7 +146,6 @@ export interface IResolveError {
 }
 
 export interface ICache {
-  debug: boolean;
   readonly stats: {
     hits: number;
     misses: number;

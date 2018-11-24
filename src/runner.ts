@@ -35,7 +35,6 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly resolvePointers: boolean;
   public readonly resolveAuthorities: boolean;
   public ctx: any = {};
-  public readonly debug: boolean;
   public readonly readers: {
     [scheme: string]: Types.IReader;
   };
@@ -60,9 +59,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       this.authorityCache.set(this.computeAuthorityCacheKey(this.authority), this);
     }
 
-    this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
-    this.debug = opts.debug || false;
     this.getRef = opts.getRef || defaultGetRef;
     this.transformRef = opts.transformRef;
     this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
@@ -292,7 +289,6 @@ export class ResolveRunner implements Types.IResolveRunner {
       authorityStack: this.authorityStack,
       authorityCache: this.authorityCache,
       readers: this.readers,
-      debug: this.debug,
       transformRef: this.transformRef,
       parseAuthorityResult: this.parseAuthorityResult,
       resolveAuthorities: this.resolveAuthorities,
