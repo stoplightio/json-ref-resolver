@@ -1,4 +1,4 @@
-import { pointerToPath, startsWith, trimStart } from '@stoplight/json';
+import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
 import produce from 'immer';
 import _get = require('lodash/get');
 import _set = require('lodash/set');
@@ -84,6 +84,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public async resolve(jsonPointer?: string): Promise<Types.IResolveResult> {
     const resolved: Types.IResolveResult = {
       result: this.source,
+      refMap: {},
       errors: [],
       runner: this,
     };
@@ -125,6 +126,14 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (authorityResults.length) {
       // Set the authority resolver results correctly
       for (const r of authorityResults) {
+        // does this resolved result belong somewhere specific in the source data?
+        let resolvedTargetPath = r.targetPath;
+
+        // if not, we should set on our targetPath
+        if (!resolvedTargetPath.length) resolvedTargetPath = targetPath || [];
+
+        resolved.refMap[String(this.authority.clone().fragment(pathToPointer(resolvedTargetPath)))] = String(r.uri);
+
         if (r.error) {
           resolved.errors.push(r.error);
         }
@@ -136,12 +145,6 @@ export class ResolveRunner implements Types.IResolveRunner {
         }
 
         if (!r.resolved.result) continue;
-
-        // does this resolved result belong somewhere specific in the source data?
-        let resolvedTargetPath = r.targetPath;
-
-        // if not, we should set on our targetPath
-        if (!resolvedTargetPath.length) resolvedTargetPath = targetPath || [];
 
         this._source = produce(this._source, draft => {
           if (r.resolved) {
@@ -192,6 +195,8 @@ export class ResolveRunner implements Types.IResolveRunner {
 
               // TODO: we might want to track and expose these circulars in the future?
               if (isCircular) continue;
+
+              resolved.refMap[pathToPointer(dependantPath)] = pathToPointer(pointerPath);
 
               if (val) {
                 _set(draft, dependantPath, val);
@@ -305,6 +310,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     const authorityCacheKey = this.computeAuthorityCacheKey(ref);
     const lookupResult: Types.IAuthorityLookupResult = {
+      uri: ref,
       pointerStack,
       targetPath: resolvingPointer === parentPointer ? [] : parentPath,
     };
@@ -312,6 +318,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (this.authorityStack.includes(authorityCacheKey)) {
       lookupResult.resolved = {
         result: val,
+        refMap: {},
         errors: [],
         runner: this,
       };

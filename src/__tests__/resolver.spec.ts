@@ -606,6 +606,96 @@ describe('resolver', () => {
     });
   });
 
+  describe('refMap', () => {
+    test('should be generated and returned', async () => {
+      const source = {
+        hello: {
+          $ref: '#/word',
+        },
+        word: 'world',
+      };
+
+      const resolver = new Resolver();
+      const resolved = await resolver.resolve(source);
+      expect(resolved.refMap).toEqual({
+        '#/hello': '#/word',
+      });
+    });
+
+    test('should point to its original target', async () => {
+      const source = {
+        hello: {
+          $ref: '#/word1',
+        },
+        word1: {
+          $ref: '#/word2',
+        },
+        word2: 'world',
+      };
+
+      const resolver = new Resolver();
+      const resolved = await resolver.resolve(source);
+      expect(resolved.refMap).toEqual({
+        // word1, not word2 (which is what it ultimately resolves to)
+        '#/hello': '#/word1',
+        '#/word1': '#/word2',
+      });
+    });
+
+    test('should handle remote authorities', async () => {
+      const data = {
+        obj1: {
+          inner: {
+            foo: {
+              $ref: 'custom://obj2#/two',
+            },
+          },
+        },
+        obj2: {
+          two: true,
+        },
+      };
+
+      const source = {
+        inner: {
+          data: {
+            $ref: 'custom://obj1',
+          },
+          dataInner: {
+            $ref: 'custom://obj1#/inner/foo',
+          },
+          dataInner2: {
+            $ref: '#/data2',
+          },
+        },
+        data2: {
+          $ref: 'custom://ob2#/two',
+        },
+      };
+
+      const reader: Types.IReader = {
+        async read(ref: uri.URI): Promise<any> {
+          return data[ref.authority()];
+        },
+      };
+
+      const resolver = new Resolver({
+        readers: {
+          custom: reader,
+        },
+      });
+
+      const resolved = await resolver.resolve(source);
+
+      expect(resolved.refMap).toEqual({
+        '#/inner/data': 'custom://obj1/',
+        '#/inner/dataInner': 'custom://obj1/#/inner/foo',
+        '#/inner/dataInner2': '#/data2',
+        '#/data2': 'custom://ob2/#/two',
+      });
+    });
+  });
+
   describe('circular handling', () => {
     test('should handle indirect circular pointer refs', async () => {
       const source = {

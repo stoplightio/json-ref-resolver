@@ -82,7 +82,16 @@ export interface IResolveResult {
   /** The original source object, with all relevant references replaced. */
   result: any;
 
-  /** A map of every single reference in source, and where it points. */
+  /**
+   * A map of every single reference in source, and where it points, ie:
+   *
+   * ```json
+   * {
+   *   "#/source/user": "#/models/user",
+   *   "#/source/card": "file:///api.json/#models/card"
+   * }
+   * ```
+   */
   refMap: {
     [source: string]: string;
   };
@@ -118,6 +127,7 @@ export interface IAuthorityParserResult {
 export interface IAuthorityLookupResult {
   pointerStack: string[];
   targetPath: string[];
+  uri: uri.URI;
   resolved?: IResolveResult;
   error?: IResolveError;
 }
