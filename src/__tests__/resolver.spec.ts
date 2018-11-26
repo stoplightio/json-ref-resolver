@@ -115,22 +115,36 @@ describe('resolver', () => {
   });
 
   describe('resolve', () => {
-    test('should not mutate original document', async () => {
+    test('should respect immutability rules', async () => {
       const source = {
         hello: {
           $ref: '#/word',
         },
-        word: 'world',
+        hello2: {
+          $ref: '#/word',
+        },
+        word: {
+          foo: 'bar',
+        },
+        inner: {
+          obj: true,
+        },
       };
 
-      const sourceCopy = _.clone(source);
+      const sourceCopy = _.cloneDeep(source);
 
       const resolver = new Resolver();
       const resolved = await resolver.resolve(source);
-      expect(resolved.result.hello).toBe('world');
 
-      // source should remain unchanged
+      // Immutable: Source should not be mutated.
       expect(source).toEqual(sourceCopy);
+
+      // Structural Sharing: Unresolved props should point to their original source location in memory.
+      expect(resolved.result.inner).toBe(source.inner);
+
+      // Reference Equality: Pointers to the same location will resolve to the same object in memory.
+      expect(resolved.result.hello).toBe(resolved.result.hello2);
+      expect(resolved.result.hello).toBe(source.word);
     });
 
     test('should support jsonPointers', async () => {

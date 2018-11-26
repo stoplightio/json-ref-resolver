@@ -11,8 +11,8 @@ Recursively resolves JSON pointers and remote authorities.
 
 - **Performant**: Hot paths are memoized, remote authorities are resolved concurrently, and the minimum surface area is crawled and resolved.
 - **Caching**: Results from remote authorities are cached.
-- **Immutable**: The original object is not changed, and structural sharing is used to only change relevant bits.
-- **Reference equality:** Pointers to the same location will resolve to the same object in memory.
+- **Immutable**: The original object is not changed, and structural sharing is used to only change relevant bits. [example test](src/__tests__/resolver.spec.ts#L139-L143)
+- **Reference equality:** Pointers to the same location will resolve to the same object in memory. [example test](src/__tests__/resolver.spec.ts#L145)
 - **Flexible:** Bring your own readers for `http://`, `file://`, `mongo://`, `custom://`... etc.
 - **Reliable:** Well tested to handle all sorts of circular reference edge cases.
 
