@@ -1,4 +1,4 @@
-import { pointerToPath, startsWith, trimStart } from '@stoplight/json';
+import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
 import produce from 'immer';
 import _get = require('lodash/get');
 import _set = require('lodash/set');
@@ -14,9 +14,7 @@ const memoize = require('fast-memoize');
 let resolveRunnerCount = 0;
 
 export const defaultGetRef = (key: string, val: any) => {
-  if (key === '$ref') {
-    return val;
-  } else if (val && typeof val === 'object' && val.$ref) {
+  if (val && typeof val === 'object' && val.$ref) {
     return val.$ref;
   }
 
@@ -35,7 +33,6 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly resolvePointers: boolean;
   public readonly resolveAuthorities: boolean;
   public ctx: any = {};
-  public readonly debug: boolean;
   public readonly readers: {
     [scheme: string]: Types.IReader;
   };
@@ -60,9 +57,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       this.authorityCache.set(this.computeAuthorityCacheKey(this.authority), this);
     }
 
-    this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
-    this.debug = opts.debug || false;
     this.getRef = opts.getRef || defaultGetRef;
     this.transformRef = opts.transformRef;
     this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
@@ -87,6 +82,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public async resolve(jsonPointer?: string): Promise<Types.IResolveResult> {
     const resolved: Types.IResolveResult = {
       result: this.source,
+      refMap: {},
       errors: [],
       runner: this,
     };
@@ -128,6 +124,14 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (authorityResults.length) {
       // Set the authority resolver results correctly
       for (const r of authorityResults) {
+        // does this resolved result belong somewhere specific in the source data?
+        let resolvedTargetPath = r.targetPath;
+
+        // if not, we should set on our targetPath
+        if (!resolvedTargetPath.length) resolvedTargetPath = targetPath || [];
+
+        resolved.refMap[String(this.authority.clone().fragment(pathToPointer(resolvedTargetPath)))] = String(r.uri);
+
         if (r.error) {
           resolved.errors.push(r.error);
         }
@@ -139,12 +143,6 @@ export class ResolveRunner implements Types.IResolveRunner {
         }
 
         if (!r.resolved.result) continue;
-
-        // does this resolved result belong somewhere specific in the source data?
-        let resolvedTargetPath = r.targetPath;
-
-        // if not, we should set on our targetPath
-        if (!resolvedTargetPath.length) resolvedTargetPath = targetPath || [];
 
         this._source = produce(this._source, draft => {
           if (r.resolved) {
@@ -195,6 +193,8 @@ export class ResolveRunner implements Types.IResolveRunner {
 
               // TODO: we might want to track and expose these circulars in the future?
               if (isCircular) continue;
+
+              resolved.refMap[pathToPointer(dependantPath)] = pathToPointer(pointerPath);
 
               if (val) {
                 _set(draft, dependantPath, val);
@@ -292,7 +292,6 @@ export class ResolveRunner implements Types.IResolveRunner {
       authorityStack: this.authorityStack,
       authorityCache: this.authorityCache,
       readers: this.readers,
-      debug: this.debug,
       transformRef: this.transformRef,
       parseAuthorityResult: this.parseAuthorityResult,
       resolveAuthorities: this.resolveAuthorities,
@@ -309,6 +308,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     const authorityCacheKey = this.computeAuthorityCacheKey(ref);
     const lookupResult: Types.IAuthorityLookupResult = {
+      uri: ref,
       pointerStack,
       targetPath: resolvingPointer === parentPointer ? [] : parentPath,
     };
@@ -316,6 +316,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (this.authorityStack.includes(authorityCacheKey)) {
       lookupResult.resolved = {
         result: val,
+        refMap: {},
         errors: [],
         runner: this,
       };
@@ -357,74 +358,63 @@ export class ResolveRunner implements Types.IResolveRunner {
       // only resolve the authority result if we were able to look it up and create the resolver
       // @ts-ignore
       if (authorityResolver) {
-        try {
-          lookupResult.resolved = await authorityResolver.resolve(Utils.uriToJSONPointer(ref));
+        lookupResult.resolved = await authorityResolver.resolve(Utils.uriToJSONPointer(ref));
 
-          // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
-          if (lookupResult.resolved.errors.length) {
-            for (const error of lookupResult.resolved.errors) {
-              if (
-                error.code === 'POINTER_MISSING' &&
-                error.path.join('/') === ref.fragment().slice(1) // only reset result value if the error is specifically for this fragment
-              ) {
-                // if the original authority request had a #/fragment on it, we wont be working with the root
-                // result value, but rather whatever was at #/fragment
-                // so this just trims #/fragment off the front of the error path (which is relative to the root), so that we can effectively
-                // set the correct property on the result fragment
-                const errorPathInResult = ref.fragment
-                  ? trimStart(error.path, trimStart(ref.fragment(), '/').split('/'))
-                  : error.path;
+        // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
+        if (lookupResult.resolved.errors.length) {
+          for (const error of lookupResult.resolved.errors) {
+            if (
+              error.code === 'POINTER_MISSING' &&
+              error.path.join('/') === ref.fragment().slice(1) // only reset result value if the error is specifically for this fragment
+            ) {
+              // if the original authority request had a #/fragment on it, we wont be working with the root
+              // result value, but rather whatever was at #/fragment
+              // so this just trims #/fragment off the front of the error path (which is relative to the root), so that we can effectively
+              // set the correct property on the result fragment
+              const errorPathInResult = ref.fragment
+                ? trimStart(error.path, trimStart(ref.fragment(), '/').split('/'))
+                : error.path;
 
-                if (errorPathInResult && errorPathInResult.length) {
-                  _set(lookupResult.resolved.result, errorPathInResult, val);
-                } else if (lookupResult.resolved.result) {
-                  lookupResult.resolved.result = val;
-                }
+              if (errorPathInResult && errorPathInResult.length) {
+                _set(lookupResult.resolved.result, errorPathInResult, val);
+              } else if (lookupResult.resolved.result) {
+                lookupResult.resolved.result = val;
               }
             }
           }
+        }
 
-          // support custom parsers
-          if (this.parseAuthorityResult) {
-            try {
-              // TODO: rework this to pass in an addValidation function to allow custom parsers to add their own validations
-              // then generally re-work the error system here to be based around more flexible validations
-              const parsed = await this.parseAuthorityResult({
-                authorityResult: lookupResult,
-                result: lookupResult.resolved.result,
-                targetAuthority: ref,
-                parentAuthority: this.authority,
-                parentPath,
-              });
+        // support custom parsers
+        if (this.parseAuthorityResult) {
+          try {
+            // TODO: rework this to pass in an addValidation function to allow custom parsers to add their own validations
+            // then generally re-work the error system here to be based around more flexible validations
+            const parsed = await this.parseAuthorityResult({
+              authorityResult: lookupResult,
+              result: lookupResult.resolved.result,
+              targetAuthority: ref,
+              parentAuthority: this.authority,
+              parentPath,
+            });
 
-              // if (parsed.errors) {
-              // TODO: as mentioned above, allow caller to add errors/validations
-              // }
+            // if (parsed.errors) {
+            // TODO: as mentioned above, allow caller to add errors/validations
+            // }
 
-              lookupResult.resolved.result = parsed.result;
-            } catch (e) {
-              // could not parse... roll back to original value
-              lookupResult.resolved.result = val;
+            lookupResult.resolved.result = parsed.result;
+          } catch (e) {
+            // could not parse... roll back to original value
+            lookupResult.resolved.result = val;
 
-              lookupResult.error = {
-                code: 'PARSE_AUTHORITY',
-                message: `Error parsing lookup result for '${ref.toString()}': ${String(e)}`,
-                authority: ref,
-                authorityStack: this.authorityStack,
-                pointerStack,
-                path: parentPath,
-              };
-            }
+            lookupResult.error = {
+              code: 'PARSE_AUTHORITY',
+              message: `Error parsing lookup result for '${ref.toString()}': ${String(e)}`,
+              authority: ref,
+              authorityStack: this.authorityStack,
+              pointerStack,
+              path: parentPath,
+            };
           }
-        } catch (e) {
-          lookupResult.error = {
-            code: 'RESOLVE_POINTER',
-            message: `Error resolving pointer @ ${Utils.uriToJSONPointer(ref)}: ${String(e)}`,
-            path: parentPath,
-            authority: ref,
-            authorityStack: this.authorityStack,
-            pointerStack,
-          };
         }
       }
     }

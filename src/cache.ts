@@ -2,8 +2,6 @@ import * as Types from './types';
 
 /** @hidden */
 export class Cache implements Types.ICache {
-  public debug = false;
-
   private _stats: {
     hits: number;
     misses: number;
@@ -38,24 +36,13 @@ export class Cache implements Types.ICache {
     // if we have a value and it is fresh, use it
     if (d && (!this._stdTTL || new Date().getTime() - d.ts < this._stdTTL)) {
       this._stats.hits += 1;
-      if (this.debug) {
-        console.log('cache.get.hit', { key, val: d });
-      }
-
       return d.val;
     }
 
     this._stats.misses += 1;
-    if (this.debug) {
-      console.log('cache.get.miss', { key });
-    }
   }
 
   public set(key: string, val: any) {
-    if (this.debug) {
-      console.log('cache.set', { key, val });
-    }
-
     this._data[key] = {
       ts: new Date().getTime(),
       val,

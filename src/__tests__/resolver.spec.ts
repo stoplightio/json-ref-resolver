@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as _ from 'lodash';
 import * as URI from 'urijs';
 
 import { Cache } from '../cache';
@@ -114,6 +115,38 @@ describe('resolver', () => {
   });
 
   describe('resolve', () => {
+    test('should respect immutability rules', async () => {
+      const source = {
+        hello: {
+          $ref: '#/word',
+        },
+        hello2: {
+          $ref: '#/word',
+        },
+        word: {
+          foo: 'bar',
+        },
+        inner: {
+          obj: true,
+        },
+      };
+
+      const sourceCopy = _.cloneDeep(source);
+
+      const resolver = new Resolver();
+      const resolved = await resolver.resolve(source);
+
+      // Immutable: Source should not be mutated.
+      expect(source).toEqual(sourceCopy);
+
+      // Structural Sharing: Unresolved props should point to their original source location in memory.
+      expect(resolved.result.inner).toBe(source.inner);
+
+      // Reference Equality: Pointers to the same location will resolve to the same object in memory.
+      expect(resolved.result.hello).toBe(resolved.result.hello2);
+      expect(resolved.result.hello).toBe(source.word);
+    });
+
     test('should support jsonPointers', async () => {
       const source = {
         hello: {
@@ -587,6 +620,96 @@ describe('resolver', () => {
     });
   });
 
+  describe('refMap', () => {
+    test('should be generated and returned', async () => {
+      const source = {
+        hello: {
+          $ref: '#/word',
+        },
+        word: 'world',
+      };
+
+      const resolver = new Resolver();
+      const resolved = await resolver.resolve(source);
+      expect(resolved.refMap).toEqual({
+        '#/hello': '#/word',
+      });
+    });
+
+    test('should point to its original target', async () => {
+      const source = {
+        hello: {
+          $ref: '#/word1',
+        },
+        word1: {
+          $ref: '#/word2',
+        },
+        word2: 'world',
+      };
+
+      const resolver = new Resolver();
+      const resolved = await resolver.resolve(source);
+      expect(resolved.refMap).toEqual({
+        // word1, not word2 (which is what it ultimately resolves to)
+        '#/hello': '#/word1',
+        '#/word1': '#/word2',
+      });
+    });
+
+    test('should handle remote authorities', async () => {
+      const data = {
+        obj1: {
+          inner: {
+            foo: {
+              $ref: 'custom://obj2#/two',
+            },
+          },
+        },
+        obj2: {
+          two: true,
+        },
+      };
+
+      const source = {
+        inner: {
+          data: {
+            $ref: 'custom://obj1',
+          },
+          dataInner: {
+            $ref: 'custom://obj1#/inner/foo',
+          },
+          dataInner2: {
+            $ref: '#/data2',
+          },
+        },
+        data2: {
+          $ref: 'custom://ob2#/two',
+        },
+      };
+
+      const reader: Types.IReader = {
+        async read(ref: uri.URI): Promise<any> {
+          return data[ref.authority()];
+        },
+      };
+
+      const resolver = new Resolver({
+        readers: {
+          custom: reader,
+        },
+      });
+
+      const resolved = await resolver.resolve(source);
+
+      expect(resolved.refMap).toEqual({
+        '#/inner/data': 'custom://obj1/',
+        '#/inner/dataInner': 'custom://obj1/#/inner/foo',
+        '#/inner/dataInner2': '#/data2',
+        '#/data2': 'custom://ob2/#/two',
+      });
+    });
+  });
+
   describe('circular handling', () => {
     test('should handle indirect circular pointer refs', async () => {
       const source = {
@@ -835,6 +958,27 @@ describe('resolver', () => {
       expect({ ...result.errors[0], authority: undefined }).toEqual({
         code: 'POINTER_MISSING',
         message: "'#/missing' does not exist",
+        path: ['inner'],
+        authorityStack: [],
+        pointerStack: [],
+        authority: undefined,
+      });
+      expect(result.errors.length).toEqual(1);
+    });
+
+    test('should throw error if no reader defined for ref scheme', async () => {
+      const source = {
+        inner: {
+          $ref: 'file:///a.json',
+        },
+      };
+
+      const resolver = new Resolver();
+      const result = await resolver.resolve(source);
+
+      expect({ ...result.errors[0], authority: undefined }).toEqual({
+        code: 'RESOLVE_AUTHORITY',
+        message: "Error: No reader defined for scheme 'file' in ref file:///a.json",
         path: ['inner'],
         authorityStack: [],
         pointerStack: [],

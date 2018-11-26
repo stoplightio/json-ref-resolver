@@ -14,7 +14,6 @@ export class Resolver {
   protected resolvePointers: boolean;
   protected resolveAuthorities: boolean;
   protected ctx: any = {};
-  protected debug: boolean;
   protected readers: {
     [scheme: string]: Types.IReader;
   };
@@ -26,7 +25,6 @@ export class Resolver {
   constructor(opts: Types.IResolverOpts = {}) {
     this.authorityCache = opts.authorityCache || new Cache();
     this.readers = opts.readers || {};
-    this.debug = opts.debug || false;
     this.getRef = opts.getRef;
     this.transformRef = opts.transformRef;
     this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
@@ -41,7 +39,6 @@ export class Resolver {
       {
         authorityCache: this.authorityCache,
         readers: this.readers,
-        debug: this.debug,
         getRef: this.getRef,
         transformRef: this.transformRef,
         resolvePointers: this.resolvePointers,

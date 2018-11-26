@@ -21,11 +21,7 @@ const replace = (str: string, find: string, repl: string): string => {
 };
 
 const encodeFragmentSegment = (segment: string): string => {
-  if (typeof segment === 'string') {
-    return replace(replace(segment, '~', '~0'), '/', '~1');
-  }
-
-  return segment;
+  return replace(replace(segment, '~', '~0'), '/', '~1');
 };
 
 // TODO: move to @stoplight/json
