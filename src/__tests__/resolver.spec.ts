@@ -173,6 +173,70 @@ describe('resolver', () => {
       expect(resolved.result).toEqual(source);
     });
 
+    test('resolvePointers option should force to true for remote authorities', async () => {
+      const data = {
+        oas: {
+          swagger: '2.0',
+          definitions: {
+            user: {
+              address: {
+                $ref: '#/definitions/address',
+              },
+            },
+            address: {
+              title: 'Address',
+            },
+          },
+        },
+      };
+
+      const fileReader: Types.IReader = {
+        async read(): Promise<any> {
+          return data.oas;
+        },
+      };
+
+      const source = {
+        definitions: {
+          foo: {
+            $ref: '#/definitions/bar',
+          },
+          bar: {
+            title: 'bar',
+          },
+          someOASFile: {
+            $ref: './main.oas2.yml#/definitions/user',
+          },
+        },
+      };
+
+      const resolver = new Resolver({
+        readers: {
+          file: fileReader,
+        },
+      });
+
+      const result = await resolver.resolve(source, {
+        resolvePointers: false,
+      });
+
+      expect(result.result).toEqual({
+        definitions: {
+          foo: {
+            $ref: '#/definitions/bar',
+          },
+          bar: {
+            title: 'bar',
+          },
+          someOASFile: {
+            address: {
+              title: 'Address',
+            },
+          },
+        },
+      });
+    });
+
     test('should support chained jsonPointers + partial resolution', async () => {
       const source = {
         hello: {
