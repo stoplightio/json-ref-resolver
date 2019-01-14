@@ -60,7 +60,14 @@ export class ResolveRunner implements Types.IResolveRunner {
     this.readers = opts.readers || {};
     this.getRef = opts.getRef || defaultGetRef;
     this.transformRef = opts.transformRef;
-    this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
+    // Need to resolve pointers if depth is greater than zero because that means the autority has changed, and the
+    // local refs need to be resolved.
+    if (this.depth) {
+      this.resolvePointers = true;
+    } else {
+      this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
+    }
+
     this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
     this.parseAuthorityResult = opts.parseAuthorityResult;
     this.ctx = opts.ctx;
