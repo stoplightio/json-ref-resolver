@@ -15,7 +15,9 @@ let resolveRunnerCount = 0;
 
 export const defaultGetRef = (key: string, val: any) => {
   if (val && typeof val === 'object' && val.$ref) {
-    return val.$ref;
+    const { $ref } = val;
+
+    if (typeof $ref === 'string' && URI.parse($ref).toString() !== '') return val.$ref;
   }
 
   return;

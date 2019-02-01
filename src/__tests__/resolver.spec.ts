@@ -160,6 +160,31 @@ describe('resolver', () => {
       expect(resolved.result.hello).toBe('world');
     });
 
+    test('should only resolve valid $refs', async () => {
+      const source = {
+        hello: {
+          $ref: {
+            foo: 'bear',
+          },
+        },
+        word: 'world',
+      };
+
+      const resolver = new Resolver();
+      let resolved = await resolver.resolve(source);
+      expect(resolved.result).toEqual(source);
+
+      // @ts-ignore
+      source.hello.$ref = true;
+      resolved = await resolver.resolve(source);
+      expect(resolved.result).toEqual(source);
+
+      // @ts-ignore
+      source.hello.$ref = 1;
+      resolved = await resolver.resolve(source);
+      expect(resolved.result).toEqual(source);
+    });
+
     test('should support not resolving pointers', async () => {
       const source = {
         hello: {
