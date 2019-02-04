@@ -14,10 +14,7 @@ const memoize = require('fast-memoize');
 let resolveRunnerCount = 0;
 
 export const defaultGetRef = (key: string, val: any) => {
-  if (val && typeof val === 'object' && val.$ref) {
-    return val.$ref;
-  }
-
+  if (val && typeof val === 'object' && typeof val.$ref === 'string') return val.$ref;
   return;
 };
 
