@@ -16,7 +16,6 @@ let resolveRunnerCount = 0;
 export const defaultGetRef = (key: string, val: any) => {
   if (val && typeof val === 'object' && val.$ref) {
     const { $ref } = val;
-
     if (typeof $ref === 'string') return val.$ref;
   }
 
