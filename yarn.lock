@@ -1156,14 +1156,14 @@
   resolved "https://registry.yarnpkg.com/@stoplight/fast-safe-stringify/-/fast-safe-stringify-2.1.2.tgz#2811eff4989c3d4c5c9a3789f057e25358db0899"
   integrity sha512-ayw3qQ9KNn2K5q6ggrLclh+rdZsSLwYIUz3uAer1NzaCpalJLR4g32G845ylgq7Xy2AunMHnNfD3FC3s0rUcsA==
 
-"@stoplight/json@1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-1.6.0.tgz#73b6b3c6312336f61a68abaf130b9e95ae7ade33"
-  integrity sha512-kTydBkUnD17XCQ3EqSqzf4MlU7Nr/PjohvFpEzexZN5kaao4iaUn7dWkbe7S06D8E8FjS+Lr1Td/M3su2FIi0Q==
+"@stoplight/json@1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-1.8.0.tgz#7e567a5ecdecec8429637790481f9c7726554359"
+  integrity sha512-XY8qYJAdoU/uVEYIpLcgr5wZD7ImzqTui99tI4Iq7tHhrXsYJmAZ8nr7GpNPyltzgJM0hoVk9SyKCM04hxSpkw==
   dependencies:
     "@stoplight/fast-safe-stringify" "2.1.2"
-    "@stoplight/types" "3.x.x"
-    jsonc-parser "2.0.3"
+    "@stoplight/types" "4.0.x"
+    jsonc-parser "git+https://github.com/stoplightio/node-jsonc-parser.git#f45703496d842937ec822683550067dfe68d898e"
     lodash "4.x.x"
 
 "@stoplight/scripts@3.0.2":
@@ -1223,10 +1223,10 @@
     typedoc "0.13.x"
     typescript-plugin-styled-components "1.0.x"
 
-"@stoplight/types@3.x.x":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/types/-/types-3.1.0.tgz#bca0a2943adbfee02f6a560cff3e60493af013cf"
-  integrity sha512-HlqKh6iLqZp/rXwEryJTybY7ZEcuePPiSm0Y18dSZMrlywzeWEDQ5jDX3DdP1y7N5BIzN2dUt727uvbsC4UmFQ==
+"@stoplight/types@4.0.x":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@stoplight/types/-/types-4.0.0.tgz#04669b13f4de54e0446392167087cd6a9a570556"
+  integrity sha512-xh7STKNeE7j4Z6w8vkw+QxSCaxhF5+c2mY7UBqT6BMiom/Ep/EdYmYq3dmvYfXqwbkiTMR6qbYymwqnoJo8Z6w==
 
 "@storybook/addon-actions@4.0.7":
   version "4.0.7"
@@ -7111,10 +7111,10 @@ json5@^0.5.0, json5@^0.5.1:
   resolved "https://registry.yarnpkg.com/json5/-/json5-0.5.1.tgz#1eade7acc012034ad84e2396767ead9fa5495821"
   integrity sha1-Hq3nrMASA0rYTiOWdn6tn6VJWCE=
 
-jsonc-parser@2.0.3:
+"jsonc-parser@git+https://github.com/stoplightio/node-jsonc-parser.git#f45703496d842937ec822683550067dfe68d898e":
   version "2.0.3"
-  resolved "https://registry.yarnpkg.com/jsonc-parser/-/jsonc-parser-2.0.3.tgz#6d4199ccab7f21ff5d2a4225050c54e981fb21a2"
-  integrity sha512-WJi9y9ABL01C8CxTKxRRQkkSpY/x2bo4Gy0WuiZGrInxQqgxQpvkBCLNcDYcHOSdhx4ODgbFcgAvfL49C+PHgQ==
+  uid f45703496d842937ec822683550067dfe68d898e
+  resolved "git+https://github.com/stoplightio/node-jsonc-parser.git#f45703496d842937ec822683550067dfe68d898e"
 
 jsonfile@^2.1.0:
   version "2.4.0"
