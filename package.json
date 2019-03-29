@@ -58,7 +58,7 @@
     "@types/lodash": "4.x.x",
     "@types/urijs": "1.15.x",
     "benchmark": "2.x.x",
-    "typescript": "3.1.6"
+    "typescript": "3.4.1"
   },
   "lint-staged": {
     "*.{ts,tsx}$": [
