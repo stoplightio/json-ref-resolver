@@ -1,3 +1,4 @@
+import { Segment } from '@stoplight/types';
 import { DepGraph } from 'dependency-graph';
 
 /**
@@ -149,7 +150,7 @@ export type ResolverErrorCode = 'POINTER_MISSING' | 'RESOLVE_AUTHORITY' | 'PARSE
 export interface IResolveError {
   code: ResolverErrorCode;
   message: string;
-  path: string[];
+  path: Segment[];
   authority: uri.URI;
   authorityStack: string[];
   pointerStack: string[];

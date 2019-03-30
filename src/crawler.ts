@@ -154,7 +154,7 @@ export class ResolveCrawler implements Types.ICrawler {
           pointerStack.push(targetPointer);
 
           // if we are partially resolving
-          this.computeGraph(_get(this._runner.source, targetPath), targetPath, targetPointer, pointerStack);
+          this.computeGraph(_get(this._runner.source, targetPath), targetPath as string[], targetPointer, pointerStack);
 
           pointerStack.pop();
         }

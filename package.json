@@ -35,30 +35,35 @@
     "build": "sl-scripts build",
     "build.docs": "sl-scripts build:typedoc",
     "commit": "git-cz",
-    "lint": "sl-scripts lint",
+    "lint": "tslint 'src/**/*.ts'",
     "lint.fix": "yarn lint --fix",
     "release": "sl-scripts release",
     "release.docs": "sl-scripts release:docs",
     "release.dryRun": "sl-scripts release --dry-run --debug",
-    "test": "sl-scripts test",
+    "test": "jest",
     "test.prod": "yarn lint && yarn test --coverage --no-cache",
     "test.update": "yarn test --updateSnapshot",
     "test.watch": "yarn test --watch"
   },
   "dependencies": {
-    "@stoplight/json": "1.6.0",
-    "dependency-graph": "0.7.x",
+    "@stoplight/json": "1.x.x",
+    "dependency-graph": "0.8.x",
     "fast-memoize": "2.x.x",
-    "immer": "1.x.x",
+    "immer": "2.x.x",
     "lodash": "4.x.x",
     "urijs": "1.x.x"
   },
   "devDependencies": {
-    "@stoplight/scripts": "3.0.2",
+    "@stoplight/scripts": "5.1.0",
+    "@types/jest": "^24.0.11",
     "@types/lodash": "4.x.x",
     "@types/urijs": "1.15.x",
     "benchmark": "2.x.x",
-    "typescript": "3.1.6"
+    "jest": "^24.5.0",
+    "ts-jest": "^24.0.1",
+    "tslint": "^5.14.0",
+    "tslint-config-stoplight": "^1.2.0",
+    "typescript": "3.4.1"
   },
   "lint-staged": {
     "*.{ts,tsx}$": [
@@ -84,5 +89,10 @@
   },
   "release": {
     "extends": "@stoplight/scripts/release"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "trailingComma": "es5",
+    "singleQuote": true
   }
 }
