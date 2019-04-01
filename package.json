@@ -46,7 +46,7 @@
     "test.watch": "yarn test --watch"
   },
   "dependencies": {
-    "@stoplight/json": "1.x.x",
+    "@stoplight/json": "1.9.x",
     "dependency-graph": "0.8.x",
     "fast-memoize": "2.x.x",
     "immer": "2.x.x",
