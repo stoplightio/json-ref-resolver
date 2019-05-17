@@ -11,7 +11,12 @@ import resolvedResults from './fixtures/resolved';
 
 export class FileReader implements Types.IReader {
   public async read(uri: uri.URI) {
-    const path = uri.path();
+    let path = uri.path();
+    // HACK: we need to remove leading forward slash on Windows
+    // for paths that include the drive letter.
+    if (path.match(/^\/[A-Za-z]\:/)) {
+      path = path.slice(1);
+    }
     return new Promise((resolve, reject) => {
       try {
         const raw = fs.readFileSync(path);
@@ -34,7 +39,7 @@ export class HttpReader implements Types.IReader {
 }
 
 const runFixtures = (factory: any) => {
-  const dir = `${__dirname}/fixtures/schemas`;
+  const dir = `${__dirname}/fixtures/schemas`.replace(/\\/g, '/');
   // all
   const files = fs.readdirSync(dir);
 
@@ -58,7 +63,7 @@ const runFixtures = (factory: any) => {
 const runFixture = (resolver: any, testCase: any, _file: any, filePath: any) => {
   return async () => {
     const resolved = await resolver.resolve(testCase.input, {
-      authority: new URI(filePath),
+      authority: new URI(`file:///${filePath}`),
     });
 
     expect(resolved.result).toEqual(testCase.expected);
@@ -84,7 +89,6 @@ describe('resolver', () => {
           https: new HttpReader(),
         },
       });
-
       test(file, runFixture(resolver, testCase, file, filePath));
     });
 
