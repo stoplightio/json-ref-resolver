@@ -57,7 +57,7 @@
     "@stoplight/scripts": "5.1.0",
     "@types/jest": "^24.0.11",
     "@types/lodash": "4.x.x",
-    "@types/urijs": "1.15.x",
+    "@types/urijs": "1.19.x",
     "benchmark": "2.x.x",
     "jest": "^24.5.0",
     "ts-jest": "^24.0.1",
