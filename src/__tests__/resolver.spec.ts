@@ -11,12 +11,9 @@ import resolvedResults from './fixtures/resolved';
 
 export class FileReader implements Types.IReader {
   public async read(uri: uri.URI) {
-    let path = uri.path();
     // HACK: we need to remove leading forward slash on Windows
     // for paths that include the drive letter.
-    if (path.match(/^\/[A-Za-z]\:/)) {
-      path = path.slice(1);
-    }
+    const path = uri.path().replace(/^\/(?=[A-Za-z]\:)/, '');
     return new Promise((resolve, reject) => {
       try {
         const raw = fs.readFileSync(path);
@@ -39,7 +36,7 @@ export class HttpReader implements Types.IReader {
 }
 
 const runFixtures = (factory: any) => {
-  const dir = `${__dirname}/fixtures/schemas`.replace(/\\/g, '/');
+  const dir = `${__dirname.replace(/\\/g, '/')}/fixtures/schemas`;
   // all
   const files = fs.readdirSync(dir);
 
