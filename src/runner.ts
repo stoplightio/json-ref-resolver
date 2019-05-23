@@ -148,7 +148,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
         if (!r.resolved.result) continue;
 
-        this._source = produce(this._source, draft => {
+        this._source = produce(this._source, (draft: any) => {
           if (r.resolved) {
             if (!resolvedTargetPath.length) {
               return r.resolved.result;
@@ -168,7 +168,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     // If using parseAuthorityResult, do not need to replace local pointers here (parseAuthorityResult is responsible)
     // if this is not an authority, then we should parse even if parseAuthorityResult is present
     if (this.resolvePointers) {
-      this._source = produce(this._source, draft => {
+      this._source = produce(this._source, (draft: any) => {
         let processOrder: any[] = [];
 
         try {
@@ -269,7 +269,7 @@ export class ResolveRunner implements Types.IResolveRunner {
           ref,
           authority: this.authority,
         },
-        this.ctx
+        this.ctx,
       );
     }
 
@@ -335,7 +335,7 @@ export class ResolveRunner implements Types.IResolveRunner {
           // TODO: report this to bugsnag so we can track? throw it as some special
           // fatal error, that platform can look for and report (maybe other errors as well)?
           throw new Error(
-            `Max authority depth (${this.authorityStack.length}) reached. Halting, this is probably a circular loop.`
+            `Max authority depth (${this.authorityStack.length}) reached. Halting, this is probably a circular loop.`,
           );
         }
 
