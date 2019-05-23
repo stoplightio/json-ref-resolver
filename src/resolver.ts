@@ -45,7 +45,7 @@ export class Resolver {
         resolveAuthorities: this.resolveAuthorities,
         parseAuthorityResult: this.parseAuthorityResult,
       },
-      opts
+      opts,
     );
 
     // merge ctx
