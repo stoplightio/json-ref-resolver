@@ -1,7 +1,6 @@
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
 import produce from 'immer';
-import _get = require('lodash/get');
-import _set = require('lodash/set');
+import { get, set } from 'lodash';
 import * as URI from 'urijs';
 
 import { Cache } from './cache';
@@ -95,7 +94,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     jsonPointer = jsonPointer && jsonPointer.trim();
     if (jsonPointer && jsonPointer !== '#' && jsonPointer !== '#/') {
       targetPath = pointerToPath(jsonPointer);
-      resolved.result = _get(resolved.result, targetPath);
+      resolved.result = get(resolved.result, targetPath);
     }
 
     if (!resolved.result) {
@@ -153,7 +152,7 @@ export class ResolveRunner implements Types.IResolveRunner {
             if (!resolvedTargetPath.length) {
               return r.resolved.result;
             } else {
-              _set(draft, resolvedTargetPath, r.resolved.result);
+              set(draft, resolvedTargetPath, r.resolved.result);
             }
           }
         });
@@ -181,7 +180,7 @@ export class ResolveRunner implements Types.IResolveRunner {
             if (!dependants.length) continue;
 
             const pointerPath = pointerToPath(pointer);
-            const val = _get(draft, pointerPath);
+            const val = get(draft, pointerPath);
             for (const dependant of dependants) {
               // check to prevent circular references in the resulting JS object
               // this implementation is MUCH more performant than decycling the final object to remove circulars
@@ -201,7 +200,7 @@ export class ResolveRunner implements Types.IResolveRunner {
               resolved.refMap[pathToPointer(dependantPath)] = pathToPointer(pointerPath);
 
               if (val) {
-                _set(draft, dependantPath, val);
+                set(draft, dependantPath, val);
               } else {
                 resolved.errors.push({
                   code: 'POINTER_MISSING',
@@ -221,7 +220,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     }
 
     if (targetPath) {
-      resolved.result = _get(this._source, targetPath);
+      resolved.result = get(this._source, targetPath);
     } else {
       resolved.result = this._source;
     }
@@ -288,7 +287,24 @@ export class ResolveRunner implements Types.IResolveRunner {
       throw new Error(`No reader defined for scheme '${ref.scheme()}' in ref ${ref.toString()}`);
     }
 
-    const result = await reader.read(ref, this.ctx);
+    let result = await reader.read(ref, this.ctx);
+
+    // support custom parsers
+    if (this.parseAuthorityResult) {
+      try {
+        const parsed = await this.parseAuthorityResult({
+          authorityResult: result,
+          result,
+          targetAuthority: ref,
+          parentAuthority: this.authority,
+          parentPath: [],
+        });
+
+        result = parsed.result;
+      } catch (e) {
+        throw new Error(`Could not parse remote reference response for '${ref.toString()}' - ${String(e)}`);
+      }
+    }
 
     return new ResolveRunner(result, {
       depth: this.depth + 1,
@@ -380,44 +396,11 @@ export class ResolveRunner implements Types.IResolveRunner {
                 : error.path;
 
               if (errorPathInResult && errorPathInResult.length) {
-                _set(lookupResult.resolved.result, errorPathInResult, val);
+                set(lookupResult.resolved.result, errorPathInResult, val);
               } else if (lookupResult.resolved.result) {
                 lookupResult.resolved.result = val;
               }
             }
-          }
-        }
-
-        // support custom parsers
-        if (this.parseAuthorityResult) {
-          try {
-            // TODO: rework this to pass in an addValidation function to allow custom parsers to add their own validations
-            // then generally re-work the error system here to be based around more flexible validations
-            const parsed = await this.parseAuthorityResult({
-              authorityResult: lookupResult,
-              result: lookupResult.resolved.result,
-              targetAuthority: ref,
-              parentAuthority: this.authority,
-              parentPath,
-            });
-
-            // if (parsed.errors) {
-            // TODO: as mentioned above, allow caller to add errors/validations
-            // }
-
-            lookupResult.resolved.result = parsed.result;
-          } catch (e) {
-            // could not parse... roll back to original value
-            lookupResult.resolved.result = val;
-
-            lookupResult.error = {
-              code: 'PARSE_AUTHORITY',
-              message: `Error parsing lookup result for '${ref.toString()}': ${String(e)}`,
-              authority: ref,
-              authorityStack: this.authorityStack,
-              pointerStack,
-              path: parentPath,
-            };
           }
         }
       }

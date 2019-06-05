@@ -4,7 +4,6 @@
 
 Recursively resolves JSON pointers and remote authorities.
 
-- Explore the interfaces: [TSDoc](https://stoplightio.github.io/json-ref-resolver/)
 - View the changelog: [Releases](https://github.com/stoplightio/json-ref-resolver/releases)
 
 ### Features
@@ -27,7 +26,7 @@ yarn add @stoplight/json-ref-resolver
 
 ### Usage
 
-All relevant types and options can be found in [src/types.ts](src/types.ts) or in the TSDoc.
+All relevant types and options can be found in [src/types.ts](src/types.ts).
 
 ```ts
 // Import the Resolver class.

@@ -1,6 +1,6 @@
 import { pointerToPath } from '@stoplight/json';
 import { DepGraph } from 'dependency-graph';
-import _get = require('lodash/get');
+import { get } from 'lodash';
 
 import * as Types from './types';
 import * as Utils from './utils';
@@ -154,7 +154,7 @@ export class ResolveCrawler implements Types.ICrawler {
           pointerStack.push(targetPointer);
 
           // if we are partially resolving
-          this.computeGraph(_get(this._runner.source, targetPath), targetPath as string[], targetPointer, pointerStack);
+          this.computeGraph(get(this._runner.source, targetPath), targetPath as string[], targetPointer, pointerStack);
 
           pointerStack.pop();
         }
