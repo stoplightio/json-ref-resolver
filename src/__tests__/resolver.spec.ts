@@ -1390,9 +1390,9 @@ describe('resolver', () => {
     test('should support `parseAuthorityResult` hook', async () => {
       const data = {
         markdown: '# hello',
-        bar: {
-          hello: 'world',
-        },
+        bar: `{
+          "hello": "world"
+        }`,
       };
 
       const source = {
@@ -1401,7 +1401,8 @@ describe('resolver', () => {
             $ref: 'http://foo.com/foo.md',
           },
           bar: {
-            $ref: 'http://foo.com/bar.json',
+            // IMPORTANT: including a pointer to test that the target is parsed before looking up #/hello
+            $ref: 'http://foo.com/bar.json#/hello',
           },
         },
       };
@@ -1426,7 +1427,7 @@ describe('resolver', () => {
               heading1: 'hello',
             };
           } else {
-            opts.result.added = true;
+            opts.result = JSON.parse(opts.result);
           }
 
           return opts;
@@ -1440,10 +1441,7 @@ describe('resolver', () => {
           foo: {
             heading1: 'hello',
           },
-          bar: {
-            hello: 'world',
-            added: true,
-          },
+          bar: 'world',
         },
       });
     });
@@ -1546,8 +1544,8 @@ describe('resolver', () => {
       });
 
       expect({ ...result.errors[0], authority: undefined }).toEqual({
-        code: 'PARSE_AUTHORITY',
-        message: "Error parsing lookup result for 'http://foo/': Error: some parse error!",
+        code: 'RESOLVE_AUTHORITY',
+        message: "Error: Could not parse remote reference response for 'http://foo/' - Error: some parse error!",
         pointerStack: [],
         authorityStack: [],
         path: ['definitions', 'foo'],
