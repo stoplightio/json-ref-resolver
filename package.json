@@ -55,7 +55,7 @@
   "devDependencies": {
     "@stoplight/scripts": "7.0.0",
     "@types/jest": "^24.0.13",
-    "@types/lodash": "4.14.133",
+    "@types/lodash": "4.14.134",
     "benchmark": "2.x.x",
     "jest": "^24.8.0",
     "ts-jest": "^24.0.2",
