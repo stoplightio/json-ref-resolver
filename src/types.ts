@@ -74,8 +74,8 @@ export interface IResolveOpts extends IResolverOpts {
   // resolve a specific part of the source object
   jsonPointer?: string;
 
-  // the parent authority. basically, where are we right now (current URL to help with relative $refs, or process.cwd() for files, etc)
-  authority?: uri.URI;
+  // the base URI against which $ref URIs are resolved
+  baseUri?: string;
 }
 
 /** The object returned from `await resolver.resolve()` */

@@ -1,4 +1,3 @@
 export * from './resolver';
-
-import { defaultGetRef } from './runner';
-export { defaultGetRef };
+export { Cache } from './cache';
+export { defaultGetRef } from './runner';

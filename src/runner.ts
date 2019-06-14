@@ -2,7 +2,9 @@ import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/
 import produce from 'immer';
 import { get, set } from 'lodash';
 import * as URI from 'urijs';
+import { URI as VSURI } from 'vscode-uri';
 
+import { dirname, isAbsolute, join } from 'path';
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
 import * as Types from './types';
@@ -43,7 +45,15 @@ export class ResolveRunner implements Types.IResolveRunner {
     this.id = resolveRunnerCount += 1;
     this.depth = opts.depth || 0;
     this._source = source;
-    this.authority = opts.authority || new URI('');
+    this.readers = opts.readers || {};
+
+    const baseUri = opts.baseUri || '';
+    let authority = new URI(baseUri || '');
+    if (this.isFile(authority)) {
+      authority = new URI(VSURI.file(baseUri).fsPath.replace(/\\/g, '/'));
+    }
+
+    this.authority = authority;
     this.authorityStack = opts.authorityStack || [];
     this.authorityCache = opts.authorityCache || new Cache();
 
@@ -53,7 +63,6 @@ export class ResolveRunner implements Types.IResolveRunner {
       this.authorityCache.set(this.computeAuthorityCacheKey(this.authority), this);
     }
 
-    this.readers = opts.readers || {};
     this.getRef = opts.getRef || defaultGetRef;
     this.transformRef = opts.transformRef;
     // Need to resolve pointers if depth is greater than zero because that means the autority has changed, and the
@@ -241,19 +250,23 @@ export class ResolveRunner implements Types.IResolveRunner {
     let ref = new URI(refStr);
 
     // Does ref only have a fragment
-    if (ref.toString() !== `#${ref.fragment()}`) {
-      let isFile = ref.scheme() === 'file';
-
-      // if the file scheme is not explicitly set, check the authority
-      if (!isFile && !ref.scheme()) {
-        const scheme = this.authority.scheme();
-        // if the authority has no scheme, then assume it is a file (urls will have http, etc)
-        isFile = scheme === '' || scheme === 'file';
-      }
+    if (ref.toString().charAt(0) !== '#') {
+      const isFile = this.isFile(ref);
 
       // if we're working with a file, resolve any path diferences and make sure the scheme is set
       if (isFile) {
-        ref = ref.absoluteTo(this.authority).scheme('file');
+        let absRef = ref.toString();
+        if (!ref.is('absolute')) {
+          if (this.authority.toString()) {
+            absRef = join(dirname(this.authority.toString()), absRef);
+          } else {
+            absRef = '';
+          }
+        }
+
+        if (absRef) {
+          ref = new URI(VSURI.file(absRef).fsPath.replace(/\\/g, '/')).fragment(ref.fragment());
+        }
       } else if (ref.scheme().includes('http') || (ref.scheme() === '' && this.authority.scheme().includes('http'))) {
         if (this.authority.authority() !== '' && ref.authority() === '') {
           ref = ref.absoluteTo(this.authority);
@@ -282,9 +295,17 @@ export class ResolveRunner implements Types.IResolveRunner {
   public lookupAuthority = async (opts: { ref: uri.URI; cacheKey: string }): Promise<ResolveRunner> => {
     const { ref } = opts;
 
-    const reader = this.readers[ref.scheme()];
+    let scheme = ref.scheme();
+
+    // if we have a scheme, but no reader for it, attempt the file scheme
+    // this covers windows specific cases such as c:/foo/bar.json
+    if (!this.readers[scheme] && this.isFile(ref)) {
+      scheme = 'file';
+    }
+
+    const reader = this.readers[scheme];
     if (!reader) {
-      throw new Error(`No reader defined for scheme '${ref.scheme()}' in ref ${ref.toString()}`);
+      throw new Error(`No reader defined for scheme '${ref.scheme() || 'file'}' in ref ${ref.toString()}`);
     }
 
     let result = await reader.read(ref, this.ctx);
@@ -308,7 +329,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     return new ResolveRunner(result, {
       depth: this.depth + 1,
-      authority: ref,
+      baseUri: ref.toString(),
       authorityStack: this.authorityStack,
       authorityCache: this.authorityCache,
       readers: this.readers,
@@ -419,5 +440,30 @@ export class ResolveRunner implements Types.IResolveRunner {
       .clone()
       .fragment('')
       .toString();
+  }
+
+  private isFile(ref: uri.URI): boolean {
+    const scheme = ref.scheme();
+
+    if (scheme === 'file') return true;
+
+    if (!scheme) {
+      // if no scheme set, and ref starts with a '/', assume it's a file
+      if (ref.toString().charAt(0) === '/') return true;
+
+      if (this.authority) {
+        // if the file scheme is not explicitly set, check the authority
+        const authorityScheme = this.authority.scheme();
+
+        // if the authority has no scheme, then assume it is a file (urls will have http, etc)
+        return Boolean(!authorityScheme || authorityScheme === 'file' || !this.readers[authorityScheme]);
+      }
+    } else if (!this.readers[scheme]) {
+      // if we have a scheme, but no reader for it, attempt the file scheme
+      // this covers windows specific cases such as c:/foo/bar.json
+      return true;
+    }
+
+    return false;
   }
 }

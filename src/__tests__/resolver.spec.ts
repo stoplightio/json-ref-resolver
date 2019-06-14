@@ -39,7 +39,7 @@ const runFixtures = (factory: any) => {
   const files = fs.readdirSync(dir);
 
   // working on now
-  // const files: string[] = ['missing.json'];
+  // const files: string[] = ['api.links.test.json'];
 
   // the following case (amongst others) does not work in stress test without protective json parse/stringify in resolve
   // basicfileref.1.json
@@ -58,7 +58,7 @@ const runFixtures = (factory: any) => {
 const runFixture = (resolver: any, testCase: any, _file: any, filePath: any) => {
   return async () => {
     const resolved = await resolver.resolve(testCase.input, {
-      authority: new URI(filePath),
+      baseUri: filePath,
     });
 
     expect(resolved.result).toEqual(testCase.expected);
@@ -115,6 +115,74 @@ describe('resolver', () => {
   });
 
   describe('resolve', () => {
+    test('windows file paths', async () => {
+      const source = {
+        schema: {
+          $ref: '../b.json#/inner',
+        },
+      };
+
+      const remotes = {
+        'c:/b.json': {
+          inner: {
+            b_name: 'b',
+            b_inner: {
+              $ref: './models/c.json',
+            },
+          },
+        },
+        'c:/models/c.json': {
+          c_name: 'c',
+          network: {
+            $ref: 'D:\\network.json#/inner',
+          },
+        },
+        'd:/network.json': {
+          inner: {
+            d_name: 'd',
+          },
+        },
+      };
+
+      const resolver = new Resolver({
+        readers: {
+          https: new HttpReader(),
+        },
+      });
+
+      const uris: string[] = [];
+      const reader: Types.IReader = {
+        async read(ref: uri.URI): Promise<any> {
+          const uri = ref.toString();
+          uris.push(uri);
+          return remotes[uri];
+        },
+      };
+
+      const result = await resolver.resolve(source, {
+        baseUri: 'c:\\My Documents\\spec.json',
+        readers: {
+          file: reader,
+        },
+      });
+
+      expect(uris[0]).toEqual('c:/b.json');
+      expect(uris[1]).toEqual('c:/models/c.json');
+      expect(uris[2]).toEqual('d:/network.json');
+
+      expect(result.result).toEqual({
+        schema: {
+          b_name: 'b',
+          b_inner: {
+            c_name: 'c',
+            network: {
+              d_name: 'd',
+            },
+          },
+        },
+      });
+    });
+
     test('should respect immutability rules', async () => {
       const source = {
         hello: {
@@ -294,6 +362,58 @@ describe('resolver', () => {
         },
       });
       // expect(resolved.runner.pointerCache.stats.misses).toEqual(2);
+    });
+
+    test('uri resolution should support naked relative file $refs (foo.json instead of ./foo.json)', async () => {
+      const data = {
+        schema: {
+          $ref: 'a.json',
+        },
+      };
+
+      let uri: string | undefined;
+      const fileReader: Types.IReader = {
+        async read(ref): Promise<any> {
+          uri = ref.toString();
+        },
+      };
+
+      const resolver = new Resolver({
+        readers: {
+          file: fileReader,
+        },
+      });
+
+      await resolver.resolve(data);
+
+      expect(uri).toEqual('a.json');
+    });
+
+    test('uri resolution should support naked relative file $refs (foo.json instead of ./foo.json)', async () => {
+      const data = {
+        schema: {
+          $ref: 'a.json',
+        },
+      };
+
+      let uri: string | undefined;
+      const fileReader: Types.IReader = {
+        async read(ref): Promise<any> {
+          uri = ref.toString();
+        },
+      };
+
+      const resolver = new Resolver({
+        readers: {
+          file: fileReader,
+        },
+      });
+
+      await resolver.resolve(data, {
+        baseUri: '/specs/spec.json',
+      });
+
+      expect(uri).toEqual('/specs/a.json');
     });
 
     test('should support authorities', async () => {
@@ -1058,7 +1178,7 @@ describe('resolver', () => {
     test('should throw error if no reader defined for ref scheme', async () => {
       const source = {
         inner: {
-          $ref: 'file:///a.json',
+          $ref: 'a.json',
         },
       };
 
@@ -1067,7 +1187,7 @@ describe('resolver', () => {
 
       expect({ ...result.errors[0], authority: undefined }).toEqual({
         code: 'RESOLVE_AUTHORITY',
-        message: "Error: No reader defined for scheme 'file' in ref file:///a.json",
+        message: "Error: No reader defined for scheme 'file' in ref a.json",
         path: ['inner'],
         authorityStack: [],
         pointerStack: [],
@@ -1181,14 +1301,14 @@ describe('resolver', () => {
           },
         },
       });
-      expect(result.errors[0]).toEqual({
+      expect(result.errors[0]).toMatchObject({
         code: 'POINTER_MISSING',
         message: "'#/missing' does not exist",
         path: ['inner'],
-        authority: new URI('custom://bar').fragment(''),
         authorityStack: [],
         pointerStack: [],
       });
+      expect(result.errors[0].authority.toString()).toEqual('custom://bar/');
       expect(result.errors.length).toEqual(1);
     });
 
@@ -1250,7 +1370,7 @@ describe('resolver', () => {
       };
 
       const result = await resolver.resolve(source, {
-        authority: new URI('https://foo.com/a'),
+        baseUri: 'https://foo.com/a',
         readers: {
           https: reader,
         },
@@ -1609,7 +1729,7 @@ describe('resolver', () => {
       });
 
       const result = await resolver.resolve(source, {
-        authority: new URI('https://root.com/foo.yml'),
+        baseUri: 'https://root.com/foo.yml',
       });
 
       expect(result.result).toEqual({
@@ -1627,7 +1747,7 @@ describe('resolver', () => {
       });
 
       const result = await resolver.resolve(source, {
-        authority: new URI('https://exporter.stoplight.io/4254/master/main.oas2.yml'),
+        baseUri: 'https://exporter.stoplight.io/4254/master/main.oas2.yml',
       });
 
       expect(result.result).toEqual(resolvedResults['https://exporter.io/resolved']);
@@ -1644,7 +1764,7 @@ describe('resolver', () => {
       });
 
       const result = await resolver.resolve(source, {
-        authority: new URI('https://back-pointing.com/a'),
+        baseUri: 'https://back-pointing.com/a',
       });
 
       expect(result.result).toEqual({
