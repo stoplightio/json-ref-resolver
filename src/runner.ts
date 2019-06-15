@@ -1,10 +1,10 @@
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
 import produce from 'immer';
 import { get, set } from 'lodash';
+import { dirname, join } from 'path';
 import * as URI from 'urijs';
 import { URI as VSURI } from 'vscode-uri';
 
-import { dirname, isAbsolute, join } from 'path';
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
 import * as Types from './types';
@@ -22,22 +22,22 @@ export const defaultGetRef = (key: string, val: any) => {
 /** @hidden */
 export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
-  public readonly authority: uri.URI;
-  public readonly authorityCache: Types.ICache;
+  public readonly baseUri: uri.URI;
+  public readonly uriCache: Types.ICache;
 
   public depth: number;
-  public authorityStack: string[];
+  public uriStack: string[];
 
-  public readonly resolvePointers: boolean;
-  public readonly resolveAuthorities: boolean;
+  public readonly dereferenceInline: boolean;
+  public readonly dereferenceRemote: boolean;
   public ctx: any = {};
-  public readonly readers: {
-    [scheme: string]: Types.IReader;
+  public readonly resolvers: {
+    [scheme: string]: Types.IResolver;
   };
 
   public readonly getRef: (key: string, val: any) => string | void;
   public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
-  public readonly parseAuthorityResult?: (opts: Types.IAuthorityParser) => Promise<Types.IAuthorityParserResult>;
+  public readonly parseResolveResult?: (opts: Types.IUriParser) => Promise<Types.IUriParserResult>;
 
   private _source: any;
 
@@ -45,22 +45,21 @@ export class ResolveRunner implements Types.IResolveRunner {
     this.id = resolveRunnerCount += 1;
     this.depth = opts.depth || 0;
     this._source = source;
-    this.readers = opts.readers || {};
+    this.resolvers = opts.resolvers || {};
 
     const baseUri = opts.baseUri || '';
-    let authority = new URI(baseUri || '');
-    if (this.isFile(authority)) {
-      authority = new URI(VSURI.file(baseUri).fsPath.replace(/\\/g, '/'));
+    let uri = new URI(baseUri || '');
+    if (this.isFile(uri)) {
+      uri = new URI(VSURI.file(baseUri).fsPath.replace(/\\/g, '/'));
     }
 
-    this.authority = authority;
-    this.authorityStack = opts.authorityStack || [];
-    this.authorityCache = opts.authorityCache || new Cache();
+    this.baseUri = uri;
+    this.uriStack = opts.uriStack || [];
+    this.uriCache = opts.uriCache || new Cache();
 
-    if (this.authority && this.depth === 0) {
-      // if this first runner is an authority, seed the cache so we don't create another one for
-      // this authority later
-      this.authorityCache.set(this.computeAuthorityCacheKey(this.authority), this);
+    if (this.baseUri && this.depth === 0) {
+      // if this first runner has a baseUri, seed the cache so we don't create another one for this uri later
+      this.uriCache.set(this.computeUriCacheKey(this.baseUri), this);
     }
 
     this.getRef = opts.getRef || defaultGetRef;
@@ -68,20 +67,20 @@ export class ResolveRunner implements Types.IResolveRunner {
     // Need to resolve pointers if depth is greater than zero because that means the autority has changed, and the
     // local refs need to be resolved.
     if (this.depth) {
-      this.resolvePointers = true;
+      this.dereferenceInline = true;
     } else {
-      this.resolvePointers = typeof opts.resolvePointers !== 'undefined' ? opts.resolvePointers : true;
+      this.dereferenceInline = typeof opts.dereferenceInline !== 'undefined' ? opts.dereferenceInline : true;
     }
 
-    this.resolveAuthorities = typeof opts.resolveAuthorities !== 'undefined' ? opts.resolveAuthorities : true;
-    this.parseAuthorityResult = opts.parseAuthorityResult;
+    this.dereferenceRemote = typeof opts.dereferenceRemote !== 'undefined' ? opts.dereferenceRemote : true;
+    this.parseResolveResult = opts.parseResolveResult;
     this.ctx = opts.ctx;
 
-    this.lookupAuthority = memoize(this.lookupAuthority, {
+    this.lookupUri = memoize(this.lookupUri, {
       serializer: this._cacheKeySerializer,
       cache: {
         create: () => {
-          return this.authorityCache;
+          return this.uriCache;
         },
       },
     });
@@ -109,9 +108,9 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (!resolved.result) {
       resolved.errors.push({
         code: 'POINTER_MISSING',
-        message: `'${jsonPointer}' does not exist @ '${this.authority.toString()}'`,
-        authority: this.authority,
-        authorityStack: this.authorityStack,
+        message: `'${jsonPointer}' does not exist @ '${this.baseUri.toString()}'`,
+        uri: this.baseUri,
+        uriStack: this.uriStack,
         pointerStack: [],
         path: targetPath || [],
       });
@@ -122,27 +121,27 @@ export class ResolveRunner implements Types.IResolveRunner {
     // create our crawler instance
     const crawler = new ResolveCrawler(this, jsonPointer);
 
-    // crawl to build up the authorityResolvers and pointerGraph
+    // crawl to build up the uriResolvers and pointerGraph
     crawler.computeGraph(resolved.result, targetPath, jsonPointer || '');
 
-    // only wait on authority resolvers if we have some
-    let authorityResults: Types.IAuthorityLookupResult[] = [];
-    if (crawler.authorityResolvers.length) {
-      authorityResults = await Promise.all(crawler.authorityResolvers);
+    // only wait on uri resolvers if we have some
+    let uriResults: Types.IUriResult[] = [];
+    if (crawler.resolvers.length) {
+      uriResults = await Promise.all(crawler.resolvers);
     }
 
     // wrap all the mutations in a producer, for structural sharing + immutability
-    // Wait for all of the authority resolvers to complete
-    if (authorityResults.length) {
-      // Set the authority resolver results correctly
-      for (const r of authorityResults) {
+    // Wait for all of the uri resolvers to complete
+    if (uriResults.length) {
+      // Set the uri resolver results correctly
+      for (const r of uriResults) {
         // does this resolved result belong somewhere specific in the source data?
         let resolvedTargetPath = r.targetPath;
 
         // if not, we should set on our targetPath
         if (!resolvedTargetPath.length) resolvedTargetPath = targetPath || [];
 
-        resolved.refMap[String(this.authority.clone().fragment(pathToPointer(resolvedTargetPath)))] = String(r.uri);
+        resolved.refMap[String(this.baseUri.clone().fragment(pathToPointer(resolvedTargetPath)))] = String(r.uri);
 
         if (r.error) {
           resolved.errors.push(r.error);
@@ -174,8 +173,8 @@ export class ResolveRunner implements Types.IResolveRunner {
     }
 
     // If using parseAuthorityResult, do not need to replace local pointers here (parseAuthorityResult is responsible)
-    // if this is not an authority, then we should parse even if parseAuthorityResult is present
-    if (this.resolvePointers) {
+    // if this is not an uri, then we should parse even if parseAuthorityResult is present
+    if (this.dereferenceInline) {
       this._source = produce(this._source, (draft: any) => {
         let processOrder: any[] = [];
 
@@ -215,8 +214,8 @@ export class ResolveRunner implements Types.IResolveRunner {
                   code: 'POINTER_MISSING',
                   message: `'${pointer}' does not exist`,
                   path: dependantPath,
-                  authority: this.authority,
-                  authorityStack: this.authorityStack,
+                  uri: this.baseUri,
+                  uriStack: this.uriStack,
                   pointerStack: [],
                 });
               }
@@ -257,8 +256,8 @@ export class ResolveRunner implements Types.IResolveRunner {
       if (isFile) {
         let absRef = ref.toString();
         if (!ref.is('absolute')) {
-          if (this.authority.toString()) {
-            absRef = join(dirname(this.authority.toString()), absRef);
+          if (this.baseUri.toString()) {
+            absRef = join(dirname(this.baseUri.toString()), absRef);
           } else {
             absRef = '';
           }
@@ -267,9 +266,9 @@ export class ResolveRunner implements Types.IResolveRunner {
         if (absRef) {
           ref = new URI(VSURI.file(absRef).fsPath.replace(/\\/g, '/')).fragment(ref.fragment());
         }
-      } else if (ref.scheme().includes('http') || (ref.scheme() === '' && this.authority.scheme().includes('http'))) {
-        if (this.authority.authority() !== '' && ref.authority() === '') {
-          ref = ref.absoluteTo(this.authority);
+      } else if (ref.scheme().includes('http') || (ref.scheme() === '' && this.baseUri.scheme().includes('http'))) {
+        if (this.baseUri.authority() !== '' && ref.authority() === '') {
+          ref = ref.absoluteTo(this.baseUri);
         }
       }
     }
@@ -279,7 +278,7 @@ export class ResolveRunner implements Types.IResolveRunner {
         {
           ...opts,
           ref,
-          authority: this.authority,
+          uri: this.baseUri,
         },
         this.ctx,
       );
@@ -288,36 +287,36 @@ export class ResolveRunner implements Types.IResolveRunner {
     return ref;
   };
 
-  public atMaxAuthorityDepth = () => {
-    return this.authorityStack.length >= 100;
+  public atMaxUriDepth = () => {
+    return this.uriStack.length >= 100;
   };
 
-  public lookupAuthority = async (opts: { ref: uri.URI; cacheKey: string }): Promise<ResolveRunner> => {
+  public lookupUri = async (opts: { ref: uri.URI; cacheKey: string }): Promise<ResolveRunner> => {
     const { ref } = opts;
 
     let scheme = ref.scheme();
 
-    // if we have a scheme, but no reader for it, attempt the file scheme
+    // if we have a scheme, but no resolver for it, attempt the file scheme
     // this covers windows specific cases such as c:/foo/bar.json
-    if (!this.readers[scheme] && this.isFile(ref)) {
+    if (!this.resolvers[scheme] && this.isFile(ref)) {
       scheme = 'file';
     }
 
-    const reader = this.readers[scheme];
-    if (!reader) {
-      throw new Error(`No reader defined for scheme '${ref.scheme() || 'file'}' in ref ${ref.toString()}`);
+    const resolver = this.resolvers[scheme];
+    if (!resolver) {
+      throw new Error(`No resolver defined for scheme '${ref.scheme() || 'file'}' in ref ${ref.toString()}`);
     }
 
-    let result = await reader.read(ref, this.ctx);
+    let result = await resolver.resolve(ref, this.ctx);
 
     // support custom parsers
-    if (this.parseAuthorityResult) {
+    if (this.parseResolveResult) {
       try {
-        const parsed = await this.parseAuthorityResult({
-          authorityResult: result,
+        const parsed = await this.parseResolveResult({
+          uriResult: result,
           result,
           targetAuthority: ref,
-          parentAuthority: this.authority,
+          parentAuthority: this.baseUri,
           parentPath: [],
         });
 
@@ -330,31 +329,31 @@ export class ResolveRunner implements Types.IResolveRunner {
     return new ResolveRunner(result, {
       depth: this.depth + 1,
       baseUri: ref.toString(),
-      authorityStack: this.authorityStack,
-      authorityCache: this.authorityCache,
-      readers: this.readers,
+      uriStack: this.uriStack,
+      uriCache: this.uriCache,
+      resolvers: this.resolvers,
       transformRef: this.transformRef,
-      parseAuthorityResult: this.parseAuthorityResult,
-      resolveAuthorities: this.resolveAuthorities,
-      resolvePointers: this.resolvePointers,
+      parseResolveResult: this.parseResolveResult,
+      dereferenceRemote: this.dereferenceRemote,
+      dereferenceInline: this.dereferenceInline,
       ctx: this.ctx,
     });
   };
 
-  public lookupAndResolveAuthority = async (opts: Types.IRefHandlerOpts): Promise<Types.IAuthorityLookupResult> => {
+  public lookupAndResolveUri = async (opts: Types.IRefHandlerOpts): Promise<Types.IUriResult> => {
     const { val, ref, resolvingPointer, parentPointer, pointerStack } = opts;
 
     // slice to make a fresh copy since we mutate in crawler for performance
     const parentPath = (opts.parentPath || []).slice();
 
-    const authorityCacheKey = this.computeAuthorityCacheKey(ref);
-    const lookupResult: Types.IAuthorityLookupResult = {
+    const uriCacheKey = this.computeUriCacheKey(ref);
+    const lookupResult: Types.IUriResult = {
       uri: ref,
       pointerStack,
       targetPath: resolvingPointer === parentPointer ? [] : parentPath,
     };
 
-    if (this.authorityStack.includes(authorityCacheKey)) {
+    if (this.uriStack.includes(uriCacheKey)) {
       lookupResult.resolved = {
         result: val,
         refMap: {},
@@ -364,42 +363,42 @@ export class ResolveRunner implements Types.IResolveRunner {
 
       return lookupResult;
     } else {
-      let authorityResolver: ResolveRunner;
+      let uriResolver: ResolveRunner;
 
       try {
-        if (this.atMaxAuthorityDepth()) {
+        if (this.atMaxUriDepth()) {
           // safe guard against edge cases we might not have caught yet..
           // TODO: report this to bugsnag so we can track? throw it as some special
           // fatal error, that platform can look for and report (maybe other errors as well)?
           throw new Error(
-            `Max authority depth (${this.authorityStack.length}) reached. Halting, this is probably a circular loop.`,
+            `Max uri depth (${this.uriStack.length}) reached. Halting, this is probably a circular loop.`,
           );
         }
 
-        authorityResolver = await this.lookupAuthority({
+        uriResolver = await this.lookupUri({
           ref: ref.clone().fragment(''),
-          cacheKey: authorityCacheKey,
+          cacheKey: uriCacheKey,
         });
 
-        const currentAuthority = this.authority.toString();
+        const currentAuthority = this.baseUri.toString();
         if (currentAuthority && this.depth !== 0) {
-          authorityResolver.authorityStack = authorityResolver.authorityStack.concat([currentAuthority]);
+          uriResolver.uriStack = uriResolver.uriStack.concat([currentAuthority]);
         }
       } catch (e) {
         lookupResult.error = {
-          code: 'RESOLVE_AUTHORITY',
+          code: 'RESOLVE_URI',
           message: String(e),
-          authority: ref,
-          authorityStack: this.authorityStack,
+          uri: ref,
+          uriStack: this.uriStack,
           pointerStack,
           path: parentPath,
         };
       }
 
-      // only resolve the authority result if we were able to look it up and create the resolver
+      // only resolve the uri result if we were able to look it up and create the resolver
       // @ts-ignore
-      if (authorityResolver) {
-        lookupResult.resolved = await authorityResolver.resolve(Utils.uriToJSONPointer(ref));
+      if (uriResolver) {
+        lookupResult.resolved = await uriResolver.resolve(Utils.uriToJSONPointer(ref));
 
         // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
         if (lookupResult.resolved.errors.length) {
@@ -408,7 +407,7 @@ export class ResolveRunner implements Types.IResolveRunner {
               error.code === 'POINTER_MISSING' &&
               error.path.join('/') === ref.fragment().slice(1) // only reset result value if the error is specifically for this fragment
             ) {
-              // if the original authority request had a #/fragment on it, we wont be working with the root
+              // if the original uri request had a #/fragment on it, we wont be working with the root
               // result value, but rather whatever was at #/fragment
               // so this just trims #/fragment off the front of the error path (which is relative to the root), so that we can effectively
               // set the correct property on the result fragment
@@ -434,8 +433,8 @@ export class ResolveRunner implements Types.IResolveRunner {
     return sOpts && typeof sOpts === 'object' && sOpts.cacheKey ? sOpts.cacheKey : JSON.stringify(arguments);
   }
 
-  private computeAuthorityCacheKey(ref: uri.URI) {
-    // don't include the fragment on authority cache key
+  private computeUriCacheKey(ref: uri.URI) {
+    // don't include the fragment on uri cache key
     return ref
       .clone()
       .fragment('')
@@ -451,15 +450,15 @@ export class ResolveRunner implements Types.IResolveRunner {
       // if no scheme set, and ref starts with a '/', assume it's a file
       if (ref.toString().charAt(0) === '/') return true;
 
-      if (this.authority) {
-        // if the file scheme is not explicitly set, check the authority
-        const authorityScheme = this.authority.scheme();
+      if (this.baseUri) {
+        // if the file scheme is not explicitly set, check the uri
+        const uriScheme = this.baseUri.scheme();
 
-        // if the authority has no scheme, then assume it is a file (urls will have http, etc)
-        return Boolean(!authorityScheme || authorityScheme === 'file' || !this.readers[authorityScheme]);
+        // if the uri has no scheme, then assume it is a file (urls will have http, etc)
+        return Boolean(!uriScheme || uriScheme === 'file' || !this.resolvers[uriScheme]);
       }
-    } else if (!this.readers[scheme]) {
-      // if we have a scheme, but no reader for it, attempt the file scheme
+    } else if (!this.resolvers[scheme]) {
+      // if we have a scheme, but no resolver for it, attempt the file scheme
       // this covers windows specific cases such as c:/foo/bar.json
       return true;
     }

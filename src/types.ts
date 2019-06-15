@@ -11,16 +11,16 @@ import { DepGraph } from 'dependency-graph';
 
 /** The options that you can pass to `new Resolver(opts)` */
 export interface IResolverOpts {
-  /** Used to store authority lookup results. If no cache passed in, one will be created for you. */
-  authorityCache?: ICache;
+  /** Used to store uri lookup results. If no cache passed in, one will be created for you. */
+  uriCache?: ICache;
 
   /**
-   * Readers define how to read pointers for different schemes (http, file, mongo, whatever).
+   * Resolvers define how to fetch pointers for different URI schemes (http, https, file, mongo, whatever).
    *
-   * If you do not pass in any readers, only local pointer resolution will work `#/foo/bar`.
+   * If you do not pass in any resolvers, only inline pointer resolution will work `#/foo/bar`.
    */
-  readers?: {
-    [scheme: string]: IReader;
+  resolvers?: {
+    [scheme: string]: IResolver;
   };
 
   /**
@@ -45,26 +45,26 @@ export interface IResolverOpts {
   transformRef?: (opts: IRefTransformer, ctx: any) => uri.URI | void;
 
   /**
-   * Hook to customize how the result of an authority look is parsed.
+   * Hook to customize how the result of an uri look is parsed.
    *
-   * For example, could use `js-yaml` to parse a yaml string returned from the authority.
+   * For example, could use `js-yaml` to parse a yaml string returned from the uri.
    */
-  parseAuthorityResult?: (opts: IAuthorityParser) => Promise<IAuthorityParserResult>;
+  parseResolveResult?: (opts: IUriParser) => Promise<IUriParserResult>;
 
   /** Should we resolve local pointers? true by default. */
-  resolvePointers?: boolean;
+  dereferenceInline?: boolean;
 
   /**
-   * Should we resolve authorities? true by default.
+   * Should we resolve remote URIs? true by default.
    *
-   * Note, must have a reader defined for the authority scheme in question.
+   * Note, must have a resolver defined for the uri scheme in question.
    */
-  resolveAuthorities?: boolean;
+  dereferenceRemote?: boolean;
 
   /**
    * A spot to put your own arbitrary data.
    *
-   * This is passed through to some hook functions, such as `transformRef` and `Reader.read`.
+   * This is passed through to some hook functions, such as `transformRef` and `Resolver.resolve`.
    */
   ctx?: any;
 }
@@ -108,24 +108,24 @@ export interface IResolveResult {
  * The below are useful to reference, but mostly internal details.
  */
 
-export interface IReader {
-  read(ref: uri.URI, ctx: any): Promise<any>;
+export interface IResolver {
+  resolve(ref: uri.URI, ctx: any): Promise<any>;
 }
 
-export interface IAuthorityParser {
+export interface IUriParser {
   result: any;
-  authorityResult: IAuthorityLookupResult;
+  uriResult: IUriResult;
   targetAuthority: uri.URI;
   parentAuthority: uri.URI;
   parentPath: string[];
 }
 
-export interface IAuthorityParserResult {
+export interface IUriParserResult {
   result?: any;
   error?: Error;
 }
 
-export interface IAuthorityLookupResult {
+export interface IUriResult {
   pointerStack: string[];
   targetPath: string[];
   uri: uri.URI;
@@ -143,16 +143,16 @@ export interface IComputeRefOpts {
 
 export interface IRefTransformer extends IComputeRefOpts {
   ref?: uri.URI;
-  authority: uri.URI;
+  uri: uri.URI;
 }
 
-export type ResolverErrorCode = 'POINTER_MISSING' | 'RESOLVE_AUTHORITY' | 'PARSE_AUTHORITY' | 'RESOLVE_POINTER';
+export type ResolverErrorCode = 'POINTER_MISSING' | 'RESOLVE_URI' | 'PARSE_URI' | 'RESOLVE_POINTER';
 export interface IResolveError {
   code: ResolverErrorCode;
   message: string;
   path: Segment[];
-  authority: uri.URI;
-  authorityStack: string[];
+  uri: uri.URI;
+  uriStack: string[];
   pointerStack: string[];
 }
 
@@ -192,20 +192,20 @@ export interface IResolveOpts {
 export interface IResolveRunner {
   id: number;
   source: any;
-  resolvePointers: boolean;
-  resolveAuthorities: boolean;
-  authorityCache: ICache;
+  dereferenceInline: boolean;
+  dereferenceRemote: boolean;
+  uriCache: ICache;
   depth: number;
-  atMaxAuthorityDepth: () => boolean;
+  atMaxUriDepth: () => boolean;
   resolve: (source: any, opts?: IResolveOpts) => Promise<IResolveResult>;
   computeRef: (opts: IComputeRefOpts) => uri.URI | void | undefined;
-  lookupAndResolveAuthority: (opts: IRefHandlerOpts) => Promise<IAuthorityLookupResult>;
+  lookupAndResolveUri: (opts: IRefHandlerOpts) => Promise<IUriResult>;
 }
 
 /** @hidden */
 export interface IResolveRunnerOpts extends IResolveOpts {
   depth?: number;
-  authorityStack?: string[];
+  uriStack?: string[];
 }
 
 export interface ICrawler {

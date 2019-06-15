@@ -7,7 +7,7 @@ import * as Utils from './utils';
 
 /** @hidden */
 export class ResolveCrawler implements Types.ICrawler {
-  public readonly authorityResolvers: Array<Promise<Types.IAuthorityLookupResult>> = [];
+  public readonly resolvers: Array<Promise<Types.IUriResult>> = [];
 
   // jsonPointer = the jsonPointer the runner was originally called with
   // need to use this when calculating parentPath for lookupAndResolveAuthority
@@ -95,7 +95,7 @@ export class ResolveCrawler implements Types.ICrawler {
 
     // local pointer
     if (Utils.uriIsJSONPointer(ref)) {
-      if (this._runner.resolvePointers) {
+      if (this._runner.dereferenceInline) {
         const targetPointer = Utils.uriToJSONPointer(ref);
         const targetPath = pointerToPath(targetPointer);
 
@@ -161,8 +161,8 @@ export class ResolveCrawler implements Types.ICrawler {
       }
     } else {
       // remote pointer
-      if (this._runner.resolveAuthorities && !this._runner.atMaxAuthorityDepth()) {
-        this.authorityResolvers.push(this._runner.lookupAndResolveAuthority(opts));
+      if (this._runner.dereferenceRemote && !this._runner.atMaxUriDepth()) {
+        this.resolvers.push(this._runner.lookupAndResolveUri(opts));
       }
     }
   };

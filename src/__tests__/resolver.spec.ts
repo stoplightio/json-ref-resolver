@@ -9,8 +9,8 @@ import * as Types from '../types';
 import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
 
-export class FileReader implements Types.IReader {
-  public async read(uri: uri.URI) {
+export class FileReader implements Types.IResolver {
+  public async resolve(uri: uri.URI) {
     const path = uri.path();
     return new Promise((resolve, reject) => {
       try {
@@ -23,8 +23,8 @@ export class FileReader implements Types.IReader {
   }
 }
 
-export class HttpReader implements Types.IReader {
-  public async read(uri: uri.URI) {
+export class HttpReader implements Types.IResolver {
+  public async resolve(uri: uri.URI) {
     const mock = httpMocks[uri.toString()];
 
     if (mock) return mock;
@@ -78,7 +78,7 @@ describe('resolver', () => {
   describe('fixtures', () => {
     runFixtures((testCase: any, file: any, filePath: any) => {
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           file: new FileReader(),
           http: new HttpReader(),
           https: new HttpReader(),
@@ -91,7 +91,7 @@ describe('resolver', () => {
     // run the fixtures 5 times "concurrently" on the same resolver instance to check for race type cases
     test('stress test', async () => {
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           file: new FileReader(),
           http: new HttpReader(),
           https: new HttpReader(),
@@ -147,8 +147,8 @@ describe('resolver', () => {
       const resolver = new Resolver();
 
       const uris: string[] = [];
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           const uri = ref.toString();
           uris.push(uri);
           return remotes[uri];
@@ -157,7 +157,7 @@ describe('resolver', () => {
 
       const result = await resolver.resolve(source, {
         baseUri: 'c:\\My Documents\\spec.json',
-        readers: {
+        resolvers: {
           file: reader,
         },
       });
@@ -257,7 +257,7 @@ describe('resolver', () => {
         word: 'world',
       };
 
-      const resolver = new Resolver({ resolvePointers: false });
+      const resolver = new Resolver({ dereferenceInline: false });
       const resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
     });
@@ -279,8 +279,8 @@ describe('resolver', () => {
         },
       };
 
-      const fileReader: Types.IReader = {
-        async read(): Promise<any> {
+      const fileReader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return data.oas;
         },
       };
@@ -300,13 +300,13 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           file: fileReader,
         },
       });
 
       const result = await resolver.resolve(source, {
-        resolvePointers: false,
+        dereferenceInline: false,
       });
 
       expect(result.result).toEqual({
@@ -368,14 +368,14 @@ describe('resolver', () => {
       };
 
       let uri: string | undefined;
-      const fileReader: Types.IReader = {
-        async read(ref): Promise<any> {
+      const fileReader: Types.IResolver = {
+        async resolve(ref): Promise<any> {
           uri = ref.toString();
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           file: fileReader,
         },
       });
@@ -393,14 +393,14 @@ describe('resolver', () => {
       };
 
       let uri: string | undefined;
-      const fileReader: Types.IReader = {
-        async read(ref): Promise<any> {
+      const fileReader: Types.IResolver = {
+        async resolve(ref): Promise<any> {
           uri = ref.toString();
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           file: fileReader,
         },
       });
@@ -423,14 +423,14 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return data;
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
@@ -442,7 +442,7 @@ describe('resolver', () => {
           hello: 'world',
         },
       });
-      expect(resolver.authorityCache.stats.misses).toEqual(1);
+      expect(resolver.uriCache.stats.misses).toEqual(1);
     });
 
     // simulates ref to deep OpenAPI path
@@ -469,14 +469,14 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return data.spec;
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           http: reader,
         },
       });
@@ -537,15 +537,15 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return data;
         },
       };
 
       const resolver = new Resolver({
-        resolveAuthorities: false,
-        readers: {
+        dereferenceRemote: false,
+        resolvers: {
           custom: reader,
         },
       });
@@ -553,10 +553,10 @@ describe('resolver', () => {
       const resolved = await resolver.resolve(source);
 
       expect(resolved.result).toEqual(source);
-      expect(resolver.authorityCache.stats.misses).toEqual(0);
+      expect(resolver.uriCache.stats.misses).toEqual(0);
     });
 
-    test('should support authority + jsonPointer', async () => {
+    test('should support uri + jsonPointer', async () => {
       const data = {
         entry: {
           $ref: '#/super',
@@ -575,21 +575,21 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return data;
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
 
       const resolved = await resolver.resolve(source);
 
-      expect(resolver.authorityCache.stats.misses).toEqual(1);
+      expect(resolver.uriCache.stats.misses).toEqual(1);
       expect(resolved.result).toEqual({
         root: {
           hello: 'world',
@@ -640,14 +640,14 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(uri: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(uri: uri.URI): Promise<any> {
           return data[uri.authority()];
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
@@ -698,7 +698,7 @@ describe('resolver', () => {
       });
     });
 
-    test('should support deep authority + pointer chain', async () => {
+    test('should support deep uri + pointer chain', async () => {
       const data = {
         file1: {
           hello: {
@@ -721,14 +721,14 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(uri: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(uri: uri.URI): Promise<any> {
           return data[uri.authority()];
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
@@ -738,7 +738,7 @@ describe('resolver', () => {
       expect(resolved.result).toEqual({
         hello: 'world',
       });
-      expect(resolver.authorityCache.stats.misses).toEqual(3);
+      expect(resolver.uriCache.stats.misses).toEqual(3);
     });
 
     test('should support partial resolution if jsonPointer option supplied', async () => {
@@ -892,14 +892,14 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           return data[ref.authority()];
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
@@ -990,7 +990,7 @@ describe('resolver', () => {
       expect(resolved.result).toEqual(circularObj);
     });
 
-    test('should handle indirect circular authority refs', async () => {
+    test('should handle indirect circular uri refs', async () => {
       const data = {
         obj1: {
           one: true,
@@ -1020,14 +1020,14 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           return data[ref.authority()];
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
@@ -1052,7 +1052,7 @@ describe('resolver', () => {
       });
 
       // should only have read 3 times
-      expect(resolver.authorityCache.stats.misses).toEqual(3);
+      expect(resolver.uriCache.stats.misses).toEqual(3);
     });
   });
 
@@ -1070,14 +1070,14 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return source.val;
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
@@ -1109,17 +1109,17 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return data;
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
-        authorityCache: new Cache({
+        uriCache: new Cache({
           stdTTL: 1000, // 1s cache
         }),
       });
@@ -1131,14 +1131,14 @@ describe('resolver', () => {
       resolved = await resolver.resolve(source);
 
       // second lookup should be cached since under stdTTL, so only 1 miss
-      expect(resolver.authorityCache.stats.misses).toEqual(1);
+      expect(resolver.uriCache.stats.misses).toEqual(1);
 
       await new Promise(resolve => setTimeout(resolve, 600));
 
       resolved = await resolver.resolve(source);
 
       // we waited over our cache time, so should have another miss
-      expect(resolver.authorityCache.stats.misses).toEqual(2);
+      expect(resolver.uriCache.stats.misses).toEqual(2);
 
       expect(resolved.result).toEqual({
         root: {
@@ -1160,18 +1160,18 @@ describe('resolver', () => {
       const resolver = new Resolver();
       const result = await resolver.resolve(source);
 
-      expect({ ...result.errors[0], authority: undefined }).toEqual({
+      expect({ ...result.errors[0], uri: undefined }).toEqual({
         code: 'POINTER_MISSING',
         message: "'#/missing' does not exist",
         path: ['inner'],
-        authorityStack: [],
+        uriStack: [],
         pointerStack: [],
-        authority: undefined,
+        uri: undefined,
       });
       expect(result.errors.length).toEqual(1);
     });
 
-    test('should throw error if no reader defined for ref scheme', async () => {
+    test('should throw error if no resolver defined for ref scheme', async () => {
       const source = {
         inner: {
           $ref: 'a.json',
@@ -1181,18 +1181,18 @@ describe('resolver', () => {
       const resolver = new Resolver();
       const result = await resolver.resolve(source);
 
-      expect({ ...result.errors[0], authority: undefined }).toEqual({
-        code: 'RESOLVE_AUTHORITY',
-        message: "Error: No reader defined for scheme 'file' in ref a.json",
+      expect({ ...result.errors[0], uri: undefined }).toEqual({
+        code: 'RESOLVE_URI',
+        message: "Error: No resolver defined for scheme 'file' in ref a.json",
         path: ['inner'],
-        authorityStack: [],
+        uriStack: [],
         pointerStack: [],
-        authority: undefined,
+        uri: undefined,
       });
       expect(result.errors.length).toEqual(1);
     });
 
-    test('should track authority errors', async () => {
+    test('should track uri errors', async () => {
       const data = {
         bar: {
           hello: 'world',
@@ -1210,8 +1210,8 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           if (data[ref.authority()]) {
             return data[ref.authority()];
           }
@@ -1221,7 +1221,7 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
@@ -1238,19 +1238,19 @@ describe('resolver', () => {
           },
         },
       });
-      expect({ ...result.errors[0], authority: undefined }).toEqual({
-        code: 'RESOLVE_AUTHORITY',
+      expect({ ...result.errors[0], uri: undefined }).toEqual({
+        code: 'RESOLVE_URI',
         message: 'Error: not found!',
-        authorityStack: [],
+        uriStack: [],
         pointerStack: [],
         path: ['definitions', 'foo'],
-        authority: undefined,
+        uri: undefined,
       });
-      expect(result.errors[0].authority.toString()).toBe('custom://missing/');
+      expect(result.errors[0].uri.toString()).toBe('custom://missing/');
       expect(result.errors.length).toEqual(1);
     });
 
-    test('should track authority + pointer errors', async () => {
+    test('should track uri + pointer errors', async () => {
       const data = {
         bar: {
           hello: 'world',
@@ -1271,8 +1271,8 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           if (data[ref.authority()]) {
             return data[ref.authority()];
           }
@@ -1282,7 +1282,7 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           custom: reader,
         },
       });
@@ -1301,10 +1301,10 @@ describe('resolver', () => {
         code: 'POINTER_MISSING',
         message: "'#/missing' does not exist",
         path: ['inner'],
-        authorityStack: [],
+        uriStack: [],
         pointerStack: [],
       });
-      expect(result.errors[0].authority.toString()).toEqual('custom://bar/');
+      expect(result.errors[0].uri.toString()).toEqual('custom://bar/');
       expect(result.errors.length).toEqual(1);
     });
 
@@ -1316,7 +1316,7 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           https: new HttpReader(),
         },
       });
@@ -1341,13 +1341,13 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           https: new HttpReader(),
         },
       });
 
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           if (ref.path() === '/b') {
             return {
               definitions: {
@@ -1367,7 +1367,7 @@ describe('resolver', () => {
 
       const result = await resolver.resolve(source, {
         baseUri: 'https://foo.com/a',
-        readers: {
+        resolvers: {
           https: reader,
         },
       });
@@ -1392,7 +1392,7 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           https: new HttpReader(),
         },
       });
@@ -1523,8 +1523,8 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           if (ref.path().split('.')[1] === 'md') {
             return data.markdown;
           }
@@ -1534,10 +1534,10 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           http: reader,
         },
-        parseAuthorityResult: async opts => {
+        parseResolveResult: async opts => {
           if (opts.targetAuthority.path().split('.')[1] === 'md') {
             opts.result = {
               heading1: 'hello',
@@ -1589,18 +1589,18 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           return data[ref.path().slice(1)];
         },
       };
 
       let counter = 0;
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           http: reader,
         },
-        parseAuthorityResult: async opts => {
+        parseResolveResult: async opts => {
           counter += 1;
           return opts;
         },
@@ -1634,17 +1634,17 @@ describe('resolver', () => {
         },
       };
 
-      const reader: Types.IReader = {
-        async read(): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return data.markdown;
         },
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           http: reader,
         },
-        parseAuthorityResult: async () => {
+        parseResolveResult: async () => {
           throw new Error('some parse error!');
         },
       });
@@ -1659,15 +1659,15 @@ describe('resolver', () => {
         },
       });
 
-      expect({ ...result.errors[0], authority: undefined }).toEqual({
-        code: 'RESOLVE_AUTHORITY',
+      expect({ ...result.errors[0], uri: undefined }).toEqual({
+        code: 'RESOLVE_URI',
         message: "Error: Could not parse remote reference response for 'http://foo/' - Error: some parse error!",
         pointerStack: [],
-        authorityStack: [],
+        uriStack: [],
         path: ['definitions', 'foo'],
-        authority: undefined,
+        uri: undefined,
       });
-      expect(result.errors[0].authority.toString()).toEqual(new URI('http://foo').toString());
+      expect(result.errors[0].uri.toString()).toEqual(new URI('http://foo').toString());
     });
 
     test('should pass context to transformRef and read', async () => {
@@ -1697,9 +1697,9 @@ describe('resolver', () => {
           t2 = ctx.prop;
           return opts.ref;
         },
-        readers: {
+        resolvers: {
           http: {
-            read: async (_uri, ctx) => {
+            resolve: async (_uri, ctx) => {
               r1 = ctx.rootProp;
               r2 = ctx.prop;
             },
@@ -1715,7 +1715,7 @@ describe('resolver', () => {
   });
 
   describe('relative paths', () => {
-    test('should not call reader if resolved path points to current authority', async () => {
+    test('should not call resolver if resolved path points to current uri', async () => {
       const source = {
         schema: {
           $ref: './spec.json#/definitions/user',
@@ -1743,8 +1743,8 @@ describe('resolver', () => {
       };
 
       const uris: string[] = [];
-      const reader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           const uri = ref.toString();
           uris.push(uri);
           return remotes[uri];
@@ -1755,7 +1755,7 @@ describe('resolver', () => {
 
       const result = await resolver.resolve(source, {
         baseUri: '/root/spec.json',
-        readers: {
+        resolvers: {
           file: reader,
         },
       });
@@ -1783,7 +1783,7 @@ describe('resolver', () => {
       const source = httpMocks['https://root.com/foo.yml'];
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           https: new HttpReader(),
         },
       });
@@ -1801,7 +1801,7 @@ describe('resolver', () => {
       const source = httpMocks['https://exporter.stoplight.io/4254/master/main.oas2.yml'];
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           https: new HttpReader(),
         },
       });
@@ -1814,11 +1814,11 @@ describe('resolver', () => {
     });
 
     // ./a#/foo -> ./b#bar -> ./a#/xxx -> ./c -> ./b#/zzz
-    test('should resolve http relative paths + back pointing authority refs', async () => {
+    test('should resolve http relative paths + back pointing uri refs', async () => {
       const source = httpMocks['https://back-pointing.com/a'];
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           https: new HttpReader(),
         },
       });
@@ -1866,14 +1866,14 @@ describe('resolver', () => {
         'https://foo.com/intro.md': `Here is **my markdown**.`,
       };
 
-      const httpReader: Types.IReader = {
-        async read(ref: uri.URI): Promise<any> {
+      const httpReader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
           return data[ref.toString()];
         },
       };
 
-      const fileReader: Types.IReader = {
-        async read(): Promise<any> {
+      const fileReader: Types.IResolver = {
+        async resolve(): Promise<any> {
           return data.oas;
         },
       };
@@ -1890,7 +1890,7 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           http: httpReader,
           https: httpReader,
           file: fileReader,
@@ -1908,13 +1908,13 @@ describe('resolver', () => {
     });
 
     // this was derived from a real world customer use case
-    test('deep authority + pointer chain', async () => {
+    test('deep uri + pointer chain', async () => {
       const source = {
         $ref: 'https://foo.com/1/master/main.hub.yml#/pages/~1/data',
       };
 
       const resolver = new Resolver({
-        readers: {
+        resolvers: {
           https: new HttpReader(),
         },
       });
