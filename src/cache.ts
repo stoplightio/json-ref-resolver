@@ -1,6 +1,5 @@
 import * as Types from './types';
 
-/** @hidden */
 export class Cache implements Types.ICache {
   private _stats: {
     hits: number;

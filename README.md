@@ -2,17 +2,18 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/0b1d841cc2445e29ef50/maintainability)](https://codeclimate.com/github/stoplightio/json-ref-resolver/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/0b1d841cc2445e29ef50/test_coverage)](https://codeclimate.com/github/stoplightio/json-ref-resolver/test_coverage)
 
-Recursively resolves JSON pointers and remote authorities.
+Dereference $ref values in JSON Schema, OpenAPI (Swagger), and any other objects with $ref values inside of them.
 
 - View the changelog: [Releases](https://github.com/stoplightio/json-ref-resolver/releases)
 
 ### Features
 
-- **Performant**: Hot paths are memoized, remote authorities are resolved concurrently, and the minimum surface area is crawled and resolved.
-- **Caching**: Results from remote authorities are cached.
-- **Immutable**: The original object is not changed, and structural sharing is used to only change relevant bits. [example test](src/__tests__/resolver.spec.ts#L139-L143)
-- **Reference equality:** Pointers to the same location will resolve to the same object in memory. [example test](src/__tests__/resolver.spec.ts#L145)
-- **Flexible:** Bring your own readers for `http://`, `file://`, `mongo://`, `custom://`... etc.
+- **Performant**: Hot paths are memoized, remote URIs are resolved concurrently, and the minimum surface area is crawled and resolved.
+- **Caching**: Results from remote URIs are cached.
+- **Immutable**: The original object is not changed, and structural sharing is used to only change relevant bits. [example test](src/__tests__/resolver.spec.ts#L182)
+- **Reference equality:** $refs to the same location will resolve to the same object in memory. [example test](src/__tests__/resolver.spec.ts#L329)
+- **Flexible:** Bring your own resolvers for `http://`, `file://`, `mongo://`, `custom://`... etc.
+- **Cross Platform:** Supports POSIX and Windows style file paths.
 - **Reliable:** Well tested to handle all sorts of circular reference edge cases.
 
 ### Installation
@@ -61,7 +62,9 @@ const resolver = new Resolver(globalOpts);
 const resolved = await resolver.resolve(sourceObj, resolveOpts);
 ```
 
-#### Example: Basic Local Resolution
+#### Example: Basic Inline Dereferencing
+
+By default, only inline references will be dereferenced.
 
 ```ts
 import { Resolver } from "@stoplight/json-ref-resolver";
@@ -91,13 +94,13 @@ expect(resolved.result).toEqual({
 });
 ```
 
-#### Example: Resolve a Subset of the Source
+#### Example: Dereference a Subset of the Source
 
-This will resolve the minimal number of references needed for the given target, and return the target.
+This will dereference the minimal number of references needed for the given target, and return the target.
 
-In the example below, the address reference (`https://slow-website.com/definitions#/address`) will NOT be resolved, since
-it is not needed to resolve the `#/user` jsonPointer target we have specified. However, `#/models/user/card` IS resolved since
-it is needed in order to full resolve the `#/user` property.
+In the example below, the address reference (`https://slow-website.com/definitions#/address`) will NOT be dereferenced, since
+it is not needed to resolve the `#/user` jsonPointer target we have specified. However, `#/models/user/card` IS dereferenced since
+it is needed in order to full dereference the `#/user` property.
 
 ```ts
 import { Resolver } from "@stoplight/json-ref-resolver";
@@ -137,13 +140,13 @@ expect(resolved.result).toEqual({
 });
 ```
 
-#### Example: Resolving Remote References with Readers
+#### Example: Dereferencing Remote References with Resolvers
 
-By default only local references (those that point to values inside of the original source) are resolved.
+By default only inline references (those that point to values inside of the original object) are dereferenced.
 
-In order to resolve remote authorities (file, http, etc) you must provide readers for each authority scheme.
+In order to dereference remote URIs (file, http, etc) you must provide resolvers for each URI scheme.
 
-Readers are keyed by scheme, receive the URI to fetch, and must return the fetched data.
+Resolvers are keyed by scheme, receive the URI to fetch, and must return the fetched data.
 
 ```ts
 import { Resolver } from "@stoplight/json-ref-resolver";
@@ -151,16 +154,16 @@ import { Resolver } from "@stoplight/json-ref-resolver";
 // some example http library
 import * as axios from "axios";
 
-// if we're in node, we create a file reader with fs
+// if we're in node, we create a file resolver with fs
 import * as fs from "fs";
 
 // create our resolver instance
 const resolver = new Resolver({
-  // readers can do anything, so long as they define an async read function that resolves to a value
-  readers: {
-    // this reader will be invoked for refs with the https protocol
+  // resolvers can do anything, so long as they define an async read function that resolves to a value
+  resolvers: {
+    // this resolver will be invoked for refs with the https protocol
     https: {
-      async read(ref: uri.URI) {
+      async resolve(ref: uri.URI) {
         return axios({
           method: "get",
           url: String(ref)
@@ -168,9 +171,9 @@ const resolver = new Resolver({
       }
     },
 
-    // this reader will be invoked for refs with the file protocol
+    // this resolver will be invoked for refs with the file protocol
     file: {
-      async read(ref: uri.URI) {
+      async resolve(ref: uri.URI) {
         return fs.read(String(ref));
       }
     }
@@ -201,10 +204,10 @@ expect(resolved.result).toEqual({
 });
 ```
 
-#### Example: Resolving Relative Remote References with the Authority Option
+#### Example: Dereferencing Relative Remote References with the baseUri Option
 
 If there are relative remote references (for example, a relative file path `../model.json`), then the location of the source
-data must be specified via the `authority` resolve option. Relative references will be resolved against this authority.
+data must be specified via the `baseUri` option. Relative references will be dereferenced against this baseUri.
 
 ```ts
 import { Resolver } from "@stoplight/json-ref-resolver";
@@ -231,7 +234,7 @@ const sourceData = fs.readSync(sourcePath);
 
 const resolved = await resolver.resolve(sourceData, {
   // Indicate where the `sourceData` being resolved lives, so that relative remote references can be fetched and resolved.
-  authority: new URI(sourcePath)
+  baseUri: new URI(sourcePath)
 });
 
 expect(resolved.result).toEqual({
@@ -241,7 +244,7 @@ expect(resolved.result).toEqual({
 });
 ```
 
-In the above example, the user \$ref will resolve to `/models/user.json`, because `../models/user.json` is resolved against the authority of the current document (which was indicated at `/specs/api.json`). Relative references will not work if the source document has no authority set.
+In the above example, the user \$ref will resolve to `/models/user.json`, because `../models/user.json` is resolved against the baseUri of the current document (which was indicated at `/specs/api.json`). Relative references will not work if the source document has no baseUri set.
 
 ### Contributing
 
