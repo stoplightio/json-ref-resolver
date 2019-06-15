@@ -144,11 +144,7 @@ describe('resolver', () => {
         },
       };
 
-      const resolver = new Resolver({
-        readers: {
-          https: new HttpReader(),
-        },
-      });
+      const resolver = new Resolver();
 
       const uris: string[] = [];
       const reader: Types.IReader = {
@@ -1719,6 +1715,70 @@ describe('resolver', () => {
   });
 
   describe('relative paths', () => {
+    test('should not call reader if resolved path points to current authority', async () => {
+      const source = {
+        schema: {
+          $ref: './spec.json#/definitions/user',
+        },
+        definitions: {
+          user: {
+            $ref: './models/user.json#/inner',
+          },
+        },
+      };
+
+      const remotes = {
+        '/root/models/user.json': {
+          inner: {
+            address: {
+              $ref: 'user.json#/definitions/address',
+            },
+          },
+          definitions: {
+            address: {
+              street: '123',
+            },
+          },
+        },
+      };
+
+      const uris: string[] = [];
+      const reader: Types.IReader = {
+        async read(ref: uri.URI): Promise<any> {
+          const uri = ref.toString();
+          uris.push(uri);
+          return remotes[uri];
+        },
+      };
+
+      const resolver = new Resolver();
+
+      const result = await resolver.resolve(source, {
+        baseUri: '/root/spec.json',
+        readers: {
+          file: reader,
+        },
+      });
+
+      // should only have called read on
+      expect(uris).toEqual(['/root/models/user.json']);
+
+      expect(result.result).toEqual({
+        schema: {
+          address: {
+            street: '123',
+          },
+        },
+        definitions: {
+          user: {
+            address: {
+              street: '123',
+            },
+          },
+        },
+      });
+    });
+
     test('should resolve http relative paths', async () => {
       const source = httpMocks['https://root.com/foo.yml'];
 
