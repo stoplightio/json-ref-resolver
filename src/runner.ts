@@ -291,7 +291,12 @@ export class ResolveRunner implements Types.IResolveRunner {
     return this.uriStack.length >= 100;
   };
 
-  public lookupUri = async (opts: { ref: uri.URI; cacheKey: string; parentPath: string[] }): Promise<ResolveRunner> => {
+  public lookupUri = async (opts: {
+    fragment: string;
+    ref: uri.URI;
+    cacheKey: string;
+    parentPath: string[];
+  }): Promise<ResolveRunner> => {
     const { ref } = opts;
 
     let scheme = ref.scheme();
@@ -318,6 +323,7 @@ export class ResolveRunner implements Types.IResolveRunner {
           targetAuthority: ref,
           parentAuthority: this.baseUri,
           parentPath: opts.parentPath,
+          fragment: opts.fragment,
         });
 
         result = parsed.result;
@@ -377,6 +383,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
         uriResolver = await this.lookupUri({
           ref: ref.clone().fragment(''),
+          fragment: ref.fragment(),
           cacheKey: uriCacheKey,
           parentPath,
         });
