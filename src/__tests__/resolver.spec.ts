@@ -39,7 +39,7 @@ const runFixtures = (factory: any) => {
   const files = fs.readdirSync(dir);
 
   // working on now
-  // const files: string[] = ['api.links.test.json'];
+  // const files: string[] = ['deep-all-of.json'];
 
   // the following case (amongst others) does not work in stress test without protective json parse/stringify in resolve
   // basicfileref.1.json
