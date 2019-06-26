@@ -150,7 +150,7 @@ export class ResolveCrawler implements Types.ICrawler {
 
         // if we are partially resolving, we need to follow refs (since they might point outside of our initial target object tree)
         // only need to initiate when top of pointer stack
-        if (this.jsonPointer && pointerStack.length === 0) {
+        if (this.jsonPointer) {
           pointerStack.push(targetPointer);
 
           // if we are partially resolving

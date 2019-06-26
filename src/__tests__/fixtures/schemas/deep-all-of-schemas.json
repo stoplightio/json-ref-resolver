@@ -1,0 +1,95 @@
+{
+	"swagger": "2.0",
+	"definitions": {
+		"Report": {
+			"type": "object",
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/ReportData"
+				}
+			}
+		},
+		"ReportData": {
+			"title": "Report data",
+			"type": "object",
+			"properties": {
+				"device": {
+					"$ref": "#/definitions/Device"
+				},
+				"broadcasts": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/RadioBroadcast"
+					}
+				}
+			}
+		},
+		"Device": {
+			"title": "Device data",
+			"type": "object",
+			"properties": {
+				"make": {
+					"type": "string"
+				}
+			}
+		},
+		"RadioBroadcast": {
+			"allOf": [
+				{
+					"$ref": "#/definitions/TimedEvent"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"startLoc": {
+							"$ref": "#/definitions/RadioBroadcastLocation"
+						},
+						"stopLoc": {
+							"$ref": "#/definitions/RadioBroadcastLocation"
+						}
+					}
+				}
+			]
+		},
+		"RadioBroadcastLocation": {
+			"allOf": [
+				{
+					"$ref": "#/definitions/HiResCoordinate"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"count": {
+							"type": "integer"
+						}
+					}
+				}
+			]
+		},
+		"HiResCoordinate": {
+			"type": "object",
+			"properties": {
+				"lat": {
+					"type": "number"
+				},
+				"lng": {
+					"type": "number"
+				}
+			}
+		},
+		"TimedEvent": {
+			"type": "object",
+			"properties": {
+				"duration": {
+					"type": "integer"
+				},
+				"startTime": {
+					"type": "string"
+				},
+				"stopTime": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}
