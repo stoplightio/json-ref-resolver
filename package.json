@@ -44,16 +44,16 @@
     "test.watch": "yarn test --watch"
   },
   "dependencies": {
-    "@stoplight/json": "2.1.x",
-    "@types/urijs": "1.19.1",
-    "dependency-graph": "0.8.x",
-    "fast-memoize": "2.x.x",
-    "immer": "3.x.x",
-    "lodash": "4.x.x",
-    "urijs": "1.x.x"
+    "@stoplight/json": "^2.1",
+    "@types/urijs": "^1.19",
+    "dependency-graph": "^0.8",
+    "fast-memoize": "^2.4",
+    "immer": "^3.0",
+    "lodash": "^4.17.5",
+    "urijs": "^1.19"
   },
   "devDependencies": {
-    "@stoplight/scripts": "7.0.0",
+    "@stoplight/scripts": "5.x.x",
     "@types/jest": "^24.0.13",
     "@types/lodash": "4.14.133",
     "benchmark": "2.x.x",
