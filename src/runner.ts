@@ -287,24 +287,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       throw new Error(`No reader defined for scheme '${ref.scheme()}' in ref ${ref.toString()}`);
     }
 
-    let result = await reader.read(ref, this.ctx);
-
-    // support custom parsers
-    if (this.parseAuthorityResult) {
-      try {
-        const parsed = await this.parseAuthorityResult({
-          authorityResult: result,
-          result,
-          targetAuthority: ref,
-          parentAuthority: this.authority,
-          parentPath: [],
-        });
-
-        result = parsed.result;
-      } catch (e) {
-        throw new Error(`Could not parse remote reference response for '${ref.toString()}' - ${String(e)}`);
-      }
-    }
+    const result = await reader.read(ref, this.ctx);
 
     return new ResolveRunner(result, {
       depth: this.depth + 1,
@@ -401,6 +384,39 @@ export class ResolveRunner implements Types.IResolveRunner {
                 lookupResult.resolved.result = val;
               }
             }
+          }
+        }
+
+        // support custom parsers
+        if (this.parseAuthorityResult) {
+          try {
+            // TODO: rework this to pass in an addValidation function to allow custom parsers to add their own validations
+            // then generally re-work the error system here to be based around more flexible validations
+            const parsed = await this.parseAuthorityResult({
+              authorityResult: lookupResult,
+              result: lookupResult.resolved.result,
+              targetAuthority: ref,
+              parentAuthority: this.authority,
+              parentPath,
+            });
+
+            // if (parsed.errors) {
+            // TODO: as mentioned above, allow caller to add errors/validations
+            // }
+
+            lookupResult.resolved.result = parsed.result;
+          } catch (e) {
+            // could not parse... roll back to original value
+            lookupResult.resolved.result = val;
+
+            lookupResult.error = {
+              code: 'PARSE_AUTHORITY',
+              message: `Error parsing lookup result for '${ref.toString()}': ${String(e)}`,
+              authority: ref,
+              authorityStack: this.authorityStack,
+              pointerStack,
+              path: parentPath,
+            };
           }
         }
       }
