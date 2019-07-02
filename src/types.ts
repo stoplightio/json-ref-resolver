@@ -114,6 +114,7 @@ export interface IResolver {
 
 export interface IUriParser {
   result: any;
+  fragment: string;
   uriResult: IUriResult;
   targetAuthority: uri.URI;
   parentAuthority: uri.URI;
