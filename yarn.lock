@@ -922,9 +922,9 @@
   integrity sha512-l42BggppR6zLmpfU6fq9HEa2oGPEI8yrSPL3GITjfRInppYFahObbIQOQK3UGxEnyQpltZLaPe75046NOZQikw==
 
 "@types/urijs@1.x.x":
-  version "1.19.1"
-  resolved "https://registry.yarnpkg.com/@types/urijs/-/urijs-1.19.1.tgz#da69e8479eec0bb4580c7cc218d218f107d2d526"
-  integrity sha512-5waMuQ9z8pH8+5yAyX05bsA7SOl50l5ZkeMripxoOgN2+nSQb4TOSuhWoRlPt7FPIIohk6iBrX/rEktUJa8KfQ==
+  version "1.19.2"
+  resolved "https://registry.yarnpkg.com/@types/urijs/-/urijs-1.19.2.tgz#45212f53c3f14f1d90ca823a719b164748ad413b"
+  integrity sha512-8Q7e4XLsVuqWkvl5Q9osdxi4R2nciXOu2sNWaroAY1rL58PEiSFU23q/elrAAUQdsHMaHk4kwsiOZh1rZ+7APA==
 
 "@types/yargs@^12.0.2", "@types/yargs@^12.0.9":
   version "12.0.12"
