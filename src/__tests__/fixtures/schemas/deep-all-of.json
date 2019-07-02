@@ -1,0 +1,129 @@
+{
+  "input": {
+    "swagger": "2.0",
+    "paths": {
+      "/reports": {
+        "post": {
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "$ref": "./deep-all-of-schemas.json#/definitions/Report"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "expected": {
+    "swagger": "2.0",
+    "paths": {
+      "/reports": {
+        "post": {
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "title": "Report data",
+                    "type": "object",
+                    "properties": {
+                      "device": {
+                        "title": "Device data",
+                        "type": "object",
+                        "properties": {
+                          "make": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "broadcasts": {
+                        "type": "array",
+                        "items": {
+                          "allOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "duration": {
+                                  "type": "integer"
+                                },
+                                "startTime": {
+                                  "type": "string"
+                                },
+                                "stopTime": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "startLoc": {
+                                  "allOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "lat": {
+                                          "type": "number"
+                                        },
+                                        "lng": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "count": {
+                                          "type": "integer"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "stopLoc": {
+                                  "allOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "lat": {
+                                          "type": "number"
+                                        },
+                                        "lng": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "count": {
+                                          "type": "integer"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
