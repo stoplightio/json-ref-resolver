@@ -739,9 +739,9 @@
   integrity sha512-ayw3qQ9KNn2K5q6ggrLclh+rdZsSLwYIUz3uAer1NzaCpalJLR4g32G845ylgq7Xy2AunMHnNfD3FC3s0rUcsA==
 
 "@stoplight/json@2.x.x":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-2.2.0.tgz#f4eb42522866a029b9ffb0964763d2b63fd2066a"
-  integrity sha512-rIoX2729uCPs1BXOsb7FAUg/xBQoBDhG81DCbhOI2UeG4TTwbYvGINCQpYd19dp51JnMg++dvEY/tACIV3Phgw==
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-2.2.2.tgz#08e0359007d643ec95609276649628a9f4bb1c1d"
+  integrity sha512-QJK2Sz4HHvqix5uKQn4TgrZoH1OFwZ3y+D4wxxqNnf2G540xkleQ6dp/DSsosBqJQnGXNHUe6woSsI0q/9xrVw==
   dependencies:
     "@stoplight/fast-safe-stringify" "2.1.2"
     "@stoplight/types" "9.0.2"
