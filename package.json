@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@stoplight/json": "2.x.x",
-    "@types/urijs": "1.x.x",
+    "@stoplight/types": "^9.1.2",
     "dependency-graph": "0.8.x",
     "fast-memoize": "2.x.x",
     "immer": "3.x.x",
@@ -57,6 +57,7 @@
     "@stoplight/scripts": "5.x.x",
     "@types/jest": "24.x.x",
     "@types/lodash": "4.x.x",
+    "@types/urijs": "1.x.x",
     "benchmark": "2.x.x",
     "jest": "24.8.x",
     "ts-jest": "24.0.x",
