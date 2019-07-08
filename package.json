@@ -54,7 +54,7 @@
     "vscode-uri": "^2.0.2"
   },
   "devDependencies": {
-    "@stoplight/scripts": "5.x.x",
+    "@stoplight/scripts": "7.x.x",
     "@types/jest": "24.x.x",
     "@types/lodash": "4.x.x",
     "@types/urijs": "1.x.x",
