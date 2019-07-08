@@ -27,7 +27,7 @@ yarn add @stoplight/json-ref-resolver
 
 ### Usage
 
-All relevant types and options can be found in [src/types.ts](src/types.ts).
+All relevant types and options can be found in [src/types.ts](./src/types.ts).
 
 ```ts
 // Import the Resolver class.
