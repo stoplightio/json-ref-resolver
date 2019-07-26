@@ -38,6 +38,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly getRef: (key: string, val: any) => string | void;
   public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
   public readonly parseResolveResult?: (opts: Types.IUriParser) => Promise<Types.IUriParserResult>;
+  public readonly transformDereferenceResult?: (opts: Types.ITransformerOptions) => Promise<Types.ITransformerResult>;
 
   private _source: any;
 
@@ -74,6 +75,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     this.dereferenceRemote = typeof opts.dereferenceRemote !== 'undefined' ? opts.dereferenceRemote : true;
     this.parseResolveResult = opts.parseResolveResult;
+    this.transformDereferenceResult = opts.transformDereferenceResult;
     this.ctx = opts.ctx;
 
     this.lookupUri = memoize(this.lookupUri, {
@@ -318,7 +320,8 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (this.parseResolveResult) {
       try {
         const parsed = await this.parseResolveResult({
-          uriResult: result,
+          // TODO: Is this correct? Result has type any, but uriResult should be type IUriResult.
+          // uriResult: result,
           result,
           targetAuthority: ref,
           parentAuthority: this.baseUri,
@@ -340,6 +343,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       resolvers: this.resolvers,
       transformRef: this.transformRef,
       parseResolveResult: this.parseResolveResult,
+      transformDereferenceResult: this.transformDereferenceResult,
       dereferenceRemote: this.dereferenceRemote,
       dereferenceInline: this.dereferenceInline,
       ctx: this.ctx,
@@ -408,6 +412,22 @@ export class ResolveRunner implements Types.IResolveRunner {
       if (uriResolver) {
         lookupResult.resolved = await uriResolver.resolve(Utils.uriToJSONPointer(ref));
 
+        // support custom transformers
+        if (this.transformDereferenceResult) {
+          const { result, error } = await this.transformDereferenceResult({
+            source: uriResolver.source,
+            result: lookupResult.resolved.result,
+            targetAuthority: ref,
+            parentAuthority: this.baseUri,
+            parentPath,
+            fragment: ref.fragment(),
+          });
+          if (error) {
+            throw new Error(`Could not transform dereferenced result for '${ref.toString()}' - ${String(error)}`);
+          }
+
+          lookupResult.resolved.result = result;
+        }
         // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
         if (lookupResult.resolved.errors.length) {
           for (const error of lookupResult.resolved.errors) {

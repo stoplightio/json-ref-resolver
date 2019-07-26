@@ -51,6 +51,13 @@ export interface IResolverOpts {
    */
   parseResolveResult?: (opts: IUriParser) => Promise<IUriParserResult>;
 
+  /**
+   * Hook to transform resolved object.
+   *
+   * For example, transform `OpenAPI` file to a `Hub Page`.
+   */
+  transformDereferenceResult?: (opts: ITransformerOptions) => Promise<ITransformerResult>;
+
   /** Should we resolve local pointers? true by default. */
   dereferenceInline?: boolean;
 
@@ -115,13 +122,27 @@ export interface IResolver {
 export interface IUriParser {
   result: any;
   fragment: string;
-  uriResult: IUriResult;
+  // uriResult: IUriResult;
   targetAuthority: uri.URI;
   parentAuthority: uri.URI;
   parentPath: string[];
 }
 
 export interface IUriParserResult {
+  result?: any;
+  error?: Error;
+}
+
+export interface ITransformerOptions {
+  result: any;
+  source: any;
+  fragment: string;
+  targetAuthority: uri.URI;
+  parentAuthority: uri.URI;
+  parentPath: string[];
+}
+
+export interface ITransformerResult {
   result?: any;
   error?: Error;
 }

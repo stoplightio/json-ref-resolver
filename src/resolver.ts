@@ -20,6 +20,7 @@ export class Resolver {
   protected getRef?: (key: string, val: any) => string | void;
   protected transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
   protected parseResolveResult?: (opts: Types.IUriParser) => Promise<Types.IUriParserResult>;
+  protected transformDereferenceResult?: (opts: Types.ITransformerOptions) => Promise<Types.ITransformerResult>;
 
   constructor(opts: Types.IResolverOpts = {}) {
     this.uriCache = opts.uriCache || new Cache();
@@ -29,6 +30,7 @@ export class Resolver {
     this.dereferenceInline = typeof opts.dereferenceInline !== 'undefined' ? opts.dereferenceInline : true;
     this.dereferenceRemote = typeof opts.dereferenceRemote !== 'undefined' ? opts.dereferenceRemote : true;
     this.parseResolveResult = opts.parseResolveResult;
+    this.transformDereferenceResult = opts.transformDereferenceResult;
     this.ctx = opts.ctx;
   }
 
@@ -41,6 +43,7 @@ export class Resolver {
       dereferenceInline: this.dereferenceInline,
       dereferenceRemote: this.dereferenceRemote,
       parseResolveResult: this.parseResolveResult,
+      transformDereferenceResult: this.transformDereferenceResult,
       ...opts,
       ctx: Object.assign({}, this.ctx || {}, opts.ctx || {}),
     });
