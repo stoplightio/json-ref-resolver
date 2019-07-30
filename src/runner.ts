@@ -241,7 +241,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (this.transformDereferenceResult) {
       const ref = new URI(jsonPointer || '');
       try {
-        const { result } = await this.transformDereferenceResult({
+        const { result, error } = await this.transformDereferenceResult({
           source: this.source,
           result: resolved.result,
           targetAuthority: ref,
@@ -251,6 +251,9 @@ export class ResolveRunner implements Types.IResolveRunner {
         });
 
         resolved.result = result;
+        if (error) {
+          throw new Error(`Could not transform dereferenced result for '${ref.toString()}' - ${String(error)}`);
+        }
       } catch (e) {
         resolved.errors.push({
           code: 'TRANSFORM_DEREFERENCED',
