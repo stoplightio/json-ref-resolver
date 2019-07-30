@@ -94,7 +94,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     return this._source;
   }
 
-  public async resolve(jsonPointer?: string): Promise<Types.IResolveResult> {
+  public async resolve(jsonPointer?: string, opts?: Types.IResolveOpts): Promise<Types.IResolveResult> {
     const resolved: Types.IResolveResult = {
       result: this.source,
       refMap: {},
@@ -171,68 +171,67 @@ export class ResolveRunner implements Types.IResolveRunner {
       }
     }
 
-    if (typeof this._source !== 'object') {
-      resolved.result = this._source;
-      return resolved;
-    }
+    if (typeof this._source === 'object') {
+      // If using parseAuthorityResult, do not need to replace local pointers here (parseAuthorityResult is responsible)
+      // if this is not an uri, then we should parse even if parseAuthorityResult is present
+      if (this.dereferenceInline) {
+        this._source = produce(this._source, (draft: any) => {
+          let processOrder: any[] = [];
 
-    // If using parseAuthorityResult, do not need to replace local pointers here (parseAuthorityResult is responsible)
-    // if this is not an uri, then we should parse even if parseAuthorityResult is present
-    if (this.dereferenceInline) {
-      this._source = produce(this._source, (draft: any) => {
-        let processOrder: any[] = [];
+          try {
+            processOrder = crawler.pointerGraph.overallOrder();
 
-        try {
-          processOrder = crawler.pointerGraph.overallOrder();
+            // loop through the pointer graph in the correct order, setting values we go
+            // this is where local pointers are replaced with their resolved values
+            for (const pointer of processOrder) {
+              const dependants = crawler.pointerGraph.dependantsOf(pointer);
+              if (!dependants.length) continue;
 
-          // loop through the pointer graph in the correct order, setting values we go
-          // this is where local pointers are replaced with their resolved values
-          for (const pointer of processOrder) {
-            const dependants = crawler.pointerGraph.dependantsOf(pointer);
-            if (!dependants.length) continue;
+              const pointerPath = pointerToPath(pointer);
+              const val = get(draft, pointerPath);
+              for (const dependant of dependants) {
+                // check to prevent circular references in the resulting JS object
+                // this implementation is MUCH more performant than decycling the final object to remove circulars
+                let isCircular;
+                const dependantPath = pointerToPath(dependant);
+                const dependantStems = crawler.pointerStemGraph.dependenciesOf(pointer);
+                for (const stem of dependantStems) {
+                  if (startsWith(dependantPath, pointerToPath(stem))) {
+                    isCircular = true;
+                    break;
+                  }
+                }
 
-            const pointerPath = pointerToPath(pointer);
-            const val = get(draft, pointerPath);
-            for (const dependant of dependants) {
-              // check to prevent circular references in the resulting JS object
-              // this implementation is MUCH more performant than decycling the final object to remove circulars
-              let isCircular;
-              const dependantPath = pointerToPath(dependant);
-              const dependantStems = crawler.pointerStemGraph.dependenciesOf(pointer);
-              for (const stem of dependantStems) {
-                if (startsWith(dependantPath, pointerToPath(stem))) {
-                  isCircular = true;
-                  break;
+                // TODO: we might want to track and expose these circulars in the future?
+                if (isCircular) continue;
+
+                resolved.refMap[pathToPointer(dependantPath)] = pathToPointer(pointerPath);
+
+                if (val) {
+                  set(draft, dependantPath, val);
+                } else {
+                  resolved.errors.push({
+                    code: 'POINTER_MISSING',
+                    message: `'${pointer}' does not exist`,
+                    path: dependantPath,
+                    uri: this.baseUri,
+                    uriStack: this.uriStack,
+                    pointerStack: [],
+                  });
                 }
               }
-
-              // TODO: we might want to track and expose these circulars in the future?
-              if (isCircular) continue;
-
-              resolved.refMap[pathToPointer(dependantPath)] = pathToPointer(pointerPath);
-
-              if (val) {
-                set(draft, dependantPath, val);
-              } else {
-                resolved.errors.push({
-                  code: 'POINTER_MISSING',
-                  message: `'${pointer}' does not exist`,
-                  path: dependantPath,
-                  uri: this.baseUri,
-                  uriStack: this.uriStack,
-                  pointerStack: [],
-                });
-              }
             }
+          } catch (e) {
+            // (MM) TODO: report this error? usually means some sort of uncaught circular structure
           }
-        } catch (e) {
-          // (MM) TODO: report this error? usually means some sort of uncaught circular structure
-        }
-      });
-    }
+        });
+      }
 
-    if (targetPath) {
-      resolved.result = get(this._source, targetPath);
+      if (targetPath) {
+        resolved.result = get(this._source, targetPath);
+      } else {
+        resolved.result = this._source;
+      }
     } else {
       resolved.result = this._source;
     }
@@ -246,7 +245,7 @@ export class ResolveRunner implements Types.IResolveRunner {
           result: resolved.result,
           targetAuthority: ref,
           parentAuthority: this.baseUri,
-          parentPath: targetPath,
+          parentPath: opts ? opts.parentPath || [] : [],
           fragment: ref.fragment(),
         });
 
@@ -442,7 +441,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       // only resolve the uri result if we were able to look it up and create the resolver
       // @ts-ignore
       if (uriResolver) {
-        lookupResult.resolved = await uriResolver.resolve(Utils.uriToJSONPointer(ref));
+        lookupResult.resolved = await uriResolver.resolve(Utils.uriToJSONPointer(ref), { parentPath });
 
         // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
         if (lookupResult.resolved.errors.length) {
