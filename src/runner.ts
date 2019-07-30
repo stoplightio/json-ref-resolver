@@ -38,6 +38,9 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly getRef: (key: string, val: any) => string | void;
   public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
   public readonly parseResolveResult?: (opts: Types.IUriParser) => Promise<Types.IUriParserResult>;
+  public readonly transformDereferenceResult?: (
+    opts: Types.IDereferenceTransformer,
+  ) => Promise<Types.ITransformerResult>;
 
   private _source: any;
 
@@ -74,6 +77,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     this.dereferenceRemote = typeof opts.dereferenceRemote !== 'undefined' ? opts.dereferenceRemote : true;
     this.parseResolveResult = opts.parseResolveResult;
+    this.transformDereferenceResult = opts.transformDereferenceResult;
     this.ctx = opts.ctx;
 
     this.lookupUri = memoize(this.lookupUri, {
@@ -233,6 +237,37 @@ export class ResolveRunner implements Types.IResolveRunner {
       resolved.result = this._source;
     }
 
+    // support custom transformers
+    if (this.transformDereferenceResult) {
+      const ref = new URI(jsonPointer || '');
+      try {
+        const { result, error } = await this.transformDereferenceResult({
+          source: this.source,
+          result: resolved.result,
+          targetAuthority: ref,
+          parentAuthority: this.baseUri,
+          parentPath: targetPath,
+          fragment: ref.fragment(),
+        });
+
+        resolved.result = result;
+        if (error) {
+          throw new Error(`Could not transform dereferenced result for '${ref.toString()}' - ${String(error)}`);
+        }
+      } catch (e) {
+        resolved.errors.push({
+          code: 'TRANSFORM_DEREFERENCED',
+          message: `Error: Could not transform dereferenced result for '${this.baseUri.toString()}${
+            ref.fragment() !== '' ? `#${ref.fragment()}` : ``
+          }' - ${String(e)}`,
+          uri: ref,
+          uriStack: this.uriStack,
+          pointerStack: [],
+          path: targetPath,
+        });
+      }
+    }
+
     return resolved;
   }
 
@@ -340,6 +375,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       resolvers: this.resolvers,
       transformRef: this.transformRef,
       parseResolveResult: this.parseResolveResult,
+      transformDereferenceResult: this.transformDereferenceResult,
       dereferenceRemote: this.dereferenceRemote,
       dereferenceInline: this.dereferenceInline,
       ctx: this.ctx,

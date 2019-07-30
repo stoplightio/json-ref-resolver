@@ -1670,6 +1670,183 @@ describe('resolver', () => {
       expect(result.errors[0].uri.toString()).toEqual(new URI('http://foo').toString());
     });
 
+    /**
+     * Allows the consumer to provide a custom ref transformer to transform a fully resolved object.
+     *
+     */
+    test('should support `transformDereferenceResult` hook', async () => {
+      const data = {
+        markdown: '# hello',
+        bar: {
+          hello: `{ "hello": "world" }`,
+        },
+      };
+
+      const source = {
+        definitions: {
+          foo: {
+            $ref: 'http://foo.com/foo.md#/markdown',
+          },
+          bar: {
+            $ref: 'http://foo.com/bar.json#/hello',
+          },
+        },
+      };
+
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
+          if (ref.path().split('.')[1] === 'md') {
+            return data;
+          }
+
+          return data.bar;
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          http: reader,
+        },
+        transformDereferenceResult: async opts => {
+          if (opts.parentAuthority.path().split('.')[1] === 'md') {
+            opts.result = {
+              heading1: 'hello',
+            };
+          } else if (opts.parentAuthority.toString() === 'http://foo.com/bar.json' && opts.fragment === '/hello') {
+            // Can transform the result however you want
+            opts.result = {
+              pooh: 'bear',
+            };
+          }
+
+          return opts;
+        },
+      });
+
+      const result = await resolver.resolve(source);
+
+      expect(result.result).toEqual({
+        definitions: {
+          foo: {
+            heading1: 'hello',
+          },
+          bar: {
+            pooh: 'bear',
+          },
+        },
+      });
+    });
+
+    test('should pass `transformDereferenceResult` to child runners', async () => {
+      const data = {
+        foo: {
+          $ref: 'http://foo.com/hi',
+        },
+        hi: {
+          $ref: 'http://foo.com/bye',
+        },
+        bye: {
+          adios: true,
+        },
+        bar: {
+          hello: 'world',
+        },
+      };
+
+      const source = {
+        definitions: {
+          foo: {
+            $ref: 'http://foo.com/foo',
+          },
+          bar: {
+            $ref: 'http://foo.com/bar',
+          },
+        },
+      };
+
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
+          return data[ref.path().slice(1)];
+        },
+      };
+
+      let counter = 0;
+      const resolver = new Resolver({
+        resolvers: {
+          http: reader,
+        },
+        transformDereferenceResult: async opts => {
+          counter += 1;
+          return opts;
+        },
+      });
+
+      const result = await resolver.resolve(source);
+
+      expect(result.result).toEqual({
+        definitions: {
+          foo: {
+            adios: true,
+          },
+          bar: {
+            hello: 'world',
+          },
+        },
+      });
+
+      expect(counter).toEqual(5);
+    });
+
+    test('should support catching error in `transformDereferenceResult` hook', async () => {
+      const data = {
+        markdown: '# hello',
+      };
+
+      const source = {
+        definitions: {
+          foo: {
+            $ref: 'http://foo.com#/markdown',
+          },
+        },
+      };
+
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
+          return data;
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          http: reader,
+        },
+        transformDereferenceResult: async opts => {
+          if (opts.parentAuthority.toString() === 'http://foo.com/') throw new Error('some transform error!');
+
+          return opts;
+        },
+      });
+
+      const result = await resolver.resolve(source);
+
+      expect(result.result).toEqual({
+        definitions: {
+          foo: '# hello',
+        },
+      });
+
+      expect({ ...result.errors[0], uri: undefined }).toEqual({
+        code: 'TRANSFORM_DEREFERENCED',
+        message:
+          "Error: Could not transform dereferenced result for 'http://foo.com/#/markdown' - Error: some transform error!",
+        pointerStack: [],
+        uriStack: [],
+        path: ['markdown'],
+        uri: undefined,
+      });
+      expect(result.errors[0].uri.toString()).toEqual(new URI('#/markdown').toString());
+    });
+
     test('should pass context to transformRef and read', async () => {
       let t1;
       let t2;
