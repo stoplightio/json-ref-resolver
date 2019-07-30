@@ -38,7 +38,9 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly getRef: (key: string, val: any) => string | void;
   public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
   public readonly parseResolveResult?: (opts: Types.IUriParser) => Promise<Types.IUriParserResult>;
-  public readonly transformDereferenceResult?: (opts: Types.ITransformerOptions) => Promise<Types.ITransformerResult>;
+  public readonly transformDereferenceResult?: (
+    opts: Types.IDereferenceTransformer,
+  ) => Promise<Types.ITransformerResult>;
 
   private _source: any;
 

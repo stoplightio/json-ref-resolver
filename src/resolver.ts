@@ -20,7 +20,7 @@ export class Resolver {
   protected getRef?: (key: string, val: any) => string | void;
   protected transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
   protected parseResolveResult?: (opts: Types.IUriParser) => Promise<Types.IUriParserResult>;
-  protected transformDereferenceResult?: (opts: Types.ITransformerOptions) => Promise<Types.ITransformerResult>;
+  protected transformDereferenceResult?: (opts: Types.IDereferenceTransformer) => Promise<Types.ITransformerResult>;
 
   constructor(opts: Types.IResolverOpts = {}) {
     this.uriCache = opts.uriCache || new Cache();

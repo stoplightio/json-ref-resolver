@@ -56,7 +56,7 @@ export interface IResolverOpts {
    *
    * For example, transform `OpenAPI` file to a `Hub Page`.
    */
-  transformDereferenceResult?: (opts: ITransformerOptions) => Promise<ITransformerResult>;
+  transformDereferenceResult?: (opts: IDereferenceTransformer) => Promise<ITransformerResult>;
 
   /** Should we resolve local pointers? true by default. */
   dereferenceInline?: boolean;
@@ -133,7 +133,7 @@ export interface IUriParserResult {
   error?: Error;
 }
 
-export interface ITransformerOptions {
+export interface IDereferenceTransformer {
   result: any;
   source: any;
   fragment: string;
