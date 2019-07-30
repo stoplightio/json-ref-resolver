@@ -122,7 +122,7 @@ export interface IResolver {
 export interface IUriParser {
   result: any;
   fragment: string;
-  // uriResult: IUriResult;
+  uriResult: IUriResult;
   targetAuthority: uri.URI;
   parentAuthority: uri.URI;
   parentPath: string[];
@@ -168,7 +168,12 @@ export interface IRefTransformer extends IComputeRefOpts {
   uri: uri.URI;
 }
 
-export type ResolverErrorCode = 'POINTER_MISSING' | 'RESOLVE_URI' | 'PARSE_URI' | 'RESOLVE_POINTER';
+export type ResolverErrorCode =
+  | 'POINTER_MISSING'
+  | 'RESOLVE_URI'
+  | 'PARSE_URI'
+  | 'RESOLVE_POINTER'
+  | 'TRANSFORM_DEREFERENCED';
 export interface IResolveError {
   code: ResolverErrorCode;
   message: string;

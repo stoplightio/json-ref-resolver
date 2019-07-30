@@ -235,6 +235,34 @@ export class ResolveRunner implements Types.IResolveRunner {
       resolved.result = this._source;
     }
 
+    // support custom transformers
+    if (this.transformDereferenceResult) {
+      const ref = new URI(jsonPointer || '');
+      try {
+        const { result } = await this.transformDereferenceResult({
+          source: this.source,
+          result: resolved.result,
+          targetAuthority: ref,
+          parentAuthority: this.baseUri,
+          parentPath: targetPath,
+          fragment: ref.fragment(),
+        });
+
+        resolved.result = result;
+      } catch (e) {
+        resolved.errors.push({
+          code: 'TRANSFORM_DEREFERENCED',
+          message: `Error: Could not transform dereferenced result for '${this.baseUri.toString()}${
+            ref.fragment() !== '' ? `#${ref.fragment()}` : ``
+          }' - ${String(e)}`,
+          uri: ref,
+          uriStack: this.uriStack,
+          pointerStack: [],
+          path: targetPath,
+        });
+      }
+    }
+
     return resolved;
   }
 
@@ -320,8 +348,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (this.parseResolveResult) {
       try {
         const parsed = await this.parseResolveResult({
-          // TODO: Is this correct? Result has type any, but uriResult should be type IUriResult.
-          // uriResult: result,
+          uriResult: result,
           result,
           targetAuthority: ref,
           parentAuthority: this.baseUri,
@@ -412,22 +439,6 @@ export class ResolveRunner implements Types.IResolveRunner {
       if (uriResolver) {
         lookupResult.resolved = await uriResolver.resolve(Utils.uriToJSONPointer(ref));
 
-        // support custom transformers
-        if (this.transformDereferenceResult) {
-          const { result, error } = await this.transformDereferenceResult({
-            source: uriResolver.source,
-            result: lookupResult.resolved.result,
-            targetAuthority: ref,
-            parentAuthority: this.baseUri,
-            parentPath,
-            fragment: ref.fragment(),
-          });
-          if (error) {
-            throw new Error(`Could not transform dereferenced result for '${ref.toString()}' - ${String(error)}`);
-          }
-
-          lookupResult.resolved.result = result;
-        }
         // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
         if (lookupResult.resolved.errors.length) {
           for (const error of lookupResult.resolved.errors) {
