@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@stoplight/json": "^2.2.2",
-    "@stoplight/types": "^9.1.2",
+    "@stoplight/types": "^10.0.1",
     "dependency-graph": "~0.8.0",
     "fast-memoize": "^2.5.1",
     "immer": "^3.1.3",
