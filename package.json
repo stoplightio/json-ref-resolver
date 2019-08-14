@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@stoplight/json": "^2.2.2",
-    "@stoplight/types": "git://github.com/stoplightio/types.git#fix/do-not-flatten-security",
+    "@stoplight/types": "^11.0.0",
     "dependency-graph": "~0.8.0",
     "fast-memoize": "^2.5.1",
     "immer": "^3.1.3",
