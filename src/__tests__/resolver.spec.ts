@@ -224,6 +224,19 @@ describe('resolver', () => {
       expect(resolved.result.hello).toBe('world');
     });
 
+    test('should resolve json pointers pointing to falsy values', async () => {
+      const source = {
+        hello: {
+          $ref: '#/word',
+        },
+        word: '',
+      };
+
+      const resolver = new Resolver();
+      const resolved = await resolver.resolve(source);
+      expect(resolved.result.hello).toBe('');
+    });
+
     test('should only resolve valid $refs', async () => {
       const source = {
         hello: {

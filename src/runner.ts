@@ -109,7 +109,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       resolved.result = get(resolved.result, targetPath);
     }
 
-    if (!resolved.result) {
+    if (resolved.result === void 0) {
       resolved.errors.push({
         code: 'POINTER_MISSING',
         message: `'${jsonPointer}' does not exist @ '${this.baseUri.toString()}'`,
@@ -207,7 +207,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
                 resolved.refMap[pathToPointer(dependantPath)] = pathToPointer(pointerPath);
 
-                if (val) {
+                if (val !== void 0) {
                   set(draft, dependantPath, val);
                 } else {
                   resolved.errors.push({
