@@ -539,6 +539,34 @@ describe('resolver', () => {
       expect(resolved.result).toEqual(source);
     });
 
+    test('should resolve jsonPointer pointing to remote falsy values', async () => {
+      const source = {
+        root: {
+          $ref: 'custom://whatever#/entry',
+        },
+      };
+
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
+          return {
+            entry: 0,
+          };
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          custom: reader,
+        },
+      });
+
+      const resolved = await resolver.resolve(source);
+
+      expect(resolved.result).toEqual({
+        root: 0,
+      });
+    });
+
     test('should support not resolving authorities', async () => {
       const data = {
         hello: 'world',

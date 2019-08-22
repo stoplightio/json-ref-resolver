@@ -157,7 +157,7 @@ export class ResolveRunner implements Types.IResolveRunner {
           resolved.errors = resolved.errors.concat(r.resolved.errors);
         }
 
-        if (!r.resolved.result) continue;
+        if (r.resolved.result === void 0) continue;
 
         this._source = produce(this._source, (draft: any) => {
           if (r.resolved) {
