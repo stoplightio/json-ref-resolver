@@ -83,6 +83,10 @@ export interface IResolveOpts extends IResolverOpts {
 
   // the base URI against which $ref URIs are resolved
   baseUri?: string;
+
+  parentPath?: string[];
+
+  pointerStack?: string[];
 }
 
 /** The object returned from `await resolver.resolve()` */
@@ -211,11 +215,6 @@ export interface IRefHandlerOpts {
   parentPointer: string;
 }
 
-export interface IResolveOpts {
-  parentPath?: string[];
-  pointerStack?: string[];
-}
-
 export interface IResolveRunner {
   id: number;
   source: any;
@@ -223,14 +222,22 @@ export interface IResolveRunner {
   dereferenceRemote: boolean;
   uriCache: ICache;
   depth: number;
+  baseUri: uri.URI;
+
+  graph: DepGraph<string>;
+  root: string;
+
   atMaxUriDepth: () => boolean;
-  resolve: (source: any, opts?: IResolveOpts) => Promise<IResolveResult>;
+  resolve: (opts?: IResolveOpts) => Promise<IResolveResult>;
   computeRef: (opts: IComputeRefOpts) => uri.URI | void | undefined;
   lookupAndResolveUri: (opts: IRefHandlerOpts) => Promise<IUriResult>;
 }
 
 /** @hidden */
 export interface IResolveRunnerOpts extends IResolveOpts {
+  graph: DepGraph<string>;
+  root?: uri.URI;
+
   depth?: number;
   uriStack?: string[];
 }
@@ -239,10 +246,12 @@ export interface ICrawler {
   jsonPointer?: string;
   pointerGraph: DepGraph<string>;
   pointerStemGraph: DepGraph<string>;
-  computeGraph: (target: any, parentPath: string[], parentPointer: string, pointerStack: string[]) => void;
+  resolvers: Array<Promise<IUriResult>>;
+  computeGraph: (target: any, parentPath: string[], parentPointer: string, pointerStack?: string[]) => void;
 }
 
 export interface ICrawlerResult {
-  result: any;
-  errors: IResolveError[];
+  jsonPointer?: string;
+  pointerGraph?: DepGraph<string>;
+  pointerStemGraph?: DepGraph<string>;
 }

@@ -819,7 +819,7 @@ describe('resolver', () => {
       };
 
       const runner = new ResolveRunner(source);
-      const resolved = await runner.resolve('#/inner2/marcsStreet');
+      const resolved = await runner.resolve({ jsonPointer: '#/inner2/marcsStreet' });
 
       // only marcStreet and related paths replaced
       const newObj = {
@@ -847,7 +847,7 @@ describe('resolver', () => {
 
       // now we use the same runner to resolve another portion of it
       // only the new portions are resolved (in addition to what has already been done)
-      await resolved.runner.resolve('#/inner3');
+      await resolved.runner.resolve({ jsonPointer: '#/inner3' });
 
       expect(runner.source).toEqual({
         ...newObj,

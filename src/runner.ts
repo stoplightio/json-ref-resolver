@@ -1,4 +1,5 @@
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
+import { DepGraph } from 'dependency-graph';
 import produce from 'immer';
 import { get, set } from 'lodash';
 import { dirname, join } from 'path';
@@ -24,6 +25,8 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
   public readonly baseUri: uri.URI;
   public readonly uriCache: Types.ICache;
+  public readonly graph: DepGraph<string>;
+  public readonly root: string;
 
   public depth: number;
   public uriStack: string[];
@@ -44,7 +47,12 @@ export class ResolveRunner implements Types.IResolveRunner {
 
   private _source: any;
 
-  constructor(source: any, opts: Types.IResolveRunnerOpts = {}) {
+  constructor(
+    source: any,
+    opts: Types.IResolveRunnerOpts = {
+      graph: new DepGraph<string>({ circular: true }),
+    },
+  ) {
     this.id = resolveRunnerCount += 1;
     this.depth = opts.depth || 0;
     this._source = source;
@@ -59,6 +67,17 @@ export class ResolveRunner implements Types.IResolveRunner {
     this.baseUri = uri;
     this.uriStack = opts.uriStack || [];
     this.uriCache = opts.uriCache || new Cache();
+
+    const rootSrn = opts.root && (opts.root.query(true) as { srn: string }).srn;
+    const rootStr = opts.root && opts.root.toString();
+    const baseSrn = (this.baseUri.query(true) as { srn: string }).srn;
+    const baseStr = this.baseUri.toString();
+    this.root = rootSrn || rootStr || baseSrn || baseStr || 'root';
+
+    this.graph = opts.graph;
+    if (!this.graph.hasNode(this.root)) {
+      this.graph.addNode(this.root);
+    }
 
     if (this.baseUri && this.depth === 0) {
       // if this first runner has a baseUri, seed the cache so we don't create another one for this uri later
@@ -94,7 +113,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     return this._source;
   }
 
-  public async resolve(jsonPointer?: string, opts?: Types.IResolveOpts): Promise<Types.IResolveResult> {
+  public async resolve(opts?: Types.IResolveOpts): Promise<Types.IResolveResult> {
     const resolved: Types.IResolveResult = {
       result: this.source,
       refMap: {},
@@ -103,7 +122,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     };
 
     let targetPath: any;
-    jsonPointer = jsonPointer && jsonPointer.trim();
+    const jsonPointer = opts && opts.jsonPointer && opts.jsonPointer.trim();
     if (jsonPointer && jsonPointer !== '#' && jsonPointer !== '#/') {
       targetPath = pointerToPath(jsonPointer);
       resolved.result = get(resolved.result, targetPath);
@@ -369,6 +388,8 @@ export class ResolveRunner implements Types.IResolveRunner {
     return new ResolveRunner(result, {
       depth: this.depth + 1,
       baseUri: ref.toString(),
+      graph: this.graph,
+      root: ref,
       uriStack: this.uriStack,
       uriCache: this.uriCache,
       resolvers: this.resolvers,
@@ -441,7 +462,10 @@ export class ResolveRunner implements Types.IResolveRunner {
       // only resolve the uri result if we were able to look it up and create the resolver
       // @ts-ignore
       if (uriResolver) {
-        lookupResult.resolved = await uriResolver.resolve(Utils.uriToJSONPointer(ref), { parentPath });
+        lookupResult.resolved = await uriResolver.resolve({
+          jsonPointer: Utils.uriToJSONPointer(ref),
+          parentPath,
+        });
 
         // if pointer resolution failed, revert to the original value (which will be a $ref most of the time)
         if (lookupResult.resolved.errors.length) {

@@ -145,6 +145,10 @@ export class ResolveCrawler implements Types.ICrawler {
           this.pointerGraph.addNode(targetPointer);
         }
 
+        const srn = `${this._runner.baseUri.toString()}${targetPointer}`;
+        if (!this._runner.graph.hasNode(srn)) this._runner.graph.addNode(srn);
+        if (this._runner.root !== srn) this._runner.graph.addDependency(this._runner.root, srn);
+
         // register parent as a dependant of the target
         this.pointerGraph.addDependency(parentPointer, targetPointer);
 
@@ -161,6 +165,10 @@ export class ResolveCrawler implements Types.ICrawler {
       }
     } else {
       // remote pointer
+      const srn = ((ref.query(true) as unknown) as { srn: string }).srn;
+      if (!this._runner.graph.hasNode(srn)) this._runner.graph.addNode(srn);
+      if (this._runner.root !== srn) this._runner.graph.addDependency(this._runner.root, srn);
+
       if (this._runner.dereferenceRemote && !this._runner.atMaxUriDepth()) {
         this.resolvers.push(this._runner.lookupAndResolveUri(opts));
       }
