@@ -251,7 +251,6 @@ export interface ICrawler {
 }
 
 export interface ICrawlerResult {
-  jsonPointer?: string;
-  pointerGraph?: DepGraph<string>;
-  pointerStemGraph?: DepGraph<string>;
+  result: any;
+  errors: IResolveError[];
 }

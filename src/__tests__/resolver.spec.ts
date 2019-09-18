@@ -2070,6 +2070,64 @@ describe('resolver', () => {
     });
   });
 
+  describe('print tree', () => {
+    test('should handle local refs', async () => {
+      const data = {
+        title: 'Example',
+        type: 'object',
+        definitions: {
+          bear: {
+            type: 'object',
+            properties: {
+              type: {
+                type: 'string',
+              },
+              diet: {
+                type: 'string',
+              },
+              age: {
+                type: 'number',
+              },
+            },
+            required: ['type', 'diet', 'age'],
+          },
+        },
+        description: 'Bears are awesome',
+        properties: {
+          id: {
+            type: 'string',
+          },
+          bear: {
+            $ref: '#/definitions/bear',
+          },
+        },
+      };
+
+      const resolver = new Resolver();
+      await resolver.resolve(data);
+
+      expect(resolver.printRefTree('root')).toMatchSnapshot();
+    });
+
+    // ./a#/foo -> ./b#bar -> ./a#/xxx -> ./c -> ./b#/zzz
+    test('should resolve http relative paths + back pointing uri refs', async () => {
+      const source = httpMocks['https://back-pointing.com/a'];
+
+      const resolver = new Resolver({
+        resolvers: {
+          https: new HttpReader(),
+        },
+      });
+
+      const baseUri = 'https://back-pointing.com/a';
+      await resolver.resolve(source, {
+        baseUri,
+      });
+
+      expect(resolver.printRefTree(baseUri)).toMatchSnapshot();
+    });
+  });
+
   describe('use cases', () => {
     test('mixture of file and http', async () => {
       const data = {

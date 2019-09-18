@@ -68,11 +68,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     this.uriStack = opts.uriStack || [];
     this.uriCache = opts.uriCache || new Cache();
 
-    const rootSrn = opts.root && (opts.root.query(true) as { srn: string }).srn;
-    const rootStr = opts.root && opts.root.toString();
-    const baseSrn = (this.baseUri.query(true) as { srn: string }).srn;
-    const baseStr = this.baseUri.toString();
-    this.root = rootSrn || rootStr || baseSrn || baseStr || 'root';
+    this.root = (opts.root && opts.root.toString()) || this.baseUri.toString() || 'root';
 
     this.graph = opts.graph;
     if (!this.graph.hasNode(this.root)) {
