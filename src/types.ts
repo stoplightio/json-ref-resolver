@@ -235,7 +235,6 @@ export interface IResolveRunner {
 
 /** @hidden */
 export interface IResolveRunnerOpts extends IResolveOpts {
-  graph: DepGraph<string>;
   root?: uri.URI;
 
   depth?: number;

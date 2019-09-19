@@ -1,5 +1,4 @@
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
-import { DepGraph } from 'dependency-graph';
 import produce from 'immer';
 import { get, set } from 'lodash';
 import { dirname, join } from 'path';
@@ -8,6 +7,7 @@ import { URI as VSURI } from 'vscode-uri';
 
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
+import { RefGraph } from './refGraph';
 import * as Types from './types';
 import * as Utils from './utils';
 
@@ -25,7 +25,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
   public readonly baseUri: uri.URI;
   public readonly uriCache: Types.ICache;
-  public readonly graph: DepGraph<string>;
+  public readonly graph: RefGraph<string>;
   public readonly root: string;
 
   public depth: number;
@@ -49,9 +49,8 @@ export class ResolveRunner implements Types.IResolveRunner {
 
   constructor(
     source: any,
-    opts: Types.IResolveRunnerOpts = {
-      graph: new DepGraph<string>({ circular: true }),
-    },
+    graph: RefGraph<string> = new RefGraph<string>({ circular: true }),
+    opts: Types.IResolveRunnerOpts = {},
   ) {
     this.id = resolveRunnerCount += 1;
     this.depth = opts.depth || 0;
@@ -70,7 +69,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     this.root = (opts.root && opts.root.toString()) || this.baseUri.toString() || 'root';
 
-    this.graph = opts.graph;
+    this.graph = graph;
     if (!this.graph.hasNode(this.root)) {
       this.graph.addNode(this.root);
     }
@@ -381,10 +380,9 @@ export class ResolveRunner implements Types.IResolveRunner {
       }
     }
 
-    return new ResolveRunner(result, {
+    return new ResolveRunner(result, this.graph, {
       depth: this.depth + 1,
       baseUri: ref.toString(),
-      graph: this.graph,
       root: ref,
       uriStack: this.uriStack,
       uriCache: this.uriCache,

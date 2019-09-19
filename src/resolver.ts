@@ -38,10 +38,9 @@ export class Resolver {
   }
 
   public resolve(source: any, opts: Types.IResolveOpts = {}): Promise<Types.IResolveResult> {
-    const runner = new ResolveRunner(source, {
+    const runner = new ResolveRunner(source, this.graph, {
       uriCache: this.uriCache,
       resolvers: this.resolvers,
-      graph: this.graph,
       getRef: this.getRef,
       transformRef: this.transformRef,
       dereferenceInline: this.dereferenceInline,
