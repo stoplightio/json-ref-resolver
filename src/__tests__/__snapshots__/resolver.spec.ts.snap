@@ -2,29 +2,14 @@
 
 exports[`resolver print tree should handle local refs 1`] = `
 "└─ root
-   ├─ #/definitions/bear
-   │  └─ incomingEdges
-   │     └─ root
-   └─ outgoingEdges
-      └─ #/definitions/bear
+   └─ #/definitions/bear
 "
 `;
 
 exports[`resolver print tree should resolve http relative paths + back pointing uri refs 1`] = `
 "└─ https://back-pointing.com/a
    ├─ https://back-pointing.com/b#/defs/one
-   │  └─ incomingEdges
-   │     └─ https://back-pointing.com/a
-   ├─ https://back-pointing.com/c
-   │  ├─ https://back-pointing.com/b#/defs/two
-   │  │  └─ incomingEdges
-   │  │     └─ https://back-pointing.com/c
-   │  ├─ incomingEdges
-   │  │  └─ https://back-pointing.com/a
-   │  └─ outgoingEdges
-   │     └─ https://back-pointing.com/b#/defs/two
-   └─ outgoingEdges
-      ├─ https://back-pointing.com/b#/defs/one
-      └─ https://back-pointing.com/c
+   └─ https://back-pointing.com/c
+      └─ https://back-pointing.com/b#/defs/two
 "
 `;
