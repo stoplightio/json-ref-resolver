@@ -37,10 +37,6 @@ export class Resolver {
     this.graph = new RefGraph<string>({ circular: true });
   }
 
-  public printRefTree(id: string) {
-    return this.graph.serialize(id);
-  }
-
   public resolve(source: any, opts: Types.IResolveOpts = {}): Promise<Types.IResolveResult> {
     const runner = new ResolveRunner(source, {
       uriCache: this.uriCache,

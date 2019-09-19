@@ -2106,7 +2106,7 @@ describe('resolver', () => {
       const resolver = new Resolver();
       await resolver.resolve(data);
 
-      expect(resolver.printRefTree('root')).toMatchSnapshot();
+      expect(resolver.graph.serialize('root')).toMatchSnapshot();
     });
 
     // ./a#/foo -> ./b#bar -> ./a#/xxx -> ./c -> ./b#/zzz
@@ -2124,7 +2124,7 @@ describe('resolver', () => {
         baseUri,
       });
 
-      expect(resolver.printRefTree(baseUri)).toMatchSnapshot();
+      expect(resolver.graph.serialize(baseUri)).toMatchSnapshot();
     });
   });
 
