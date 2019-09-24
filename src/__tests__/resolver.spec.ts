@@ -2104,9 +2104,9 @@ describe('resolver', () => {
       };
 
       const resolver = new Resolver();
-      await resolver.resolve(data);
+      const { graph } = await resolver.resolve(data);
 
-      expect(resolver.graph.serialize('root')).toMatchSnapshot();
+      expect(graph.serialize('root')).toMatchSnapshot();
     });
 
     // ./a#/foo -> ./b#bar -> ./a#/xxx -> ./c -> ./b#/zzz
@@ -2120,11 +2120,11 @@ describe('resolver', () => {
       });
 
       const baseUri = 'https://back-pointing.com/a';
-      await resolver.resolve(source, {
+      const { graph } = await resolver.resolve(source, {
         baseUri,
       });
 
-      expect(resolver.graph.serialize(baseUri)).toMatchSnapshot();
+      expect(graph.serialize(baseUri)).toMatchSnapshot();
     });
   });
 
