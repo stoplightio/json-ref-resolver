@@ -10,7 +10,6 @@ import * as Types from './types';
  */
 export class Resolver {
   public readonly uriCache: Types.ICache;
-  public readonly graph: RefGraph<string>;
 
   protected dereferenceInline: boolean;
   protected dereferenceRemote: boolean;
@@ -34,11 +33,11 @@ export class Resolver {
     this.parseResolveResult = opts.parseResolveResult;
     this.transformDereferenceResult = opts.transformDereferenceResult;
     this.ctx = opts.ctx;
-    this.graph = new RefGraph<string>({ circular: true });
   }
 
   public resolve(source: any, opts: Types.IResolveOpts = {}): Promise<Types.IResolveResult> {
-    const runner = new ResolveRunner(source, this.graph, {
+    const graph = new RefGraph<string>({ circular: true });
+    const runner = new ResolveRunner(source, graph, {
       uriCache: this.uriCache,
       resolvers: this.resolvers,
       getRef: this.getRef,

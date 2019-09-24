@@ -111,6 +111,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public async resolve(opts?: Types.IResolveOpts): Promise<Types.IResolveResult> {
     const resolved: Types.IResolveResult = {
       result: this.source,
+      graph: this.graph,
       refMap: {},
       errors: [],
       runner: this,
@@ -412,6 +413,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     if (this.uriStack.includes(uriCacheKey)) {
       lookupResult.resolved = {
         result: val,
+        graph: this.graph,
         refMap: {},
         errors: [],
         runner: this,
