@@ -1,5 +1,5 @@
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
-import produce from 'immer';
+import produce, { original } from 'immer';
 import { get, set } from 'lodash';
 import { dirname, join } from 'path';
 import * as URI from 'urijs';
@@ -180,6 +180,10 @@ export class ResolveRunner implements Types.IResolveRunner {
               return r.resolved.result;
             } else {
               set(draft, resolvedTargetPath, r.resolved.result);
+
+              if (this.graph.hasNode(String(r.uri))) {
+                this.graph.setNodeData(String(r.uri), r.resolved.result);
+              }
             }
           }
         });
@@ -224,6 +228,10 @@ export class ResolveRunner implements Types.IResolveRunner {
 
                 if (val !== void 0) {
                   set(draft, dependantPath, val);
+
+                  if (this.graph.hasNode(pathToPointer(pointerPath))) {
+                    this.graph.setNodeData(pathToPointer(pointerPath), original(val));
+                  }
                 } else {
                   resolved.errors.push({
                     code: 'POINTER_MISSING',
