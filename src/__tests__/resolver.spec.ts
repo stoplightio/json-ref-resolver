@@ -2106,7 +2106,7 @@ describe('resolver', () => {
       const resolver = new Resolver();
       const { graph } = await resolver.resolve(data);
 
-      expect(graph.serialize('root')).toMatchSnapshot();
+      expect(graph.dependenciesOf('root')).toMatchSnapshot();
     });
 
     // ./a#/foo -> ./b#bar -> ./a#/xxx -> ./c -> ./b#/zzz
@@ -2124,7 +2124,7 @@ describe('resolver', () => {
         baseUri,
       });
 
-      expect(graph.serialize(baseUri)).toMatchSnapshot();
+      expect(graph.dependenciesOf[baseUri]).toMatchSnapshot();
     });
 
     test('circular refs', async () => {
@@ -2143,10 +2143,10 @@ describe('resolver', () => {
       const resolver = new Resolver();
       const { graph } = await resolver.resolve(source);
 
-      expect(graph.serialize('root')).toMatchSnapshot();
+      expect(graph.dependenciesOf('root')).toMatchSnapshot();
     });
 
-    test.skip('indirect circular refs', async () => {
+    test('indirect circular refs', async () => {
       const data = {
         obj1: {
           one: true,
@@ -2190,7 +2190,7 @@ describe('resolver', () => {
 
       const { graph } = await resolver.resolve(source);
 
-      expect(graph.serialize('root')).toMatchSnapshot();
+      expect(graph.dependenciesOf('root')).toMatchSnapshot();
     });
   });
 

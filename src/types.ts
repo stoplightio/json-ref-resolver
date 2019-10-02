@@ -1,6 +1,5 @@
 import { Segment } from '@stoplight/types';
 import { DepGraph } from 'dependency-graph';
-import { RefGraph } from './refGraph';
 
 /**
  * The following interfaces are the primary interaction points for json-ref-resolver.
@@ -114,7 +113,7 @@ export interface IResolveResult {
    * A graph of every single reference in source.
    *
    */
-  graph: RefGraph<any>;
+  graph: DepGraph<any>;
 
   /** Any errors that occured during the resolution process. */
   errors: IResolveError[];

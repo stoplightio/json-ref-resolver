@@ -1,5 +1,6 @@
+import { DepGraph } from 'dependency-graph';
+
 import { Cache } from './cache';
-import { RefGraph } from './refGraph';
 import { ResolveRunner } from './runner';
 import * as Types from './types';
 
@@ -36,7 +37,7 @@ export class Resolver {
   }
 
   public resolve(source: any, opts: Types.IResolveOpts = {}): Promise<Types.IResolveResult> {
-    const graph = new RefGraph<string>({ circular: true });
+    const graph = new DepGraph<any>({ circular: true });
     const runner = new ResolveRunner(source, graph, {
       uriCache: this.uriCache,
       resolvers: this.resolvers,

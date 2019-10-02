@@ -1,4 +1,5 @@
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
+import { DepGraph } from 'dependency-graph';
 import produce, { original } from 'immer';
 import { get, set } from 'lodash';
 import { dirname, join } from 'path';
@@ -7,7 +8,6 @@ import { URI as VSURI } from 'vscode-uri';
 
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
-import { RefGraph } from './refGraph';
 import * as Types from './types';
 import * as Utils from './utils';
 
@@ -25,7 +25,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
   public readonly baseUri: uri.URI;
   public readonly uriCache: Types.ICache;
-  public readonly graph: RefGraph<string>;
+  public readonly graph: DepGraph<any>;
   public readonly root: string;
 
   public depth: number;
@@ -49,7 +49,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
   constructor(
     source: any,
-    graph: RefGraph<string> = new RefGraph<string>({ circular: true }),
+    graph: DepGraph<any> = new DepGraph<any>({ circular: true }),
     opts: Types.IResolveRunnerOpts = {},
   ) {
     this.id = resolveRunnerCount += 1;
