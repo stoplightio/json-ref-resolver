@@ -114,7 +114,7 @@ export interface IResolveResult {
    * A graph of every single reference in source.
    *
    */
-  graph: RefGraph<string>;
+  graph: RefGraph<any>;
 
   /** Any errors that occured during the resolution process. */
   errors: IResolveError[];
@@ -232,7 +232,7 @@ export interface IResolveRunner {
   depth: number;
   baseUri: uri.URI;
 
-  graph: DepGraph<string>;
+  graph: DepGraph<any>;
   root: string;
 
   atMaxUriDepth: () => boolean;
