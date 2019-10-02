@@ -1,3 +1,5 @@
+import { DepGraph } from 'dependency-graph';
+
 import { Cache } from './cache';
 import { ResolveRunner } from './runner';
 import * as Types from './types';
@@ -35,7 +37,8 @@ export class Resolver {
   }
 
   public resolve(source: any, opts: Types.IResolveOpts = {}): Promise<Types.IResolveResult> {
-    const runner = new ResolveRunner(source, {
+    const graph = new DepGraph<any>({ circular: true });
+    const runner = new ResolveRunner(source, graph, {
       uriCache: this.uriCache,
       resolvers: this.resolvers,
       getRef: this.getRef,
@@ -48,6 +51,6 @@ export class Resolver {
       ctx: Object.assign({}, this.ctx || {}, opts.ctx || {}),
     });
 
-    return runner.resolve(opts.jsonPointer);
+    return runner.resolve(opts);
   }
 }

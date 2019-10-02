@@ -819,7 +819,7 @@ describe('resolver', () => {
       };
 
       const runner = new ResolveRunner(source);
-      const resolved = await runner.resolve('#/inner2/marcsStreet');
+      const resolved = await runner.resolve({ jsonPointer: '#/inner2/marcsStreet' });
 
       // only marcStreet and related paths replaced
       const newObj = {
@@ -847,7 +847,7 @@ describe('resolver', () => {
 
       // now we use the same runner to resolve another portion of it
       // only the new portions are resolved (in addition to what has already been done)
-      await resolved.runner.resolve('#/inner3');
+      await resolved.runner.resolve({ jsonPointer: '#/inner3' });
 
       expect(runner.source).toEqual({
         ...newObj,
@@ -2067,6 +2067,130 @@ describe('resolver', () => {
           },
         },
       });
+    });
+  });
+
+  describe('print tree', () => {
+    test('should handle local refs', async () => {
+      const data = {
+        title: 'Example',
+        type: 'object',
+        definitions: {
+          bear: {
+            type: 'object',
+            properties: {
+              type: {
+                type: 'string',
+              },
+              diet: {
+                type: 'string',
+              },
+              age: {
+                type: 'number',
+              },
+            },
+            required: ['type', 'diet', 'age'],
+          },
+        },
+        description: 'Bears are awesome',
+        properties: {
+          id: {
+            type: 'string',
+          },
+          bear: {
+            $ref: '#/definitions/bear',
+          },
+        },
+      };
+
+      const resolver = new Resolver();
+      const { graph } = await resolver.resolve(data);
+
+      expect(graph.dependenciesOf('root')).toMatchSnapshot();
+    });
+
+    // ./a#/foo -> ./b#bar -> ./a#/xxx -> ./c -> ./b#/zzz
+    test('should resolve http relative paths + back pointing uri refs', async () => {
+      const source = httpMocks['https://back-pointing.com/a'];
+
+      const resolver = new Resolver({
+        resolvers: {
+          https: new HttpReader(),
+        },
+      });
+
+      const baseUri = 'https://back-pointing.com/a';
+      const { graph } = await resolver.resolve(source, {
+        baseUri,
+      });
+
+      expect(graph.dependenciesOf[baseUri]).toMatchSnapshot();
+    });
+
+    test('circular refs', async () => {
+      const source = {
+        ref1: {
+          $ref: '#/ref3',
+        },
+        ref2: {
+          $ref: '#/ref1',
+        },
+        ref3: {
+          $ref: '#/ref2',
+        },
+      };
+
+      const resolver = new Resolver();
+      const { graph } = await resolver.resolve(source);
+
+      expect(graph.dependenciesOf('root')).toMatchSnapshot();
+    });
+
+    test('indirect circular refs', async () => {
+      const data = {
+        obj1: {
+          one: true,
+          foo: {
+            $ref: 'custom://obj2',
+          },
+        },
+        obj2: {
+          two: true,
+          foo: {
+            $ref: 'custom://obj3',
+          },
+        },
+        obj3: {
+          three: true,
+          foo: {
+            $ref: 'custom://obj1',
+          },
+        },
+      };
+
+      const source = {
+        inner: {
+          data: {
+            $ref: 'custom://obj1',
+          },
+        },
+      };
+
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
+          return data[ref.authority()];
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          custom: reader,
+        },
+      });
+
+      const { graph } = await resolver.resolve(source);
+
+      expect(graph.dependenciesOf('root')).toMatchSnapshot();
     });
   });
 
