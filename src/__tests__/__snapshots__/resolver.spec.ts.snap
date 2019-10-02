@@ -1,5 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`resolver print tree circular refs 1`] = `
+"└─ root
+   ├─ #/ref3
+   ├─ #/ref1
+   └─ #/ref2
+"
+`;
+
+exports[`resolver print tree indirect circular refs 1`] = `""`;
+
 exports[`resolver print tree should handle local refs 1`] = `
 "└─ root
    └─ #/definitions/bear

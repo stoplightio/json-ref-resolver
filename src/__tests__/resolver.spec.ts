@@ -2126,6 +2126,72 @@ describe('resolver', () => {
 
       expect(graph.serialize(baseUri)).toMatchSnapshot();
     });
+
+    test('circular refs', async () => {
+      const source = {
+        ref1: {
+          $ref: '#/ref3',
+        },
+        ref2: {
+          $ref: '#/ref1',
+        },
+        ref3: {
+          $ref: '#/ref2',
+        },
+      };
+
+      const resolver = new Resolver();
+      const { graph } = await resolver.resolve(source);
+
+      expect(graph.serialize('root')).toMatchSnapshot();
+    });
+
+    test.skip('indirect circular refs', async () => {
+      const data = {
+        obj1: {
+          one: true,
+          foo: {
+            $ref: 'custom://obj2',
+          },
+        },
+        obj2: {
+          two: true,
+          foo: {
+            $ref: 'custom://obj3',
+          },
+        },
+        obj3: {
+          three: true,
+          foo: {
+            $ref: 'custom://obj1',
+          },
+        },
+      };
+
+      const source = {
+        inner: {
+          data: {
+            $ref: 'custom://obj1',
+          },
+        },
+      };
+
+      const reader: Types.IResolver = {
+        async resolve(ref: uri.URI): Promise<any> {
+          return data[ref.authority()];
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          custom: reader,
+        },
+      });
+
+      const { graph } = await resolver.resolve(source);
+
+      expect(graph.serialize('root')).toMatchSnapshot();
+    });
   });
 
   describe('use cases', () => {
