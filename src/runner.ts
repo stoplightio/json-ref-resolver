@@ -25,7 +25,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
   public readonly baseUri: uri.URI;
   public readonly uriCache: Types.ICache;
-  public readonly graph: DepGraph<any>;
+  public readonly graph: Types.IResolveRunner['graph'];
   public readonly root: string;
 
   public depth: number;
@@ -181,9 +181,7 @@ export class ResolveRunner implements Types.IResolveRunner {
             } else {
               set(draft, resolvedTargetPath, r.resolved.result);
 
-              if (this.graph.hasNode(String(r.uri))) {
-                this.graph.setNodeData(String(r.uri), r.resolved.result);
-              }
+              this._setGraphNodeData(String(r.uri), resolvedTargetPath, r.resolved.result);
             }
           }
         });
@@ -229,9 +227,7 @@ export class ResolveRunner implements Types.IResolveRunner {
                 if (val !== void 0) {
                   set(draft, dependantPath, val);
 
-                  if (this.graph.hasNode(pathToPointer(pointerPath))) {
-                    this.graph.setNodeData(pathToPointer(pointerPath), original(val));
-                  }
+                  this._setGraphNodeData(pathToPointer(pointerPath), dependantPath as string[], original(val));
                 } else {
                   resolved.errors.push({
                     code: 'POINTER_MISSING',
@@ -535,5 +531,31 @@ export class ResolveRunner implements Types.IResolveRunner {
     }
 
     return false;
+  }
+
+  private _setGraphNodeData(nodeId: string, propertyPath: string[], data: any) {
+    if (!this.graph.hasNode(nodeId)) return;
+
+    const graphNodeData = this.graph.getNodeData(nodeId);
+
+    let propertyPaths = {};
+
+    // create an empty placeholder in case graphNodeData isn't an object
+    propertyPaths[this.root] = [];
+
+    if (typeof graphNodeData === 'object') {
+      propertyPaths = {
+        ...propertyPaths,
+        ...graphNodeData.propertyPaths,
+      };
+    }
+
+    propertyPaths[this.root].push(pathToPointer(propertyPath));
+
+    this.graph.setNodeData(nodeId, {
+      propertyPaths,
+
+      data,
+    });
   }
 }
