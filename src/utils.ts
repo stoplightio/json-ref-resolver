@@ -1,3 +1,6 @@
+import { alg, Graph } from '@dagrejs/graphlib';
+import { initial, tail } from 'lodash';
+
 const replace = (str: string, find: string, repl: string): string => {
   // modified from http://jsperf.com/javascript-replace-all/10
   const orig = str.toString();
@@ -39,3 +42,13 @@ export const uriToJSONPointer = (uri: uri.URI): string => {
 export const uriIsJSONPointer = (ref: uri.URI): boolean => {
   return ref.toString().slice(0, 2) === '#/';
 };
+
+/** @hidden */
+export function getDependenciesOf(graph: Graph, nodeId: string) {
+  return (graph.outEdges(nodeId) || []).map(edge => edge.w);
+}
+
+/** @hidden */
+export function getDependantsOf(graph: Graph, nodeId: string) {
+  return (graph.inEdges(nodeId) || []).map(edge => edge.v);
+}

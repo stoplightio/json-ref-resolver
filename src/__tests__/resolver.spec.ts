@@ -6,6 +6,7 @@ import { Cache } from '../cache';
 import { Resolver } from '../resolver';
 import { defaultGetRef, ResolveRunner } from '../runner';
 import * as Types from '../types';
+import { getDependenciesOf } from '../utils';
 import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
 
@@ -2106,7 +2107,7 @@ describe('resolver', () => {
       const resolver = new Resolver();
       const { graph } = await resolver.resolve(data);
 
-      expect(graph.dependenciesOf('root')).toMatchSnapshot();
+      expect(getDependenciesOf(graph, 'root')).toMatchSnapshot();
     });
 
     // ./a#/foo -> ./b#bar -> ./a#/xxx -> ./c -> ./b#/zzz
@@ -2124,7 +2125,7 @@ describe('resolver', () => {
         baseUri,
       });
 
-      expect(graph.dependenciesOf[baseUri]).toMatchSnapshot();
+      expect(getDependenciesOf(graph, baseUri)).toMatchSnapshot();
     });
 
     test('circular refs', async () => {
@@ -2143,7 +2144,7 @@ describe('resolver', () => {
       const resolver = new Resolver();
       const { graph } = await resolver.resolve(source);
 
-      expect(graph.dependenciesOf('root')).toMatchSnapshot();
+      expect(getDependenciesOf(graph, 'root')).toMatchSnapshot();
     });
 
     test('indirect circular refs', async () => {
@@ -2190,7 +2191,7 @@ describe('resolver', () => {
 
       const { graph } = await resolver.resolve(source);
 
-      expect(graph.dependenciesOf('root')).toMatchSnapshot();
+      expect(getDependenciesOf(graph, 'root')).toMatchSnapshot();
     });
   });
 

@@ -5,6 +5,8 @@
   "include": ["."],
 
   "compilerOptions": {
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
+    "baseUrl": ".",
+    "paths": { "*": ["src/types/*"] }
   }
 }

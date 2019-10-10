@@ -1,5 +1,5 @@
+import { Graph } from '@dagrejs/graphlib';
 import { pointerToPath } from '@stoplight/json';
-import { DepGraph } from 'dependency-graph';
 import { get } from 'lodash';
 
 import * as Types from './types';
@@ -14,11 +14,9 @@ export class ResolveCrawler implements Types.ICrawler {
   // to properly calculate the resolve target
   public jsonPointer?: string;
 
-  // @ts-ignore
-  public readonly pointerGraph = new DepGraph<string>({ circular: true });
+  public readonly pointerGraph = new Graph();
 
-  // @ts-ignore
-  public readonly pointerStemGraph = new DepGraph<string>({ circular: true });
+  public readonly pointerStemGraph = new Graph();
 
   private _runner: Types.IResolveRunner;
 
@@ -115,7 +113,7 @@ export class ResolveCrawler implements Types.ICrawler {
         // pointerStemGraph tracks all of the stem dependency and is used later
         // in the runner to protect against circular refs in the final JS object
         if (!this.pointerStemGraph.hasNode(targetPointer)) {
-          this.pointerStemGraph.addNode(targetPointer);
+          this.pointerStemGraph.setNode(targetPointer);
         }
 
         let stem = '#';
@@ -129,28 +127,35 @@ export class ResolveCrawler implements Types.ICrawler {
             const dep = `${stem}${tail}`;
             if (dep !== parentPointer && dep !== targetPointer) {
               if (!this.pointerStemGraph.hasNode(dep)) {
-                this.pointerStemGraph.addNode(dep);
+                this.pointerStemGraph.setNode(dep);
               }
 
-              this.pointerStemGraph.addDependency(dep, targetPointer);
+              this.pointerStemGraph.setEdge(dep, targetPointer);
             }
           }
         }
 
         if (!this.pointerGraph.hasNode(parentPointer)) {
-          this.pointerGraph.addNode(parentPointer);
+          this.pointerGraph.setNode(parentPointer);
         }
 
         if (!this.pointerGraph.hasNode(targetPointer)) {
-          this.pointerGraph.addNode(targetPointer);
+          this.pointerGraph.setNode(targetPointer);
         }
 
         const targetRef = `${this._runner.baseUri.toString()}${targetPointer}`;
-        if (!this._runner.graph.hasNode(targetRef)) this._runner.graph.addNode(targetRef);
-        if (this._runner.root !== targetRef) this._runner.graph.addDependency(this._runner.root, targetRef);
+
+        if (!this._runner.graph.hasNode(targetRef)) {
+          this._runner.graph.setNode(targetRef);
+        }
+
+        if (this._runner.root !== targetRef) {
+          // TODO (CL): Set edge data to be the proprty path
+          this._runner.graph.setEdge(this._runner.root, targetRef);
+        }
 
         // register parent as a dependant of the target
-        this.pointerGraph.addDependency(parentPointer, targetPointer);
+        this.pointerGraph.setEdge(parentPointer, targetPointer);
 
         // if we are partially resolving, we need to follow refs (since they might point outside of our initial target object tree)
         // only need to initiate when top of pointer stack
@@ -166,8 +171,14 @@ export class ResolveCrawler implements Types.ICrawler {
     } else {
       // remote pointer
       const remoteRef = ref.toString();
-      if (!this._runner.graph.hasNode(remoteRef)) this._runner.graph.addNode(remoteRef);
-      if (this._runner.root !== remoteRef) this._runner.graph.addDependency(this._runner.root, remoteRef);
+      if (!this._runner.graph.hasNode(remoteRef)) {
+        this._runner.graph.setNode(remoteRef);
+      }
+
+      if (this._runner.root !== remoteRef) {
+        // TODO (CL): Set edge data to be the proprty path
+        this._runner.graph.setEdge(this._runner.root, remoteRef);
+      }
 
       if (this._runner.dereferenceRemote && !this._runner.atMaxUriDepth()) {
         this.resolvers.push(this._runner.lookupAndResolveUri(opts));

@@ -1,5 +1,5 @@
-import { Dictionary, Segment } from '@stoplight/types';
-import { DepGraph } from 'dependency-graph';
+import { Segment } from '@stoplight/types';
+import { Graph } from 'graphlib';
 
 /**
  * The following interfaces are the primary interaction points for json-ref-resolver.
@@ -113,7 +113,7 @@ export interface IResolveResult {
    * A graph of every single reference in source.
    *
    */
-  graph: DepGraph<IGraphNodeData>;
+  graph: Graph;
 
   /** Any errors that occured during the resolution process. */
   errors: IResolveError[];
@@ -222,29 +222,6 @@ export interface IRefHandlerOpts {
   parentPointer: string;
 }
 
-export interface IGraphNodeData {
-  /**
-   * A map of the root URI string to the property paths that reference this node.
-   *
-   * Example:
-   *
-   * ```json
-   * {
-   *   "root": [
-   *     "#/properties/name",
-   *     "#/properties/user/properties/name"
-   *   ],
-   *   "file:///api.json/#models/card": [
-   *     "#/properties/name"
-   *   ]
-   * }
-   * ```
-   */
-  propertyPaths: Dictionary<string[]>;
-
-  data: any;
-}
-
 export interface IResolveRunner {
   id: number;
   source: any;
@@ -254,7 +231,7 @@ export interface IResolveRunner {
   depth: number;
   baseUri: uri.URI;
 
-  graph: DepGraph<IGraphNodeData>;
+  graph: Graph;
   root: string;
 
   atMaxUriDepth: () => boolean;
@@ -273,8 +250,8 @@ export interface IResolveRunnerOpts extends IResolveOpts {
 
 export interface ICrawler {
   jsonPointer?: string;
-  pointerGraph: DepGraph<string>;
-  pointerStemGraph: DepGraph<string>;
+  pointerGraph: Graph;
+  pointerStemGraph: Graph;
   resolvers: Array<Promise<IUriResult>>;
   computeGraph: (target: any, parentPath: string[], parentPointer: string, pointerStack?: string[]) => void;
 }

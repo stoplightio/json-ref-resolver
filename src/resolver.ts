@@ -1,4 +1,4 @@
-import { DepGraph } from 'dependency-graph';
+import { Graph } from '@dagrejs/graphlib';
 
 import { Cache } from './cache';
 import { ResolveRunner } from './runner';
@@ -37,7 +37,7 @@ export class Resolver {
   }
 
   public resolve(source: any, opts: Types.IResolveOpts = {}): Promise<Types.IResolveResult> {
-    const graph = new DepGraph<any>({ circular: true });
+    const graph = new Graph({ directed: true });
     const runner = new ResolveRunner(source, graph, {
       uriCache: this.uriCache,
       resolvers: this.resolvers,

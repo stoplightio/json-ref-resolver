@@ -1,5 +1,5 @@
+import { alg, Graph } from '@dagrejs/graphlib';
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
-import { DepGraph } from 'dependency-graph';
 import produce, { original } from 'immer';
 import { get, set } from 'lodash';
 import { dirname, join } from 'path';
@@ -47,11 +47,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
   private _source: any;
 
-  constructor(
-    source: any,
-    graph: DepGraph<any> = new DepGraph<any>({ circular: true }),
-    opts: Types.IResolveRunnerOpts = {},
-  ) {
+  constructor(source: any, graph = new Graph(), opts: Types.IResolveRunnerOpts = {}) {
     this.id = resolveRunnerCount += 1;
     this.depth = opts.depth || 0;
     this._source = source;
@@ -71,7 +67,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     this.graph = graph;
     if (!this.graph.hasNode(this.root)) {
-      this.graph.addNode(this.root);
+      this.graph.setNode(this.root);
     }
 
     if (this.baseUri && this.depth === 0) {
@@ -181,7 +177,7 @@ export class ResolveRunner implements Types.IResolveRunner {
             } else {
               set(draft, resolvedTargetPath, r.resolved.result);
 
-              this._setGraphNodeData(String(r.uri), resolvedTargetPath, r.resolved.result);
+              this.graph.setNode(String(r.uri), r.resolved.result);
             }
           }
         });
@@ -196,12 +192,12 @@ export class ResolveRunner implements Types.IResolveRunner {
           let processOrder: any[] = [];
 
           try {
-            processOrder = crawler.pointerGraph.overallOrder();
+            processOrder = crawler.pointerGraph.nodes();
 
             // loop through the pointer graph in the correct order, setting values we go
             // this is where local pointers are replaced with their resolved values
             for (const pointer of processOrder) {
-              const dependants = crawler.pointerGraph.dependantsOf(pointer);
+              const dependants = Utils.getDependantsOf(crawler.pointerGraph, pointer);
               if (!dependants.length) continue;
 
               const pointerPath = pointerToPath(pointer);
@@ -211,7 +207,8 @@ export class ResolveRunner implements Types.IResolveRunner {
                 // this implementation is MUCH more performant than decycling the final object to remove circulars
                 let isCircular;
                 const dependantPath = pointerToPath(dependant);
-                const dependantStems = crawler.pointerStemGraph.dependenciesOf(pointer);
+                const dependantStems = Utils.getDependenciesOf(crawler.pointerStemGraph, pointer);
+
                 for (const stem of dependantStems) {
                   if (startsWith(dependantPath, pointerToPath(stem))) {
                     isCircular = true;
@@ -227,7 +224,7 @@ export class ResolveRunner implements Types.IResolveRunner {
                 if (val !== void 0) {
                   set(draft, dependantPath, val);
 
-                  this._setGraphNodeData(pathToPointer(pointerPath), dependantPath as string[], original(val));
+                  this.graph.setNode(pathToPointer(pointerPath), original(val));
                 } else {
                   resolved.errors.push({
                     code: 'POINTER_MISSING',
@@ -531,31 +528,5 @@ export class ResolveRunner implements Types.IResolveRunner {
     }
 
     return false;
-  }
-
-  private _setGraphNodeData(nodeId: string, propertyPath: string[], data: any) {
-    if (!this.graph.hasNode(nodeId)) return;
-
-    const graphNodeData = this.graph.getNodeData(nodeId);
-
-    let propertyPaths = {};
-
-    // create an empty placeholder in case graphNodeData isn't an object
-    propertyPaths[this.root] = [];
-
-    if (typeof graphNodeData === 'object') {
-      propertyPaths = {
-        ...propertyPaths,
-        ...graphNodeData.propertyPaths,
-      };
-    }
-
-    propertyPaths[this.root].push(pathToPointer(propertyPath));
-
-    this.graph.setNodeData(nodeId, {
-      propertyPaths,
-
-      data,
-    });
   }
 }
