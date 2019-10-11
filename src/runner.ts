@@ -1,5 +1,5 @@
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
-import { dirname, join, toFSPath } from '@stoplight/path';
+import { dirname, join, stripRoot, toFSPath } from '@stoplight/path';
 import { DepGraph } from 'dependency-graph';
 import produce, { original } from 'immer';
 import { get, set } from 'lodash';
@@ -313,7 +313,7 @@ export class ResolveRunner implements Types.IResolveRunner {
         let absRef = ref.toString();
         if (!ref.is('absolute')) {
           if (this.baseUri.toString()) {
-            absRef = join(dirname(this.baseUri.toString()), absRef);
+            absRef = join(dirname(this.baseUri.toString()), stripRoot(absRef));
           } else {
             absRef = '';
           }
