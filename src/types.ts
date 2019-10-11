@@ -224,25 +224,18 @@ export interface IRefHandlerOpts {
 
 export interface IGraphNodeData {
   /**
-   * A map of the root URI string to the property paths that reference this node.
+   * A map of the refs in this node, and where they point
    *
    * Example:
    *
    * ```json
    * {
-   *   "root": [
-   *     "#/properties/name",
-   *     "#/properties/user/properties/name"
-   *   ],
-   *   "file:///api.json/#models/card": [
-   *     "#/properties/name"
-   *   ]
+   *   "#/users/address": "file:///api.json/#models/card",
    * }
    * ```
    */
-  propertyPaths: Dictionary<string[]>;
-
-  data: any;
+  refMap: Dictionary<string>;
+  data?: any;
 }
 
 export interface IResolveRunner {

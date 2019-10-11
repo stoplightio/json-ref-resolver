@@ -71,7 +71,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     this.graph = graph;
     if (!this.graph.hasNode(this.root)) {
-      this.graph.addNode(this.root);
+      this.graph.addNode(this.root, { refMap: {} });
     }
 
     if (this.baseUri && this.depth === 0) {
@@ -160,7 +160,10 @@ export class ResolveRunner implements Types.IResolveRunner {
         // if not, we should set on our targetPath
         if (!resolvedTargetPath.length) resolvedTargetPath = targetPath || [];
 
+        // refMap deprecated, use graph
         resolved.refMap[String(this.baseUri.clone().fragment(pathToPointer(resolvedTargetPath)))] = String(r.uri);
+
+        this._setGraphNodeEdge(String(this.root), pathToPointer(resolvedTargetPath), String(r.uri));
 
         if (r.error) {
           resolved.errors.push(r.error);
@@ -181,7 +184,7 @@ export class ResolveRunner implements Types.IResolveRunner {
             } else {
               set(draft, resolvedTargetPath, r.resolved.result);
 
-              this._setGraphNodeData(String(r.uri), resolvedTargetPath, r.resolved.result);
+              this._setGraphNodeData(String(r.uri), r.resolved.result);
             }
           }
         });
@@ -222,12 +225,15 @@ export class ResolveRunner implements Types.IResolveRunner {
                 // TODO: we might want to track and expose these circulars in the future?
                 if (isCircular) continue;
 
+                // refMap deprecated, use graph
                 resolved.refMap[pathToPointer(dependantPath)] = pathToPointer(pointerPath);
+
+                this._setGraphNodeEdge(this.root, pathToPointer(dependantPath), pathToPointer(pointerPath));
 
                 if (val !== void 0) {
                   set(draft, dependantPath, val);
 
-                  this._setGraphNodeData(pathToPointer(pointerPath), dependantPath as string[], original(val));
+                  this._setGraphNodeData(pathToPointer(pointerPath), original(val));
                 } else {
                   resolved.errors.push({
                     code: 'POINTER_MISSING',
@@ -533,29 +539,24 @@ export class ResolveRunner implements Types.IResolveRunner {
     return false;
   }
 
-  private _setGraphNodeData(nodeId: string, propertyPath: string[], data: any) {
+  private _setGraphNodeData(nodeId: string, data: any) {
     if (!this.graph.hasNode(nodeId)) return;
 
-    const graphNodeData = this.graph.getNodeData(nodeId);
+    const graphNodeData = this.graph.getNodeData(nodeId) || {};
+    graphNodeData.data = data;
 
-    let propertyPaths = {};
+    this.graph.setNodeData(nodeId, graphNodeData);
+  }
+
+  private _setGraphNodeEdge(nodeId: string, fromPointer: string, toNodeId: string) {
+    if (!this.graph.hasNode(nodeId)) return;
+
+    const graphNodeData = this.graph.getNodeData(nodeId) || {};
+    graphNodeData.refMap = graphNodeData.refMap || {};
 
     // create an empty placeholder in case graphNodeData isn't an object
-    propertyPaths[this.root] = [];
+    graphNodeData.refMap[fromPointer] = toNodeId;
 
-    if (typeof graphNodeData === 'object') {
-      propertyPaths = {
-        ...propertyPaths,
-        ...graphNodeData.propertyPaths,
-      };
-    }
-
-    propertyPaths[this.root].push(pathToPointer(propertyPath));
-
-    this.graph.setNodeData(nodeId, {
-      propertyPaths,
-
-      data,
-    });
+    this.graph.setNodeData(nodeId, graphNodeData);
   }
 }
