@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as URI from 'urijs';
 
+import produce from 'immer';
 import { Cache } from '../cache';
 import { Resolver } from '../resolver';
 import { defaultGetRef, ResolveRunner } from '../runner';
@@ -238,7 +239,7 @@ describe('resolver', () => {
     });
 
     test('should only resolve valid $refs', async () => {
-      const source = {
+      let source = {
         hello: {
           $ref: {
             foo: 'bear',
@@ -251,13 +252,15 @@ describe('resolver', () => {
       let resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
 
-      // @ts-ignore
-      source.hello.$ref = true;
+      source = produce(source, (next: any) => {
+        next.hello.$ref = true;
+      });
       resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
 
-      // @ts-ignore
-      source.hello.$ref = 1;
+      source = produce(source, (next: any) => {
+        next.hello.$ref = 1;
+      });
       resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
     });
