@@ -1,10 +1,9 @@
 import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/json';
+import { dirname, join, toFSPath } from '@stoplight/path';
 import { DepGraph } from 'dependency-graph';
 import produce, { original } from 'immer';
 import { get, set } from 'lodash';
-import { dirname, join } from 'path';
 import * as URI from 'urijs';
-import { URI as VSURI } from 'vscode-uri';
 
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
@@ -60,7 +59,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     const baseUri = opts.baseUri || '';
     let uri = new URI(baseUri || '');
     if (this.isFile(uri)) {
-      uri = new URI(VSURI.file(baseUri).fsPath.replace(/\\/g, '/'));
+      uri = new URI(toFSPath(baseUri));
     }
 
     this.baseUri = uri;
@@ -321,7 +320,7 @@ export class ResolveRunner implements Types.IResolveRunner {
         }
 
         if (absRef) {
-          ref = new URI(VSURI.file(absRef).fsPath.replace(/\\/g, '/')).fragment(ref.fragment());
+          ref = new URI(toFSPath(absRef)).fragment(ref.fragment());
         }
       } else if (ref.scheme().includes('http') || (ref.scheme() === '' && this.baseUri.scheme().includes('http'))) {
         if (this.baseUri.authority() !== '' && ref.authority() === '') {
