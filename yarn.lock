@@ -775,20 +775,20 @@
     lodash "^4.17.4"
     read-pkg-up "^6.0.0"
 
-"@stoplight/json@^3.1.0":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-3.1.1.tgz#531d966a62247bf2ab1e8a06a685fa62e36cf890"
-  integrity sha512-DK2ufmnPvfW9Mv0q4DYtldjicTTcBY+j4kiEUOEmc9hL+mzMDV08+5ix4tmPtheUDZH6OtEqEmGcf8ZKCHFbpg==
+"@stoplight/json@^3.1.2":
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-3.1.2.tgz#ae89d1974f0b6f8bc5778f792aeed4664c95ec62"
+  integrity sha512-7zt0zCN94m90X1sL7FrD7jXhPtkIup07MyG/00sELVrCvzb2wgNaiE+x2N7WSbk3Z0wS08e8B6kow81GQY+Isw==
   dependencies:
     "@stoplight/types" "^11.0.0"
     jsonc-parser "~2.1.1"
     lodash "^4.17.15"
     safe-stable-stringify "^1.1"
 
-"@stoplight/path@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@stoplight/path/-/path-1.2.1.tgz#f39f408377a0d1a9c33a04ce08eb3a1691c457d6"
-  integrity sha512-W/wBpTw6ThKZGPcb1ztKz6ULnMVnLE/ygzqIjnqnmKcpNrKkSuBLtL7+oQYZSkteZfJAryloAt3plU3sTiekcQ==
+"@stoplight/path@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@stoplight/path/-/path-1.3.0.tgz#da2282352a4eb23c09d5106b9d1650d30a9ca2ad"
+  integrity sha512-t74/MHMgmFVMQhdQ/2Q766GryNTIW8McH8+vB25oeoBhYKTOrJ/wPDt+OCxIWHPUlcSi2fTWa4FKQ8qgmP2jVA==
 
 "@stoplight/scripts@5.x.x":
   version "5.1.0"
