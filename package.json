@@ -44,8 +44,8 @@
     "test.watch": "yarn test --watch"
   },
   "dependencies": {
-    "@stoplight/json": "^3.1.0",
-    "@stoplight/path": "^1.2.1",
+    "@stoplight/json": "^3.1.2",
+    "@stoplight/path": "^1.3.0",
     "@stoplight/types": "^11.0.0",
     "@types/urijs": "1.x.x",
     "dependency-graph": "~0.8.0",
@@ -65,7 +65,7 @@
     "ts-jest": "24.1.x",
     "tslint": "5.20.0",
     "tslint-config-stoplight": "1.3.0",
-    "typescript": "3.6.3"
+    "typescript": "3.6.4"
   },
   "lint-staged": {
     "*.{ts,tsx}$": [
