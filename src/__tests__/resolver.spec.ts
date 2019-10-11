@@ -1,8 +1,8 @@
 import * as fs from 'fs';
+import produce from 'immer';
 import * as _ from 'lodash';
 import * as URI from 'urijs';
 
-import produce from 'immer';
 import { Cache } from '../cache';
 import { Resolver } from '../resolver';
 import { defaultGetRef, ResolveRunner } from '../runner';
