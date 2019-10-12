@@ -1,8 +1,8 @@
 import * as fs from 'fs';
+import produce from 'immer';
 import * as _ from 'lodash';
 import * as URI from 'urijs';
 
-import produce from 'immer';
 import { Cache } from '../cache';
 import { Resolver } from '../resolver';
 import { defaultGetRef, ResolveRunner } from '../runner';
@@ -252,14 +252,14 @@ describe('resolver', () => {
       let resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
 
-      source = produce(source, (next: any) => {
-        next.hello.$ref = true;
+      source = produce(source, (draft: any) => {
+        draft.hello.$ref = true;
       });
       resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
 
-      source = produce(source, (next: any) => {
-        next.hello.$ref = 1;
+      source = produce(source, (draft: any) => {
+        draft.hello.$ref = 1;
       });
       resolved = await resolver.resolve(source);
       expect(resolved.result).toEqual(source);
@@ -880,9 +880,12 @@ describe('resolver', () => {
 
       const resolver = new Resolver();
       const resolved = await resolver.resolve(source);
-      expect(resolved.refMap).toEqual({
+      const refMap: any = {
         '#/hello': '#/word',
-      });
+      };
+
+      expect(resolved.refMap).toEqual(refMap);
+      expect(resolved.graph.getNodeData('root').refMap).toEqual(refMap);
     });
 
     test('should point to its original target', async () => {
@@ -898,11 +901,14 @@ describe('resolver', () => {
 
       const resolver = new Resolver();
       const resolved = await resolver.resolve(source);
-      expect(resolved.refMap).toEqual({
+      const refMap: any = {
         // word1, not word2 (which is what it ultimately resolves to)
         '#/hello': '#/word1',
         '#/word1': '#/word2',
-      });
+      };
+
+      expect(resolved.refMap).toEqual(refMap);
+      expect(resolved.graph.getNodeData('root').refMap).toEqual(refMap);
     });
 
     test('should handle remote authorities', async () => {
@@ -949,13 +955,15 @@ describe('resolver', () => {
       });
 
       const resolved = await resolver.resolve(source);
-
-      expect(resolved.refMap).toEqual({
+      const refMap: any = {
         '#/inner/data': 'custom://obj1/',
         '#/inner/dataInner': 'custom://obj1/#/inner/foo',
         '#/inner/dataInner2': '#/data2',
         '#/data2': 'custom://ob2/#/two',
-      });
+      };
+
+      expect(resolved.refMap).toEqual(refMap);
+      expect(resolved.graph.getNodeData('root').refMap).toEqual(refMap);
     });
   });
 

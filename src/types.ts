@@ -1,4 +1,4 @@
-import { Segment } from '@stoplight/types';
+import { Dictionary, Segment } from '@stoplight/types';
 import { DepGraph } from 'dependency-graph';
 
 /**
@@ -113,7 +113,7 @@ export interface IResolveResult {
    * A graph of every single reference in source.
    *
    */
-  graph: DepGraph<any>;
+  graph: DepGraph<IGraphNodeData>;
 
   /** Any errors that occured during the resolution process. */
   errors: IResolveError[];
@@ -222,6 +222,22 @@ export interface IRefHandlerOpts {
   parentPointer: string;
 }
 
+export interface IGraphNodeData {
+  /**
+   * A map of the refs in this node, and where they point
+   *
+   * Example:
+   *
+   * ```json
+   * {
+   *   "#/users/address": "file:///api.json/#models/card",
+   * }
+   * ```
+   */
+  refMap: Dictionary<string>;
+  data?: any;
+}
+
 export interface IResolveRunner {
   id: number;
   source: any;
@@ -231,7 +247,7 @@ export interface IResolveRunner {
   depth: number;
   baseUri: uri.URI;
 
-  graph: DepGraph<any>;
+  graph: DepGraph<IGraphNodeData>;
   root: string;
 
   atMaxUriDepth: () => boolean;
