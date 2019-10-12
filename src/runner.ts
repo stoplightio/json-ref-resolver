@@ -70,7 +70,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
     this.graph = graph;
     if (!this.graph.hasNode(this.root)) {
-      this.graph.addNode(this.root, { refMap: {} });
+      this.graph.addNode(this.root, { refMap: {}, data: this._source });
     }
 
     if (this.baseUri && this.depth === 0) {
@@ -290,6 +290,8 @@ export class ResolveRunner implements Types.IResolveRunner {
         });
       }
     }
+
+    this._setGraphNodeData(this.root, this._source);
 
     return resolved;
   }
@@ -553,7 +555,6 @@ export class ResolveRunner implements Types.IResolveRunner {
     const graphNodeData = this.graph.getNodeData(nodeId) || {};
     graphNodeData.refMap = graphNodeData.refMap || {};
 
-    // create an empty placeholder in case graphNodeData isn't an object
     graphNodeData.refMap[fromPointer] = toNodeId;
 
     this.graph.setNodeData(nodeId, graphNodeData);

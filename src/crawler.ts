@@ -14,10 +14,8 @@ export class ResolveCrawler implements Types.ICrawler {
   // to properly calculate the resolve target
   public jsonPointer?: string;
 
-  // @ts-ignore
   public readonly pointerGraph = new DepGraph<string>({ circular: true });
 
-  // @ts-ignore
   public readonly pointerStemGraph = new DepGraph<string>({ circular: true });
 
   private _runner: Types.IResolveRunner;
