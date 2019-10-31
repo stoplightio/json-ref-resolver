@@ -50,7 +50,7 @@
     "@types/urijs": "^1.19",
     "dependency-graph": "~0.8.0",
     "fast-memoize": "^2.5.1",
-    "immer": "^4.0.1",
+    "immer": "^5.0.0",
     "lodash": "^4.17.15",
     "tslib": "^1.10.0",
     "urijs": "~1.19.1"
