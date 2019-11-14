@@ -184,7 +184,9 @@ export type ResolverErrorCode =
   | 'RESOLVE_URI'
   | 'PARSE_URI'
   | 'RESOLVE_POINTER'
+  | 'PARSE_POINTER'
   | 'TRANSFORM_DEREFERENCED';
+
 export interface IResolveError {
   code: ResolverErrorCode;
   message: string;

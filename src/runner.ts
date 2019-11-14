@@ -119,7 +119,21 @@ export class ResolveRunner implements Types.IResolveRunner {
     let targetPath: any;
     const jsonPointer = opts && opts.jsonPointer && opts.jsonPointer.trim();
     if (jsonPointer && jsonPointer !== '#' && jsonPointer !== '#/') {
-      targetPath = pointerToPath(jsonPointer);
+      try {
+        targetPath = pointerToPath(jsonPointer);
+      } catch {
+        resolved.errors.push({
+          code: 'PARSE_POINTER',
+          message: `'${jsonPointer}' JSON pointer is invalid`,
+          uri: this.baseUri,
+          uriStack: this.uriStack,
+          pointerStack: [],
+          path: [],
+        });
+
+        return resolved;
+      }
+
       resolved.result = get(resolved.result, targetPath);
     }
 
