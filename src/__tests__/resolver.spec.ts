@@ -1360,6 +1360,38 @@ describe('resolver', () => {
       expect(result.errors.length).toEqual(1);
     });
 
+    test('should track syntactically invalid JSON pointers', async () => {
+      const source = {
+        foo: 'bar',
+        inner: {
+          $ref: 'https://foo.com/oas#invalid',
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          https: {
+            async resolve() {
+              return {};
+            },
+          },
+        },
+      });
+
+      const result = await resolver.resolve(source);
+
+      expect(result.errors).toStrictEqual([
+        {
+          code: 'PARSE_POINTER',
+          message: "'#invalid' JSON pointer is invalid",
+          path: [],
+          uriStack: [],
+          pointerStack: [],
+          uri: expect.any(Object),
+        },
+      ]);
+    });
+
     test('should replace what it can even if some inner remote refs fail', async () => {
       const source = {
         inner: {
