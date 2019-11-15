@@ -3,6 +3,7 @@ import produce from 'immer';
 import * as _ from 'lodash';
 import * as URI from 'urijs';
 
+import { join } from '@stoplight/path';
 import { Cache } from '../cache';
 import { Resolver } from '../resolver';
 import { defaultGetRef, ResolveRunner } from '../runner';
@@ -1105,6 +1106,24 @@ describe('resolver', () => {
 
       // should only have read 3 times
       expect(resolver.uriCache.stats.misses).toEqual(3);
+    });
+
+    test('should handle file referencing file with circular pointer refs', async () => {
+      const resolver = new Resolver({
+        resolvers: {
+          file: new FileReader(),
+          http: new HttpReader(),
+          https: new HttpReader(),
+        },
+      });
+      const docUri = join(__dirname, './fixtures/sandbox/index.json');
+      const resolved = await resolver.resolve(JSON.parse(await fs.promises.readFile(docUri, 'utf8')), {
+        baseUri: docUri,
+      });
+
+      expect(resolved.result).toStrictEqual({
+        $ref: '#/definitions/todo-full',
+      });
     });
   });
 
