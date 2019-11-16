@@ -1,0 +1,10 @@
+{
+  "oneOf": [
+    {
+      "$ref": "todos-circular-definitions.simple.json#/definitions/todo-full"
+    },
+    {
+      "$ref": "todos-circular-definitions.simple.json#/definitions/todo-partial"
+    }
+  ]
+}

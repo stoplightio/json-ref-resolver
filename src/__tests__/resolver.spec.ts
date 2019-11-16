@@ -1,3 +1,4 @@
+import { join } from '@stoplight/path';
 import * as fs from 'fs';
 import produce from 'immer';
 import * as _ from 'lodash';
@@ -1105,6 +1106,31 @@ describe('resolver', () => {
 
       // should only have read 3 times
       expect(resolver.uriCache.stats.misses).toEqual(3);
+    });
+
+    test('should handle referencing circular remote refs with JSON pointers', async () => {
+      const resolver = new Resolver({
+        resolvers: {
+          file: new FileReader(),
+          http: new HttpReader(),
+          https: new HttpReader(),
+        },
+      });
+      const docUri = join(__dirname, './fixtures/schemas/referencing-circular-remote-pointers.json');
+      const resolved = await resolver.resolve(JSON.parse(fs.readFileSync(docUri, 'utf8')), {
+        baseUri: docUri,
+      });
+
+      expect(resolved.result).toStrictEqual({
+        oneOf: [
+          {
+            $ref: '#/definitions/todo-partial',
+          },
+          {
+            $ref: '#/definitions/todo-full',
+          },
+        ],
+      });
     });
   });
 
