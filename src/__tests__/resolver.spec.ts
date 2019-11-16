@@ -1,4 +1,4 @@
-import * as path from '@stoplight/path';
+import { join } from '@stoplight/path';
 import * as fs from 'fs';
 import produce from 'immer';
 import * as _ from 'lodash';
@@ -1108,7 +1108,7 @@ describe('resolver', () => {
       expect(resolver.uriCache.stats.misses).toEqual(3);
     });
 
-    test('should handle file referencing file with circular pointer refs', async () => {
+    test('should handle referencing circular remote refs with JSON pointers', async () => {
       const resolver = new Resolver({
         resolvers: {
           file: new FileReader(),
@@ -1116,8 +1116,8 @@ describe('resolver', () => {
           https: new HttpReader(),
         },
       });
-      const docUri = path.join(__dirname, './fixtures/schemas/referencing-circular.json');
-      const resolved = await resolver.resolve(JSON.parse(await fs.promises.readFile(docUri, 'utf8')), {
+      const docUri = join(__dirname, './fixtures/schemas/referencing-circular-remote-pointers.json');
+      const resolved = await resolver.resolve(JSON.parse(fs.readFileSync(docUri, 'utf8')), {
         baseUri: docUri,
       });
 
