@@ -1,9 +1,9 @@
+import * as path from '@stoplight/path';
 import * as fs from 'fs';
 import produce from 'immer';
 import * as _ from 'lodash';
 import * as URI from 'urijs';
 
-import { join } from '@stoplight/path';
 import { Cache } from '../cache';
 import { Resolver } from '../resolver';
 import { defaultGetRef, ResolveRunner } from '../runner';
@@ -1116,13 +1116,20 @@ describe('resolver', () => {
           https: new HttpReader(),
         },
       });
-      const docUri = join(__dirname, './fixtures/sandbox/index.json');
+      const docUri = path.join(__dirname, './fixtures/schemas/referencing-circular.json');
       const resolved = await resolver.resolve(JSON.parse(await fs.promises.readFile(docUri, 'utf8')), {
         baseUri: docUri,
       });
 
       expect(resolved.result).toStrictEqual({
-        $ref: '#/definitions/todo-full',
+        oneOf: [
+          {
+            $ref: '#/definitions/todo-partial',
+          },
+          {
+            $ref: '#/definitions/todo-full',
+          },
+        ],
       });
     });
   });
