@@ -1,0 +1,10 @@
+{
+  "definitions": {
+    "todo-partial": {
+      "$ref": "#/definitions/todo-full"
+    },
+    "todo-full": {
+      "$ref": "#/definitions/todo-partial"
+    }
+  }
+}

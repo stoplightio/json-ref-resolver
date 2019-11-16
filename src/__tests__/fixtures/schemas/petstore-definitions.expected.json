@@ -1,0 +1,188 @@
+{
+  "ApiResponse": {
+    "properties": {
+      "code": {
+        "format": "int32",
+        "type": "integer"
+      },
+      "message": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "Category": {
+    "properties": {
+      "id": {
+        "format": "int64",
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "type": "object",
+    "xml": {
+      "name": "Category"
+    }
+  },
+  "Order": {
+    "properties": {
+      "complete": {
+        "type": "boolean"
+      },
+      "id": {
+        "format": "int64",
+        "type": "integer"
+      },
+      "petId": {
+        "format": "int64",
+        "type": "integer"
+      },
+      "quantity": {
+        "properties": {
+          "completed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "name": {
+            "$ref": "#/definitions/todo-full"
+          }
+        },
+        "required": [
+          "name",
+          "completed"
+        ],
+        "title": "Todo Partial",
+        "type": "object"
+      },
+      "shipDate": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "status": {
+        "description": "Order Status",
+        "enum": [
+          "placed",
+          "approved",
+          "delivered"
+        ],
+        "type": "string"
+      }
+    },
+    "type": "object",
+    "xml": {
+      "name": "Order"
+    }
+  },
+  "Pet": {
+    "properties": {
+      "category": {
+        "$ref": "#/definitions/Category"
+      },
+      "id": {
+        "format": "int64",
+        "type": "integer"
+      },
+      "name": {
+        "example": "doggie",
+        "type": "string"
+      },
+      "photoUrls": {
+        "items": {
+          "type": "string",
+          "xml": {
+            "name": "photoUrl"
+          }
+        },
+        "type": "array",
+        "xml": {
+          "wrapped": true
+        }
+      },
+      "status": {
+        "description": "pet status in the store",
+        "enum": [
+          "available",
+          "pending",
+          "sold"
+        ],
+        "type": "string"
+      },
+      "tags": {
+        "items": {
+          "$ref": "#/definitions/Tag",
+          "xml": {
+            "name": "tag"
+          }
+        },
+        "type": "array",
+        "xml": {
+          "wrapped": true
+        }
+      }
+    },
+    "required": [
+      "name",
+      "photoUrls"
+    ],
+    "type": "object",
+    "xml": {
+      "name": "Pet"
+    }
+  },
+  "Tag": {
+    "properties": {
+      "id": {
+        "$ref": "#/definitions/Order"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "type": "object",
+    "xml": {
+      "name": "Tag"
+    }
+  },
+  "User": {
+    "properties": {
+      "email": {
+        "type": "string"
+      },
+      "firstName": {
+        "type": "string"
+      },
+      "id": {
+        "format": "int64",
+        "type": "integer"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string"
+      },
+      "phone": {
+        "type": "string"
+      },
+      "userStatus": {
+        "description": "User Status",
+        "format": "int32",
+        "type": "integer"
+      },
+      "username": {
+        "type": "string"
+      }
+    },
+    "type": "object",
+    "xml": {
+      "name": "User"
+    }
+  }
+}

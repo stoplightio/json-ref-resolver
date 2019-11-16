@@ -1,10 +1,63 @@
 {
   "definitions": {
     "todo-partial": {
-      "$ref": "#/definitions/todo-full"
+      "title": "Todo Partial",
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/todo-full"
+        },
+        "completed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "completed"
+      ]
     },
     "todo-full": {
-      "$ref": "#/definitions/todo-partial"
+      "title": "Todo Full",
+      "allOf": [
+        {
+          "$ref": "#/definitions/todo-partial"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "completed_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "user": {
+              "$ref": "../my-apis/test.v1.yaml"
+            }
+          },
+          "required": [
+            "id",
+            "user"
+          ]
+        }
+      ]
     }
   }
 }
