@@ -17,7 +17,7 @@ const { ResolveRunner } = require('../runner');
  * 2. `yarn test tests/benchmark.spec.ts`
  */
 
-describe.skip('benchmark', async () => {
+describe.skip('benchmark', () => {
   test('huge circular resolve', async () => {
     const suite = new Benchmark.Suite();
     await new Promise(resolve => {
