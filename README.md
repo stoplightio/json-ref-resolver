@@ -1,31 +1,31 @@
-# JSON Ref Resolver
+# JSON Ref Resolver 
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/0b1d841cc2445e29ef50/maintainability)](https://codeclimate.com/github/stoplightio/json-ref-resolver/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/0b1d841cc2445e29ef50/test_coverage)](https://codeclimate.com/github/stoplightio/json-ref-resolver/test_coverage)
+[![Buy us a tree](https://img.shields.io/badge/Buy%20us%20a%20tree-%F0%9F%8C%B3-lightgreen)](https://offset.earth/stoplightinc)
+[![CircleCI](https://circleci.com/gh/stoplightio/json-ref-resolver.svg?style=svg)](https://circleci.com/gh/stoplightio/json-ref-resolver)
 
-Dereference $ref values in JSON Schema, OpenAPI (Swagger), and any other objects with $ref values inside of them.
+Follow `$ref` values in JSON Schema, OpenAPI (formerly known as Swagger), and any other objects with `$ref` values inside of them.
 
 - View the changelog: [Releases](https://github.com/stoplightio/json-ref-resolver/releases)
 
-### Features
+## Features
 
 - **Performant**: Hot paths are memoized, remote URIs are resolved concurrently, and the minimum surface area is crawled and resolved.
 - **Caching**: Results from remote URIs are cached.
 - **Immutable**: The original object is not changed, and structural sharing is used to only change relevant bits. [example test](src/__tests__/resolver.spec.ts#L182)
 - **Reference equality:** $refs to the same location will resolve to the same object in memory. [example test](src/__tests__/resolver.spec.ts#L329)
-- **Flexible:** Bring your own resolvers for `http://`, `file://`, `mongo://`, `custom://`... etc.
+- **Flexible:** Bring your own readers for `http://`, `file://`, `mongo://`, `custom://`... etc, or use [one of ours][json-ref-readers].
 - **Cross Platform:** Supports POSIX and Windows style file paths.
 - **Reliable:** Well tested to handle all sorts of circular reference edge cases.
 
-### Installation
+## Installation
 
 Supported in modern browsers and node.
 
 ```bash
-# latest stable
 yarn add @stoplight/json-ref-resolver
 ```
 
-### Usage
+## Usage
 
 All relevant types and options can be found in [src/types.ts](./src/types.ts).
 
@@ -62,7 +62,7 @@ const resolver = new Resolver(globalOpts);
 const resolved = await resolver.resolve(sourceObj, resolveOpts);
 ```
 
-#### Example: Basic Inline Dereferencing
+### Example: Basic Inline Dereferencing
 
 By default, only inline references will be dereferenced.
 
@@ -94,7 +94,7 @@ expect(resolved.result).toEqual({
 });
 ```
 
-#### Example: Dereference a Subset of the Source
+### Example: Dereference a Subset of the Source
 
 This will dereference the minimal number of references needed for the given target, and return the target.
 
@@ -140,7 +140,7 @@ expect(resolved.result).toEqual({
 });
 ```
 
-#### Example: Dereferencing Remote References with Resolvers
+### Example: Dereferencing Remote References with Resolvers
 
 By default only inline references (those that point to values inside of the original object) are dereferenced.
 
@@ -204,7 +204,7 @@ expect(resolved.result).toEqual({
 });
 ```
 
-#### Example: Dereferencing Relative Remote References with the baseUri Option
+### Example: Dereferencing Relative Remote References with the baseUri Option
 
 If there are relative remote references (for example, a relative file path `../model.json`), then the location of the source
 data must be specified via the `baseUri` option. Relative references will be dereferenced against this baseUri.
@@ -244,16 +244,12 @@ expect(resolved.result).toEqual({
 });
 ```
 
-In the above example, the user \$ref will resolve to `/models/user.json`, because `../models/user.json` is resolved against the baseUri of the current document (which was indicated at `/specs/api.json`). Relative references will not work if the source document has no baseUri set.
+In the above example, the user `$ref` will resolve to `/models/user.json`, because `../models/user.json` is resolved against the `baseUri` of the current document (which was indicated at `/specs/api.json`). Relative references will not work if the source document has no baseUri set.
 
-### Contributing
+This is a simplistic example of a reader. You can create your own, but we have built some [readers][json-ref-readers] which you might find useful.
 
-1. Clone repo.
-2. Create / checkout `feature/{name}`, `chore/{name}`, or `fix/{name}` branch.
-3. Install deps: `yarn`.
-4. Make your changes.
-5. Run tests: `yarn test.prod`.
-6. Stage relevant files to git.
-7. Commit: `yarn commit`. _NOTE: Commits that don't follow the [conventional](https://github.com/marionebl/commitlint/tree/master/%40commitlint/config-conventional) format will be rejected. `yarn commit` creates this format for you, or you can put it together manually and then do a regular `git commit`._
-8. Push: `git push`.
-9. Open PR targeting the `develop` branch.
+## Contributing
+
+If you are interested in contributing to Spectral itself, check out our [contributing docs](CONTRIBUTING.md) to get started.
+
+[json-ref-readers]: https://github.com/stoplightio/json-ref-readers/
