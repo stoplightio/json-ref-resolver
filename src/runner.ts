@@ -221,7 +221,7 @@ export class ResolveRunner implements Types.IResolveRunner {
               if (!dependants.length) continue;
 
               const pointerPath = pointerToPath(pointer);
-              const val = get(draft, pointerPath);
+              const val = pointerPath.length === 0 ? original(draft) : get(draft, pointerPath);
               for (const dependant of dependants) {
                 // check to prevent circular references in the resulting JS object
                 // this implementation is MUCH more performant than decycling the final object to remove circulars
@@ -323,7 +323,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     let ref = new URI(refStr);
 
     // Does ref only have a fragment
-    if (ref.toString().charAt(0) !== '#') {
+    if (refStr[0] !== '#') {
       const isFile = this.isFile(ref);
 
       // if we're working with a file, resolve any path diferences and make sure the scheme is set
@@ -426,7 +426,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     const { val, ref, resolvingPointer, parentPointer, pointerStack } = opts;
 
     // slice to make a fresh copy since we mutate in crawler for performance
-    const parentPath = (opts.parentPath || []).slice();
+    const parentPath = opts.parentPath ? opts.parentPath.slice() : [];
 
     const uriCacheKey = this.computeUriCacheKey(ref);
     const lookupResult: Types.IUriResult = {

@@ -1132,6 +1132,45 @@ describe('resolver', () => {
         ],
       });
     });
+
+    test('should handle circular local root reference', async () => {
+      const resolver = new Resolver({
+        resolvers: {
+          file: new FileReader(),
+        },
+      });
+      const docUri = join(__dirname, './fixtures/schemas/circular-root-reference.json');
+      const resolved = await resolver.resolve(JSON.parse(fs.readFileSync(docUri, 'utf8')), {
+        baseUri: docUri,
+      });
+
+      expect(resolved.errors).toEqual([]);
+      expect(resolved.result).toStrictEqual({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        '': {
+          type: 'string',
+        },
+        anyOf: [
+          {
+            $schema: 'http://json-schema.org/draft-07/schema#',
+            '': {
+              type: 'string',
+            },
+            anyOf: [
+              {
+                $ref: '#',
+              },
+              {
+                $ref: '#/',
+              },
+            ],
+          },
+          {
+            type: 'string',
+          },
+        ],
+      });
+    });
   });
 
   describe('cache', () => {
