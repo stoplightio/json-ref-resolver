@@ -151,7 +151,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     }
 
     // create our crawler instance
-    const crawler = new ResolveCrawler(this, jsonPointer);
+    const crawler = new ResolveCrawler(this, jsonPointer, resolved);
 
     // crawl to build up the uriResolvers and pointerGraph
     crawler.computeGraph(resolved.result, targetPath, jsonPointer || '');

@@ -1386,7 +1386,7 @@ describe('resolver', () => {
       expect(result.errors.length).toEqual(1);
     });
 
-    test('should track syntactically invalid JSON pointers', async () => {
+    test('should track syntactically invalid JSON pointers used by remote refs', async () => {
       const source = {
         foo: 'bar',
         inner: {
@@ -1410,6 +1410,38 @@ describe('resolver', () => {
         {
           code: 'PARSE_POINTER',
           message: "'#invalid' JSON pointer is invalid",
+          path: [],
+          uriStack: [],
+          pointerStack: [],
+          uri: expect.any(Object),
+        },
+      ]);
+    });
+
+    test('should track syntactically invalid JSON pointers used by local refs', async () => {
+      const source = {
+        foo: 'bar',
+        inner: {
+          $ref: '#.',
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          file: {
+            async resolve() {
+              return {};
+            },
+          },
+        },
+      });
+
+      const result = await resolver.resolve(source);
+
+      expect(result.errors).toStrictEqual([
+        {
+          code: 'PARSE_POINTER',
+          message: "'#.' JSON pointer is invalid",
           path: [],
           uriStack: [],
           pointerStack: [],
