@@ -1,7 +1,7 @@
 import { pointerToPath } from '@stoplight/json';
+import { Optional } from '@stoplight/types';
 import { DepGraph } from 'dependency-graph';
 import { get } from 'lodash';
-import { Optional } from '@stoplight/types';
 
 import * as Types from './types';
 import * as Utils from './utils';
