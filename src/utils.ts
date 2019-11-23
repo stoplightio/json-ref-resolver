@@ -32,10 +32,10 @@ export const addToJSONPointer = (pointer: string, part: string): string => {
 
 /** @hidden */
 export const uriToJSONPointer = (uri: uri.URI): string => {
-  return uri && uri.fragment() ? `#${uri.fragment()}` : '';
+  return uri.fragment() ? `#${uri.fragment()}` : '#';
 };
 
 /** @hidden */
 export const uriIsJSONPointer = (ref: uri.URI): boolean => {
-  return ref.toString().slice(0, 2) === '#/';
+  return ref.path() === '';
 };
