@@ -1,4 +1,5 @@
 import { pointerToPath } from '@stoplight/json';
+import { Optional } from '@stoplight/types';
 import { DepGraph } from 'dependency-graph';
 import { get } from 'lodash';
 
@@ -20,7 +21,7 @@ export class ResolveCrawler implements Types.ICrawler {
 
   private _runner: Types.IResolveRunner;
 
-  constructor(runner: Types.IResolveRunner, jsonPointer?: string) {
+  constructor(runner: Types.IResolveRunner, jsonPointer: Optional<string>, private _resolved: Types.IResolveResult) {
     this.jsonPointer = jsonPointer;
     this._runner = runner;
   }
@@ -95,7 +96,21 @@ export class ResolveCrawler implements Types.ICrawler {
     if (Utils.uriIsJSONPointer(ref)) {
       if (this._runner.dereferenceInline) {
         const targetPointer = Utils.uriToJSONPointer(ref);
-        const targetPath = pointerToPath(targetPointer);
+        let targetPath;
+        try {
+          targetPath = pointerToPath(targetPointer);
+        } catch {
+          this._resolved.errors.push({
+            code: 'PARSE_POINTER',
+            message: `'${ref}' JSON pointer is invalid`,
+            uri: this._runner.baseUri,
+            uriStack: this._runner.uriStack,
+            pointerStack: [],
+            path: [],
+          });
+
+          return;
+        }
 
         /**
          * Protects against circular references back to something higher up in the tree

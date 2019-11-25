@@ -247,6 +247,7 @@ export interface IResolveRunner {
   dereferenceRemote: boolean;
   uriCache: ICache;
   depth: number;
+  uriStack: string[];
   baseUri: uri.URI;
 
   graph: DepGraph<IGraphNodeData>;
