@@ -116,7 +116,7 @@ export class ResolveCrawler implements Types.ICrawler {
          * Protects against circular references back to something higher up in the tree
          * Will stop #/definitions/columns/rows -> #/definitions/columns
          */
-        let referencesParent = true;
+        let referencesParent = targetPath.length > 0;
         for (const i in targetPath) {
           if (parentPath[i] !== targetPath[i]) {
             referencesParent = false;
