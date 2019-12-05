@@ -779,12 +779,12 @@
     read-pkg-up "^6.0.0"
 
 "@stoplight/json@^3.1.2":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-3.1.2.tgz#ae89d1974f0b6f8bc5778f792aeed4664c95ec62"
-  integrity sha512-7zt0zCN94m90X1sL7FrD7jXhPtkIup07MyG/00sELVrCvzb2wgNaiE+x2N7WSbk3Z0wS08e8B6kow81GQY+Isw==
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-3.3.0.tgz#25d35daf0f189039d17fa1bbf6b2bd4da157a2e6"
+  integrity sha512-lseHw4Tr7SpmfumNdNSsxn/KlrTFZ2EyyVDUXCn10CVDzHYPfVIngVeYPbLc8c5RRvhow6S0zmBK0m9rXPFZiQ==
   dependencies:
-    "@stoplight/types" "^11.0.0"
-    jsonc-parser "~2.1.1"
+    "@stoplight/types" "^11.1.1"
+    jsonc-parser "~2.2.0"
     lodash "^4.17.15"
     safe-stable-stringify "^1.1"
 
@@ -820,7 +820,7 @@
     tslib "1.9.3"
     typedoc "0.14.2"
 
-"@stoplight/types@^11.0.0", "@stoplight/types@^11.1.1":
+"@stoplight/types@^11.1.1":
   version "11.1.1"
   resolved "https://registry.yarnpkg.com/@stoplight/types/-/types-11.1.1.tgz#a92d1833adb580a72439f42ba73de8f560fd68b4"
   integrity sha512-IU8U9y/uO548z15DX/Jl053u9VQG8gCwNtypuD4RtskUA7pvHZl4+zzGK3klgIcO6Ql3Jk4/fcrFaN9vjmdEWg==
@@ -4581,10 +4581,10 @@ json5@2.x, json5@^2.1.0:
   dependencies:
     minimist "^1.2.0"
 
-jsonc-parser@~2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/jsonc-parser/-/jsonc-parser-2.1.1.tgz#83dc3d7a6e7186346b889b1280eefa04446c6d3e"
-  integrity sha512-VC0CjnWJylKB1iov4u76/W/5Ef0ydDkjtYWxoZ9t3HdWlSnZQwZL5MgFikaB/EtQ4RmMEw3tmQzuYnZA2/Ja1g==
+jsonc-parser@~2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/jsonc-parser/-/jsonc-parser-2.2.0.tgz#f206f87f9d49d644b7502052c04e82dd6392e9ef"
+  integrity sha512-4fLQxW1j/5fWj6p78vAlAafoCKtuBm6ghv+Ij5W2DrDx0qE+ZdEl2c6Ko1mgJNF5ftX1iEWQQ4Ap7+3GlhjkOA==
 
 jsonfile@^4.0.0:
   version "4.0.0"
