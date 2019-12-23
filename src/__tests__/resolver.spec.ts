@@ -1314,6 +1314,9 @@ describe('resolver', () => {
         bar: {
           hello: 'world',
         },
+        test: {
+          $ref: 'custom://missing-test',
+        },
       };
 
       const source = {
@@ -1323,6 +1326,9 @@ describe('resolver', () => {
           },
           bar: {
             $ref: 'custom://bar',
+          },
+          test: {
+            $ref: 'custom://test',
           },
         },
       };
@@ -1353,18 +1359,33 @@ describe('resolver', () => {
           bar: {
             hello: 'world',
           },
+          test: {
+            $ref: 'custom://missing-test',
+          },
         },
       });
-      expect({ ...result.errors[0], uri: undefined }).toEqual({
-        code: 'RESOLVE_URI',
-        message: 'Error: not found!',
-        uriStack: [],
-        pointerStack: [],
-        path: ['definitions', 'foo'],
-        uri: undefined,
-      });
-      expect(result.errors[0].uri.toString()).toBe('custom://missing/');
-      expect(result.errors.length).toEqual(1);
+      expect(result.errors).toEqual([
+        {
+          code: 'RESOLVE_URI',
+          message: 'Error: not found!',
+          uriStack: [],
+          pointerStack: [],
+          path: ['definitions', 'foo'],
+          uri: expect.objectContaining({
+            _string: 'custom://missing/',
+          }),
+        },
+        {
+          code: 'RESOLVE_URI',
+          message: 'Error: not found!',
+          uriStack: ['custom://test/'],
+          pointerStack: [],
+          path: [],
+          uri: expect.objectContaining({
+            _string: 'custom://missing-test/',
+          }),
+        },
+      ]);
     });
 
     test('should track uri + pointer errors', async () => {

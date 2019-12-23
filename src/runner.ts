@@ -447,6 +447,8 @@ export class ResolveRunner implements Types.IResolveRunner {
       return lookupResult;
     } else {
       let uriResolver: ResolveRunner;
+      const currentAuthority = this.baseUri.toString();
+      const newUriStack = currentAuthority && this.depth !== 0 ? currentAuthority : null;
 
       try {
         if (this.atMaxUriDepth()) {
@@ -465,16 +467,15 @@ export class ResolveRunner implements Types.IResolveRunner {
           parentPath,
         });
 
-        const currentAuthority = this.baseUri.toString();
-        if (currentAuthority && this.depth !== 0) {
-          uriResolver.uriStack = uriResolver.uriStack.concat([currentAuthority]);
+        if (newUriStack) {
+          uriResolver.uriStack = uriResolver.uriStack.concat(newUriStack);
         }
       } catch (e) {
         lookupResult.error = {
           code: 'RESOLVE_URI',
           message: String(e),
           uri: ref,
-          uriStack: this.uriStack,
+          uriStack: newUriStack ? this.uriStack.concat(newUriStack) : this.uriStack,
           pointerStack,
           path: parentPath,
         };
