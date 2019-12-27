@@ -134,7 +134,26 @@ describe('resolver', () => {
       }
     });
 
-    test.only('circular madness - clean cache', async () => {
+    test.only('circular madness - clean instance', async () => {
+      const uriCache = new Cache();
+      for (const file of fs.readdirSync(join(__dirname, 'fixtures', 'circular-madness', 'schemas-2'))) {
+        const resolver = new Resolver({
+          uriCache,
+          resolvers: {
+            file: new FileReader(),
+          },
+        });
+
+        const filePath = join(__dirname, 'fixtures', 'circular-madness', 'schemas-2', file);
+        const result = await resolver.resolve(parse(fs.readFileSync(filePath, 'utf8')), {
+          baseUri: filePath,
+        });
+
+        expect(result.errors).toEqual([]);
+      }
+    });
+
+    test.only('circular madness - clean cache and instance', async () => {
       for (const file of fs.readdirSync(join(__dirname, 'fixtures', 'circular-madness', 'schemas-2'))) {
         const resolver = new Resolver({
           resolvers: {
