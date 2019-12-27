@@ -1,4 +1,5 @@
 import { join } from '@stoplight/path';
+import { parse } from '@stoplight/yaml';
 import * as fs from 'fs';
 import produce from 'immer';
 import * as _ from 'lodash';
@@ -10,6 +11,7 @@ import { defaultGetRef, ResolveRunner } from '../runner';
 import * as Types from '../types';
 import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
+import { safeStringify } from '@stoplight/json';
 
 export class FileReader implements Types.IResolver {
   public async resolve(uri: uri.URI) {
@@ -17,7 +19,7 @@ export class FileReader implements Types.IResolver {
     return new Promise((resolve, reject) => {
       try {
         const raw = fs.readFileSync(path);
-        resolve(JSON.parse(raw.toString()));
+        resolve(parse(raw.toString()));
       } catch (err) {
         reject(err);
       }
@@ -113,6 +115,22 @@ describe('resolver', () => {
 
       // simple performance sanity check
       expect(new Date().getTime() - now).toBeLessThan(500);
+    });
+
+    test.only('circular madness', async () => {
+      const resolver = new Resolver({
+        resolvers: {
+          file: new FileReader(),
+        },
+      });
+
+      const filePath = join(__dirname, 'fixtures', 'circular-madness', 'openapi-simplifed.yaml');
+      console.log(filePath);
+      const result = await resolver.resolve(parse(fs.readFileSync(filePath, 'utf8')), {
+        baseUri: filePath,
+      });
+
+      console.log(safeStringify(result.result, undefined, 4));
     });
   });
 

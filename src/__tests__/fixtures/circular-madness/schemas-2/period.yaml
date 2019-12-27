@@ -1,0 +1,16 @@
+type: object
+properties:
+  total:
+    $ref: '../openapi-simplifed.yaml#/components/schemas/Currency'
+  intervalStartDate:
+    description: Date of starting point for interval
+    type: string
+  items:
+    type: array
+    items:
+      $ref: '../openapi-simplifed.yaml#/components/schemas/Item'
+  additions:
+    description: Additional properties
+    type: object
+    additionalProperties:
+      type: string

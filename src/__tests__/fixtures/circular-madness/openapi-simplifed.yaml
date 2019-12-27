@@ -1,0 +1,22 @@
+openapi: 3.0.1
+info:
+  title: Example
+  version: v2
+  description: Example
+servers:
+  - description: Prism mock server
+    url: http://localhost:4010
+tags:
+- name: Example
+paths:
+
+components:
+  schemas:
+    Period:
+      $ref: schemas-2/period.yaml
+    CategoryTotals:
+      $ref: schemas-2/category-totals.yaml
+    Item:
+      $ref: schemas-2/item.yaml
+    Currency:
+      $ref: schemas-2/currency.yaml

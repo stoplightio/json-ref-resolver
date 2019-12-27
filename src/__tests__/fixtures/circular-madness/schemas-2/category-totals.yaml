@@ -1,0 +1,15 @@
+type: object
+properties:
+  total:
+    $ref: '../openapi-simplifed.yaml#/components/schemas/Currency'
+  items:
+    type: array
+    items:
+      $ref: '../openapi-simplifed.yaml#/components/schemas/Item'
+  additions:
+    description: Additional properties
+    type: object
+    additionalProperties:
+      type: string
+required:
+  - items
