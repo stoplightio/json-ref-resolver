@@ -124,13 +124,31 @@ describe('resolver', () => {
         },
       });
 
-      const filePath = join(__dirname, 'fixtures', 'circular-madness', 'openapi-simplifed.yaml');
-      console.log(filePath);
-      const result = await resolver.resolve(parse(fs.readFileSync(filePath, 'utf8')), {
-        baseUri: filePath,
-      });
+      for (const file of fs.readdirSync(join(__dirname, 'fixtures', 'circular-madness', 'schemas-2'))) {
+        const filePath = join(__dirname, 'fixtures', 'circular-madness', 'schemas-2', file);
+        const result = await resolver.resolve(parse(fs.readFileSync(filePath, 'utf8')), {
+          baseUri: filePath,
+        });
 
-      console.log(safeStringify(result.result, undefined, 4));
+        expect(result.errors).toEqual([]);
+      }
+    });
+
+    test.only('circular madness - clean cache', async () => {
+      for (const file of fs.readdirSync(join(__dirname, 'fixtures', 'circular-madness', 'schemas-2'))) {
+        const resolver = new Resolver({
+          resolvers: {
+            file: new FileReader(),
+          },
+        });
+
+        const filePath = join(__dirname, 'fixtures', 'circular-madness', 'schemas-2', file);
+        const result = await resolver.resolve(parse(fs.readFileSync(filePath, 'utf8')), {
+          baseUri: filePath,
+        });
+
+        expect(result.errors).toEqual([]);
+      }
     });
   });
 
