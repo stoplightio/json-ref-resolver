@@ -987,13 +987,13 @@ describe('resolver', () => {
 
       expect(resolved.result).toEqual({
         ref1: {
-          $ref: '#/ref3',
+          $ref: '#/ref1',
         },
         ref2: {
           $ref: '#/ref1',
         },
         ref3: {
-          $ref: '#/ref2',
+          $ref: '#/ref1',
         },
       });
 
@@ -1124,7 +1124,7 @@ describe('resolver', () => {
       expect(resolved.result).toStrictEqual({
         oneOf: [
           {
-            $ref: '#/definitions/todo-partial',
+            $ref: '#/definitions/todo-full',
           },
           {
             $ref: '#/definitions/todo-full',
