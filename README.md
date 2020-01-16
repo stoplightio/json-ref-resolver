@@ -84,7 +84,7 @@ const resolved = await resolver.resolve({
 // ==> result is the original object, with local refs resolved and replaced
 expect(resolved.result).toEqual({
   user: {
-    name: "json"
+    name: "john"
   },
   models: {
     user: {
@@ -133,7 +133,7 @@ const resolved = await resolver.resolve(
 
 // ==> result is the target object, with refs resolved and replaced
 expect(resolved.result).toEqual({
-  name: "json",
+  name: "john",
   card: {
     type: "visa"
   }
