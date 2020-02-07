@@ -56,7 +56,7 @@
     "urijs": "~1.19.2"
   },
   "devDependencies": {
-    "@stoplight/scripts": "^5",
+    "@stoplight/scripts": "^8",
     "@types/jest": "^24.9.0",
     "@types/lodash": "^4.14.149",
     "benchmark": "^2.1",
