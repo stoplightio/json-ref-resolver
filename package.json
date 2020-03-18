@@ -60,7 +60,7 @@
     "@types/jest": "^24.9.0",
     "@types/lodash": "^4.14.149",
     "benchmark": "^2.1",
-    "jest": "^24.9",
+    "jest": "^25.1",
     "ts-jest": "^24.3.0",
     "tslint": "^5.20",
     "tslint-config-stoplight": "~1.4",
