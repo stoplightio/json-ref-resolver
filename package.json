@@ -62,7 +62,7 @@
     "benchmark": "^2.1",
     "jest": "^24.9",
     "ts-jest": "^24.3.0",
-    "tslint": "^5.20",
+    "tslint": "^6.1",
     "tslint-config-stoplight": "~1.4",
     "typescript": "3.7.5"
   },
