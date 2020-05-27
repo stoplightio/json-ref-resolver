@@ -1,5 +1,6 @@
 import { Dictionary, Segment } from '@stoplight/types';
 import { DepGraph } from 'dependency-graph';
+import * as URI from 'urijs';
 
 /**
  * The following interfaces are the primary interaction points for json-ref-resolver.
@@ -42,7 +43,7 @@ export interface IResolverOpts {
    *
    * It should return a URI object to change the value being resolved, or void to make no changes.
    */
-  transformRef?: (opts: IRefTransformer, ctx: any) => uri.URI | void;
+  transformRef?: (opts: IRefTransformer, ctx: any) => URI | void;
 
   /**
    * Hook to customize how the result of an uri look is parsed.
@@ -127,15 +128,15 @@ export interface IResolveResult {
  */
 
 export interface IResolver {
-  resolve(ref: uri.URI, ctx: any): Promise<any>;
+  resolve(ref: URI, ctx: any): Promise<any>;
 }
 
 export interface IUriParser {
   result: any;
   fragment: string;
   uriResult: IUriResult;
-  targetAuthority: uri.URI;
-  parentAuthority: uri.URI;
+  targetAuthority: URI;
+  parentAuthority: URI;
   parentPath: string[];
 }
 
@@ -148,8 +149,8 @@ export interface IDereferenceTransformer {
   result: any;
   source: any;
   fragment: string;
-  targetAuthority: uri.URI;
-  parentAuthority: uri.URI;
+  targetAuthority: URI;
+  parentAuthority: URI;
   parentPath: string[];
 }
 
@@ -161,7 +162,7 @@ export interface ITransformerResult {
 export interface IUriResult {
   pointerStack: string[];
   targetPath: string[];
-  uri: uri.URI;
+  uri: URI;
   resolved?: IResolveResult;
   error?: IResolveError;
 }
@@ -175,8 +176,8 @@ export interface IComputeRefOpts {
 }
 
 export interface IRefTransformer extends IComputeRefOpts {
-  ref?: uri.URI;
-  uri: uri.URI;
+  ref?: URI;
+  uri: URI;
 }
 
 export type ResolverErrorCode =
@@ -191,7 +192,7 @@ export interface IResolveError {
   code: ResolverErrorCode;
   message: string;
   path: Segment[];
-  uri: uri.URI;
+  uri: URI;
   uriStack: string[];
   pointerStack: string[];
 }
@@ -215,7 +216,7 @@ export interface ICacheOpts {
 
 /** @hidden */
 export interface IRefHandlerOpts {
-  ref: uri.URI;
+  ref: URI;
   val: any;
   pointerStack: string[];
   cacheKey: string;
@@ -248,20 +249,20 @@ export interface IResolveRunner {
   uriCache: ICache;
   depth: number;
   uriStack: string[];
-  baseUri: uri.URI;
+  baseUri: URI;
 
   graph: DepGraph<IGraphNodeData>;
   root: string;
 
   atMaxUriDepth: () => boolean;
   resolve: (opts?: IResolveOpts) => Promise<IResolveResult>;
-  computeRef: (opts: IComputeRefOpts) => uri.URI | void | undefined;
+  computeRef: (opts: IComputeRefOpts) => URI | void | undefined;
   lookupAndResolveUri: (opts: IRefHandlerOpts) => Promise<IUriResult>;
 }
 
 /** @hidden */
 export interface IResolveRunnerOpts extends IResolveOpts {
-  root?: uri.URI;
+  root?: URI;
 
   depth?: number;
   uriStack?: string[];

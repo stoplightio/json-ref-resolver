@@ -1,3 +1,5 @@
+import * as URI from 'urijs';
+
 const replace = (str: string, find: string, repl: string): string => {
   // modified from http://jsperf.com/javascript-replace-all/10
   const orig = str.toString();
@@ -31,11 +33,11 @@ export const addToJSONPointer = (pointer: string, part: string): string => {
 };
 
 /** @hidden */
-export const uriToJSONPointer = (uri: uri.URI): string => {
+export const uriToJSONPointer = (uri: URI): string => {
   return uri.fragment() !== '' ? `#${uri.fragment()}` : uri.href() === '' ? '#' : '';
 };
 
 /** @hidden */
-export const uriIsJSONPointer = (ref: uri.URI): boolean => {
+export const uriIsJSONPointer = (ref: URI): boolean => {
   return ref.path() === '';
 };
