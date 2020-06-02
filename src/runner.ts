@@ -22,7 +22,7 @@ export const defaultGetRef = (key: string, val: any) => {
 /** @hidden */
 export class ResolveRunner implements Types.IResolveRunner {
   public readonly id: number;
-  public readonly baseUri: uri.URI;
+  public readonly baseUri: URI;
   public readonly uriCache: Types.ICache;
   public readonly graph: Types.IResolveRunner['graph'];
   public readonly root: string;
@@ -38,7 +38,7 @@ export class ResolveRunner implements Types.IResolveRunner {
   };
 
   public readonly getRef: (key: string, val: any) => string | void;
-  public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
+  public readonly transformRef?: (opts: Types.IRefTransformer, ctx: any) => URI | any;
   public readonly parseResolveResult?: (opts: Types.IUriParser) => Promise<Types.IUriParserResult>;
   public readonly transformDereferenceResult?: (
     opts: Types.IDereferenceTransformer,
@@ -315,7 +315,7 @@ export class ResolveRunner implements Types.IResolveRunner {
    *
    * If so, return the appropriate URI object.
    */
-  public computeRef = (opts: Types.IComputeRefOpts): uri.URI | void => {
+  public computeRef = (opts: Types.IComputeRefOpts): URI | void => {
     const refStr = this.getRef(opts.key, opts.val);
 
     if (!refStr) return;
@@ -367,7 +367,7 @@ export class ResolveRunner implements Types.IResolveRunner {
 
   public lookupUri = async (opts: {
     fragment: string;
-    ref: uri.URI;
+    ref: URI;
     cacheKey: string;
     parentPath: string[];
   }): Promise<ResolveRunner> => {
@@ -522,7 +522,7 @@ export class ResolveRunner implements Types.IResolveRunner {
     return sOpts && typeof sOpts === 'object' && sOpts.cacheKey ? sOpts.cacheKey : JSON.stringify(arguments);
   }
 
-  private computeUriCacheKey(ref: uri.URI) {
+  private computeUriCacheKey(ref: URI) {
     // don't include the fragment on uri cache key
     return ref
       .clone()
@@ -530,7 +530,7 @@ export class ResolveRunner implements Types.IResolveRunner {
       .toString();
   }
 
-  private isFile(ref: uri.URI): boolean {
+  private isFile(ref: URI): boolean {
     const scheme = ref.scheme();
 
     if (scheme === 'file') return true;

@@ -1,4 +1,5 @@
 import { DepGraph } from 'dependency-graph';
+import * as URI from 'urijs';
 
 import { Cache } from './cache';
 import { ResolveRunner } from './runner';
@@ -20,7 +21,7 @@ export class Resolver {
   };
 
   protected getRef?: (key: string, val: any) => string | void;
-  protected transformRef?: (opts: Types.IRefTransformer, ctx: any) => uri.URI | any;
+  protected transformRef?: (opts: Types.IRefTransformer, ctx: any) => URI | any;
   protected parseResolveResult?: (opts: Types.IUriParser) => Promise<Types.IUriParserResult>;
   protected transformDereferenceResult?: (opts: Types.IDereferenceTransformer) => Promise<Types.ITransformerResult>;
 

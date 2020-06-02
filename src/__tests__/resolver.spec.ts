@@ -12,7 +12,7 @@ import httpMocks from './fixtures/http-mocks';
 import resolvedResults from './fixtures/resolved';
 
 export class FileReader implements Types.IResolver {
-  public async resolve(uri: uri.URI) {
+  public async resolve(uri: URI) {
     const path = uri.path();
     return new Promise((resolve, reject) => {
       try {
@@ -26,7 +26,7 @@ export class FileReader implements Types.IResolver {
 }
 
 export class HttpReader implements Types.IResolver {
-  public async resolve(uri: uri.URI) {
+  public async resolve(uri: URI) {
     const mock = httpMocks[uri.toString()];
 
     if (mock) return mock;
@@ -150,7 +150,7 @@ describe('resolver', () => {
 
       const uris: string[] = [];
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           const uri = ref.toString();
           uris.push(uri);
           return remotes[uri];
@@ -686,7 +686,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(uri: uri.URI): Promise<any> {
+        async resolve(uri: URI): Promise<any> {
           return data[uri.authority()];
         },
       };
@@ -767,7 +767,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(uri: uri.URI): Promise<any> {
+        async resolve(uri: URI): Promise<any> {
           return data[uri.authority()];
         },
       };
@@ -944,7 +944,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           return data[ref.authority()];
         },
       };
@@ -1074,7 +1074,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           return data[ref.authority()];
         },
       };
@@ -1334,7 +1334,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           if (data[ref.authority()]) {
             return data[ref.authority()];
           }
@@ -1410,7 +1410,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           if (data[ref.authority()]) {
             return data[ref.authority()];
           }
@@ -1549,7 +1549,7 @@ describe('resolver', () => {
       });
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           if (ref.path() === '/b') {
             return {
               definitions: {
@@ -1726,7 +1726,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           if (ref.path().split('.')[1] === 'md') {
             return data.markdown;
           }
@@ -1792,7 +1792,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           return data[ref.path().slice(1)];
         },
       };
@@ -1896,7 +1896,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           if (ref.path().split('.')[1] === 'md') {
             return data;
           }
@@ -1967,7 +1967,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           return data[ref.path().slice(1)];
         },
       };
@@ -2123,7 +2123,7 @@ describe('resolver', () => {
 
       const uris: string[] = [];
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           const uri = ref.toString();
           uris.push(uri);
           return remotes[uri];
@@ -2338,7 +2338,7 @@ describe('resolver', () => {
       };
 
       const reader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           return data[ref.authority()];
         },
       };
@@ -2370,7 +2370,7 @@ describe('resolver', () => {
       };
 
       const httpReader: Types.IResolver = {
-        async resolve(ref: uri.URI): Promise<any> {
+        async resolve(ref: URI): Promise<any> {
           return data[ref.toString()];
         },
       };
