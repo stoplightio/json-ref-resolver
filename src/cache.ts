@@ -51,4 +51,13 @@ export class Cache implements Types.ICache {
   public has(key: string): boolean {
     return key in this._data;
   }
+
+  public purge(): void {
+    Object.assign(this._stats, {
+      hits: 0,
+      misses: 0,
+    });
+
+    this._data = {};
+  }
 }

@@ -206,6 +206,7 @@ export interface ICache {
   get(key: string): any;
   set(key: string, val: any): void;
   has(key: string): boolean;
+  purge(): void;
 }
 
 export interface ICacheOpts {
