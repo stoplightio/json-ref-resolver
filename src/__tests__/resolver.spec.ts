@@ -1215,6 +1215,76 @@ describe('resolver', () => {
       });
     });
 
+    test('should be resilient to purging', async () => {
+      const data = {
+        hello: 'world',
+        resolved: 0,
+      };
+
+      const source = {
+        root: {
+          $ref: 'custom://whatever',
+        },
+      };
+
+      const expected = {
+        root: {
+          hello: 'world',
+        },
+      };
+
+      let counter = 1;
+
+      const reader: Types.IResolver = {
+        async resolve(): Promise<any> {
+          const out = { ...data, resolved: counter++ };
+          return out;
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          custom: reader,
+        },
+      });
+
+      const stats = resolver.uriCache.stats;
+
+      let resolved = await resolver.resolve(source);
+      expect(resolved.result).toEqual({
+        root: {
+          hello: 'world',
+          resolved: 1, // initial resolving
+        },
+      });
+      expect(stats.hits).toEqual(0);
+      expect(stats.misses).toEqual(1);
+
+      resolved = await resolver.resolve(source);
+      expect(resolved.result).toEqual({
+        root: {
+          hello: 'world',
+          resolved: 1, // not resolved, served by the cache
+        },
+      });
+      expect(stats.hits).toEqual(1);
+      expect(stats.misses).toEqual(1);
+
+      resolver.uriCache.purge();
+      expect(stats.hits).toEqual(0);
+      expect(stats.misses).toEqual(0);
+
+      resolved = await resolver.resolve(source);
+      expect(resolved.result).toEqual({
+        root: {
+          hello: 'world',
+          resolved: 2, // once again resolved as the cache was emptied
+        },
+      });
+      expect(stats.hits).toEqual(0);
+      expect(stats.misses).toEqual(1);
+    });
+
     test('should support _stdTTL', async () => {
       const data = {
         hello: 'world',
