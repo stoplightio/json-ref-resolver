@@ -2,7 +2,8 @@ import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/
 import { dirname, join, stripRoot, toFSPath } from '@stoplight/path';
 import { DepGraph } from 'dependency-graph';
 import produce, { original } from 'immer';
-import { get, set } from 'lodash';
+import get = require('lodash.get');
+import set = require('lodash.set');
 import * as URI from 'urijs';
 
 import { Cache } from './cache';
@@ -246,7 +247,7 @@ export class ResolveRunner implements Types.IResolveRunner {
                 if (val !== void 0) {
                   set(draft, dependantPath, val);
 
-                  this._setGraphNodeData(pathToPointer(pointerPath), original(val));
+                  this._setGraphNodeData(pathToPointer(pointerPath), val);
                 } else {
                   resolved.errors.push({
                     code: 'POINTER_MISSING',
