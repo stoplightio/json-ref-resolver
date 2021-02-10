@@ -68,7 +68,7 @@ jobs:
 
   release:
     docker:
-      - image: circleci/node:lts
+      - image: circleci/node:dubnium
     steps:
       - checkout
       - run: yarn
