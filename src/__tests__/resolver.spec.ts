@@ -181,6 +181,43 @@ describe('resolver', () => {
       });
     });
 
+    test('should attempt to resolve whitespace-only $refs', async () => {
+      const source = {
+        empty: {
+          $ref: '',
+        },
+        whitespace: {
+          $ref: ' ',
+        },
+      };
+
+      const resolver = new Resolver({
+        resolvers: {
+          file: new FileReader(),
+        },
+      });
+      const result = await resolver.resolve(source);
+
+      expect(result.errors).toStrictEqual([
+        {
+          code: 'RESOLVE_URI',
+          message: 'Error: ENOENT: no such file or directory, open',
+          path: ['empty'],
+          pointerStack: [],
+          uriStack: [],
+          uri: expect.any(Object),
+        },
+        {
+          code: 'RESOLVE_URI',
+          message: "Error: ENOENT: no such file or directory, open ' '",
+          path: ['whitespace'],
+          pointerStack: [],
+          uriStack: [],
+          uri: expect.any(Object),
+        },
+      ]);
+    });
+
     test('should respect immutability rules', async () => {
       const source = {
         hello: {
