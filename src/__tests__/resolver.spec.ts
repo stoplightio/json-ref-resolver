@@ -201,7 +201,7 @@ describe('resolver', () => {
       expect(result.errors).toStrictEqual([
         {
           code: 'RESOLVE_URI',
-          message: 'Error: ENOENT: no such file or directory, open',
+          message: expect.stringMatching(/^Error: ENOENT: no such file or directory, open/),
           path: ['empty'],
           pointerStack: [],
           uriStack: [],
