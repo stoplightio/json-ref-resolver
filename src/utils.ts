@@ -1,4 +1,5 @@
 import * as URI from 'urijs';
+import { ExtendedURI } from './uri';
 
 const replace = (str: string, find: string, repl: string): string => {
   // modified from http://jsperf.com/javascript-replace-all/10
@@ -33,11 +34,15 @@ export const addToJSONPointer = (pointer: string, part: string): string => {
 };
 
 /** @hidden */
-export const uriToJSONPointer = (uri: URI): string => {
+export const uriToJSONPointer = (uri: URI | ExtendedURI): string => {
+  if ('length' in uri && uri.length === 0) {
+    return '';
+  }
+
   return uri.fragment() !== '' ? `#${uri.fragment()}` : uri.href() === '' ? '#' : '';
 };
 
 /** @hidden */
-export const uriIsJSONPointer = (ref: URI): boolean => {
-  return ref.path() === '';
+export const uriIsJSONPointer = (ref: URI | ExtendedURI): boolean => {
+  return (!('length' in ref) || ref.length > 0) && ref.path() === '';
 };

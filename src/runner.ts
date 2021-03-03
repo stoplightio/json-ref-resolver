@@ -5,6 +5,7 @@ import produce, { original } from 'immer';
 import get = require('lodash.get');
 import set = require('lodash.set');
 import * as URI from 'urijs';
+import { ExtendedURI } from './uri';
 
 import { Cache } from './cache';
 import { ResolveCrawler } from './crawler';
@@ -319,9 +320,9 @@ export class ResolveRunner implements Types.IResolveRunner {
   public computeRef = (opts: Types.IComputeRefOpts): URI | void => {
     const refStr = this.getRef(opts.key, opts.val);
 
-    if (!refStr) return;
+    if (refStr === undefined) return;
 
-    let ref = new URI(refStr);
+    let ref: URI = new ExtendedURI(refStr);
 
     // Does ref only have a fragment
     if (refStr[0] !== '#') {

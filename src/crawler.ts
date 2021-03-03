@@ -42,7 +42,7 @@ export class ResolveCrawler implements Types.ICrawler {
      *   "$ref": "#/hi"
      * }
      */
-    if (ref) {
+    if (ref !== undefined) {
       this._resolveRef({
         ref,
         val: target,
@@ -69,7 +69,7 @@ export class ResolveCrawler implements Types.ICrawler {
         parentPath.push(key);
 
         // if this value a ref, resolve and continue on to the next property
-        if (ref) {
+        if (ref !== undefined) {
           this._resolveRef({
             ref,
             val,
