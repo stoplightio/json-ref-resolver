@@ -51,7 +51,6 @@
     "dependency-graph": "~0.11.0",
     "fast-memoize": "^2.5.2",
     "immer": "^9.0.6",
-    "lodash.get": "^4.4.2",
     "lodash": "^4.17.21",
     "tslib": "^2.3.1",
     "urijs": "^1.19.6"
@@ -59,7 +58,6 @@
   "devDependencies": {
     "@stoplight/scripts": "^5",
     "@types/jest": "^24.9.0",
-    "@types/lodash.get": "^4.4.6",
     "@types/lodash": "^4.14.178",
     "benchmark": "^2.1",
     "jest": "^24.9",
