@@ -2,8 +2,8 @@ import { pathToPointer, pointerToPath, startsWith, trimStart } from '@stoplight/
 import { dirname, join, stripRoot, toFSPath } from '@stoplight/path';
 import { DepGraph } from 'dependency-graph';
 import produce, { original } from 'immer';
-import get = require('lodash.get');
-import set = require('lodash.set');
+import get = require('lodash/get');
+import set = require('lodash/set');
 import * as URI from 'urijs';
 import { ExtendedURI } from './uri';
 
