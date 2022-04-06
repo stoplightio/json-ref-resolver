@@ -209,7 +209,7 @@ describe('resolver', () => {
         },
         {
           code: 'RESOLVE_URI',
-          message: "Error: ENOENT: no such file or directory, open ' '",
+          message: expect.stringMatching(/^Error: ENOENT: no such file or directory, open/),
           path: ['whitespace'],
           pointerStack: [],
           uriStack: [],

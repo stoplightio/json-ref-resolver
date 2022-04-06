@@ -1,8 +1,10 @@
 import * as BaseURI from 'urijs';
 
 export class ExtendedURI extends BaseURI {
-  constructor(private readonly _value: string) {
+  private readonly _value: string;
+  constructor(_value: string) {
     super(_value);
+    this._value = _value.trim();
   }
 
   public get length() {
