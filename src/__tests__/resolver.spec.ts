@@ -1208,6 +1208,37 @@ describe('resolver', () => {
         ],
       });
     });
+
+    test('should handle circular direct file reference', async () => {
+      const resolver = new Resolver({
+        resolvers: {
+          file: new FileReader(),
+        },
+      });
+      const docUri = join(__dirname, './fixtures/schemas/circular-file-reference.json');
+      const resolved = await resolver.resolve(JSON.parse(fs.readFileSync(docUri, 'utf8')), {
+        baseUri: docUri,
+      });
+
+      expect(resolved.errors).toEqual([]);
+      expect(resolved.result).toStrictEqual({
+        anyOf: [
+          {
+            anyOf: [
+              {
+                $ref: 'circular-file-reference.json',
+              },
+              {
+                $ref: 'circular-file-reference.json#/anyOf',
+              },
+            ],
+          },
+          {
+            $ref: 'circular-file-reference.json#/anyOf',
+          },
+        ],
+      });
+    });
   });
 
   describe('cache', () => {
