@@ -1,0 +1,10 @@
+{
+  "anyOf": [
+    {
+      "$ref": "circular-file-reference.json"
+    },
+    {
+      "$ref": "circular-file-reference.json#/anyOf"
+    }
+  ]
+}

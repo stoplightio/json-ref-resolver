@@ -349,6 +349,10 @@ export class ResolveRunner implements Types.IResolveRunner {
       }
     }
 
+    if (String(ref).length > 0 && this.isFile(this.baseUri) && this.isFile(ref) && this.baseUri.path() === ref.path()) {
+      ref = new ExtendedURI(`#${ref.fragment()}`);
+    }
+
     if (this.transformRef) {
       return this.transformRef(
         {
