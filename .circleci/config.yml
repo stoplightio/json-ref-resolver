@@ -27,34 +27,21 @@ jobs:
   # https://nodejs.org/en/about/releases/
   test_node_lts:
     docker:
-      - image: circleci/node:lts
+      - image: cimg/node:lts
     steps:
       - checkout
-      - run:
-          name: Download cc-test-reporter
-          command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-      - run:
-          name: cc-before
-          command: |
-            ./cc-test-reporter before-build
       - install_and_test
-      - run:
-          name: cc-after
-          command: |
-            ./cc-test-reporter after-build --coverage-input-type lcov --exit-code $?
 
   test_node_latest:
     docker:
-      - image: circleci/node:latest
+      - image: cimg/node:current
     steps:
       - checkout
       - install_and_test
 
   release:
     docker:
-      - image: circleci/node:lts
+      - image: cimg/node:lts
     steps:
       - checkout
       - run: yarn
