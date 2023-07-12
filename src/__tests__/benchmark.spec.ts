@@ -20,7 +20,7 @@ const { ResolveRunner } = require('../runner');
 describe.skip('benchmark', () => {
   test('huge circular resolve', async () => {
     const suite = new Benchmark.Suite();
-    await new Promise(resolve => {
+    await new Promise<void>(resolve => {
       // add tests
       suite
         .add('huge circular resolve', async () => {
@@ -96,7 +96,7 @@ describe.skip('benchmark', () => {
 
     const sharedRunner = new ResolveRunner();
 
-    await new Promise(resolve => {
+    await new Promise<void>(resolve => {
       // add tests
       suite
         .add('crawler', () => {
