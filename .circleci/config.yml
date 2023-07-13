@@ -41,10 +41,10 @@ jobs:
 
   release:
     docker:
-      - image: cimg/node:lts
+      - image: circleci/node:8
     steps:
       - checkout
-      - run: yarn
+      - run: yarn --ignore-engines
       - run: yarn build
       - run: yarn release
 
