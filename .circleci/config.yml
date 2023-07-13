@@ -41,10 +41,10 @@ jobs:
 
   release:
     docker:
-      - image: cimg/node:lts
+      - image: cimg/node:12
     steps:
       - checkout
-      - run: yarn
+      - run: yarn --ignore-engines
       - run: yarn build
       - run: yarn release
 
